@@ -7,18 +7,33 @@ import React, {
   useState,
 } from 'react';
 import { ALL_DRILL_TYPES, CHAPTERS_DATA } from '../data/chaptersData';
+import { ALL_HSK_PATTERN_IDS } from '../data/mockExamsData';
 import { authenticateStudent } from '../data/students';
 import { useActiveStudyTimer } from '../hooks/useActiveStudyTimer';
-import { syncStudentStatsToSheets, SyncResult } from '../services/sheetsSync';
+import {
+  bindStudentDeviceInSheet,
+  fetchStudentSessionFromSheet,
+  syncStudentStatsToSheets,
+  SyncResult,
+} from '../services/sheetsSync';
 import {
   ChapterStatEntry,
   DrillStatEntry,
   DrillType,
+  HskMockExamResult,
+  HskPatternId,
+  HskPatternStatEntry,
+  MistakeItem,
+  MockExamAttempt,
   QuestionAnswerRecord,
   SheetsSyncPayload,
   Student,
   StudentProgress,
+  StudentStudyBookmark,
+  StudyBookmarkItemType,
+  UnlockedAccess,
 } from '../types';
+import { getOrCreateClientDeviceId, parseUnlockedAccess } from '../utils/accessControl';
 
 type ThemeMode = 'light' | 'dark';
 
@@ -27,7 +42,61 @@ const STORAGE_KEYS = {
   THEME: 'chinese_portal_theme_v1',
   PINYIN: 'chinese_portal_show_pinyin_v1',
   PROGRESS_PREFIX: 'chinese_portal_progress_v1_',
+  BOOKMARKS_PREFIX: 'chinese_portal_bookmarks_v1_',
 };
+
+export function makeStudyBookmarkKey(itemType: StudyBookmarkItemType, itemId: string): string {
+  return `${itemType}:${itemId}`;
+}
+
+function loadStudentBookmarks(studentId: string): Record<string, StudentStudyBookmark> {
+  try {
+    const raw = localStorage.getItem(`${STORAGE_KEYS.BOOKMARKS_PREFIX}${studentId}`);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, StudentStudyBookmark>;
+    if (!parsed || typeof parsed !== 'object') return {};
+    const cleaned: Record<string, StudentStudyBookmark> = {};
+    for (const [k, v] of Object.entries(parsed)) {
+      if (
+        v &&
+        (v.itemType === 'vocab' || v.itemType === 'sentence') &&
+        typeof v.itemId === 'string' &&
+        typeof v.chapterId === 'number'
+      ) {
+        const noteText = typeof v.note === 'string' ? v.note : '';
+        const isBookmarked = Boolean(v.bookmarked);
+        if (isBookmarked || noteText.trim().length > 0) {
+          cleaned[k] = {
+            key: k,
+            itemType: v.itemType,
+            itemId: v.itemId,
+            chapterId: v.chapterId,
+            bookmarked: isBookmarked,
+            note: noteText,
+            updatedAt: typeof v.updatedAt === 'string' ? v.updatedAt : new Date().toISOString(),
+          };
+        }
+      }
+    }
+    return cleaned;
+  } catch {
+    return {};
+  }
+}
+
+function saveStudentBookmarks(
+  studentId: string,
+  bookmarks: Record<string, StudentStudyBookmark>
+): void {
+  try {
+    localStorage.setItem(
+      `${STORAGE_KEYS.BOOKMARKS_PREFIX}${studentId}`,
+      JSON.stringify(bookmarks)
+    );
+  } catch {
+    // تجاهل أخطاء مساحة التخزين
+  }
+}
 
 function getTodayIsoDate(): string {
   const now = new Date();
@@ -37,15 +106,43 @@ function getTodayIsoDate(): string {
   return `${y}-${m}-${d}`;
 }
 
+function makeMistakeKey(chapterId: number, drillType: DrillType, sourceItemId: string): string {
+  return `${chapterId}::${drillType}::${sourceItemId}`;
+}
+
+function normalizeHskPatternEntry(
+  raw?: Partial<HskPatternStatEntry> | null
+): HskPatternStatEntry {
+  const solved = Math.max(0, Number(raw?.solved ?? raw?.attempted ?? 0));
+  const correct = Math.max(0, Math.min(solved, Number(raw?.correct ?? 0)));
+  const wrong =
+    raw?.wrong !== undefined ? Math.max(0, Number(raw.wrong)) : Math.max(0, solved - correct);
+  const accuracyPercent = solved > 0 ? Math.round((correct / solved) * 100) : 0;
+  return {
+    solved,
+    attempted: solved,
+    correct,
+    wrong,
+    accuracyPercent,
+  };
+}
+
 function createEmptyProgress(studentId: string): StudentProgress {
   const drillStats = {} as Record<DrillType, DrillStatEntry>;
+  const drillTimeSeconds = {} as Record<DrillType, number>;
   for (const dt of ALL_DRILL_TYPES) {
     drillStats[dt] = { attempted: 0, correct: 0 };
+    drillTimeSeconds[dt] = 0;
   }
 
   const chapterStats = {} as Record<number, ChapterStatEntry>;
   for (const ch of CHAPTERS_DATA) {
     chapterStats[ch.id] = { solved: 0, correct: 0, completedDrills: [] };
+  }
+
+  const hskPatternStats = {} as Record<HskPatternId, HskPatternStatEntry>;
+  for (const pid of ALL_HSK_PATTERN_IDS) {
+    hskPatternStats[pid] = normalizeHskPatternEntry();
   }
 
   return {
@@ -57,7 +154,12 @@ function createEmptyProgress(studentId: string): StudentProgress {
     studyDates: [getTodayIsoDate()],
     lastActive: new Date().toISOString(),
     drillStats,
+    drillTimeSeconds,
     chapterStats,
+    mistakes: [],
+    mockExamHistory: [],
+    hskPatternStats,
+    hskMockResults: [],
   };
 }
 
@@ -68,15 +170,54 @@ function loadStudentProgress(studentId: string): StudentProgress {
     if (!raw) return fallback;
     const parsed = JSON.parse(raw) as Partial<StudentProgress>;
 
-    const mergedDrillStats = { ...fallback.drillStats, ...(parsed.drillStats ?? {}) };
+    const mergedDrillStats = { ...fallback.drillStats };
+    if (parsed.drillStats) {
+      for (const dt of ALL_DRILL_TYPES) {
+        if (parsed.drillStats[dt]) {
+          mergedDrillStats[dt] = parsed.drillStats[dt];
+        }
+      }
+    }
+
+    const mergedDrillTime = { ...fallback.drillTimeSeconds };
+    if (parsed.drillTimeSeconds) {
+      for (const dt of ALL_DRILL_TYPES) {
+        const val = parsed.drillTimeSeconds[dt];
+        if (typeof val === 'number' && !Number.isNaN(val)) {
+          mergedDrillTime[dt] = val;
+        }
+      }
+    }
+
     const mergedChapterStats = { ...fallback.chapterStats, ...(parsed.chapterStats ?? {}) };
+    const validDrillSet = new Set<string>(ALL_DRILL_TYPES);
+    const cleanedMistakes: MistakeItem[] = Array.isArray(parsed.mistakes)
+      ? parsed.mistakes.filter(
+          (m): m is MistakeItem =>
+            Boolean(m && m.key && m.sourceItemId && validDrillSet.has(m.drillType))
+        )
+      : [];
+
+    const mergedHskPatternStats = { ...fallback.hskPatternStats! };
+    if (parsed.hskPatternStats) {
+      for (const pid of ALL_HSK_PATTERN_IDS) {
+        if (parsed.hskPatternStats[pid]) {
+          mergedHskPatternStats[pid] = normalizeHskPatternEntry(parsed.hskPatternStats[pid]);
+        }
+      }
+    }
 
     return {
       ...fallback,
       ...parsed,
       studentId,
       drillStats: mergedDrillStats,
+      drillTimeSeconds: mergedDrillTime,
       chapterStats: mergedChapterStats,
+      mistakes: cleanedMistakes,
+      mockExamHistory: Array.isArray(parsed.mockExamHistory) ? parsed.mockExamHistory : [],
+      hskPatternStats: mergedHskPatternStats,
+      hskMockResults: Array.isArray(parsed.hskMockResults) ? parsed.hskMockResults : [],
       studyDates: Array.isArray(parsed.studyDates) ? parsed.studyDates : fallback.studyDates,
     };
   } catch {
@@ -134,7 +275,8 @@ function computeChapterCompletion(chapterId: number, stats: ChapterStatEntry | u
 
   const availableDrills = ALL_DRILL_TYPES.filter((dt) => {
     if (
-      dt === 'sentence-translation' ||
+      dt === 'sentence-hanzi-to-arabic' ||
+      dt === 'sentence-arabic-to-hanzi' ||
       dt === 'sentence-builder' ||
       dt === 'fill-in-blank'
     ) {
@@ -170,15 +312,41 @@ interface AppContextValue {
   showPinyin: boolean;
   togglePinyin: () => void;
   currentStudent: Student | null;
-  login: (nameOrId: string, code: string) => boolean;
+  unlockedAccess: UnlockedAccess;
+  refreshStudentAccess: () => Promise<UnlockedAccess | null>;
+  login: (nameOrId: string, code: string, verifiedStudent?: Student) => boolean;
   logout: () => void;
   progress: StudentProgress | null;
   analytics: ComputedAnalytics;
   lastSyncResult: SyncResult | null;
+  addDrillElapsedTime: (drillElapsedSeconds: Partial<Record<DrillType, number>>) => void;
   recordCompletedSession: (
-    chapterId: number,
+    records: QuestionAnswerRecord[],
+    drillElapsedSeconds?: Partial<Record<DrillType, number>>,
+    options?: { isMistakeReview?: boolean }
+  ) => Promise<SyncResult | null>;
+  recordMockExamAttempt: (
+    attempt: MockExamAttempt,
     records: QuestionAnswerRecord[]
   ) => Promise<SyncResult | null>;
+  recordHskPatternPractice: (
+    patternId: HskPatternId,
+    attempted: number,
+    correct: number
+  ) => Promise<SyncResult | null>;
+  recordHskFixedMockExam: (result: HskMockExamResult) => Promise<SyncResult | null>;
+  studyVault: Record<string, StudentStudyBookmark>;
+  vaultCount: number;
+  isItemBookmarked: (itemType: StudyBookmarkItemType, itemId: string) => boolean;
+  getItemNote: (itemType: StudyBookmarkItemType, itemId: string) => string;
+  toggleBookmark: (itemType: StudyBookmarkItemType, itemId: string, chapterId: number) => void;
+  saveItemNote: (
+    itemType: StudyBookmarkItemType,
+    itemId: string,
+    chapterId: number,
+    note: string
+  ) => void;
+  removeVaultEntry: (key: string) => void;
 }
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
@@ -205,7 +373,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [currentStudent, setCurrentStudent] = useState<Student | null>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.SESSION);
-      return saved ? (JSON.parse(saved) as Student) : null;
+      if (!saved) return null;
+      const parsed = JSON.parse(saved) as Student;
+      return {
+        ...parsed,
+        unlockedAccess: parseUnlockedAccess(parsed.unlockedAccess),
+      };
     } catch {
       return null;
     }
@@ -223,6 +396,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   });
 
   const [lastSyncResult, setLastSyncResult] = useState<SyncResult | null>(null);
+
+  const [studyVault, setStudyVault] = useState<Record<string, StudentStudyBookmark>>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.SESSION);
+      if (!saved) return {};
+      const student = JSON.parse(saved) as Student;
+      return loadStudentBookmarks(student.id);
+    } catch {
+      return {};
+    }
+  });
 
   useEffect(() => {
     const root = document.documentElement;
@@ -274,31 +458,141 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setShowPinyin((prev) => !prev);
   }, []);
 
-  const login = useCallback((nameOrId: string, code: string): boolean => {
-    const matched = authenticateStudent(nameOrId, code);
-    if (!matched) return false;
+  const refreshStudentAccess = useCallback(async (): Promise<UnlockedAccess | null> => {
+    if (!currentStudent) return null;
+    const latestSession = await fetchStudentSessionFromSheet(currentStudent);
+    if (!latestSession) return null;
 
-    setCurrentStudent(matched);
-    const loaded = loadStudentProgress(matched.id);
-    const today = getTodayIsoDate();
-    if (!loaded.studyDates.includes(today)) {
-      loaded.studyDates = [...loaded.studyDates, today];
+    const clientDeviceId = getOrCreateClientDeviceId();
+    if (latestSession.boundDeviceId && latestSession.boundDeviceId !== clientDeviceId) {
+      setCurrentStudent(null);
+      setProgress(null);
+      try {
+        localStorage.removeItem(STORAGE_KEYS.SESSION);
+      } catch {
+        // تجاهل
+      }
+      return null;
     }
-    loaded.lastActive = new Date().toISOString();
-    saveStudentProgress(loaded);
-    setProgress(loaded);
 
-    try {
-      localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(matched));
-    } catch {
-      // تجاهل
+    if (!latestSession.boundDeviceId) {
+      void bindStudentDeviceInSheet(currentStudent, clientDeviceId);
     }
-    return true;
-  }, []);
+
+    const latestAccess = latestSession.unlockedAccess;
+    setCurrentStudent((prev) => {
+      if (!prev) return prev;
+      const prevJson = JSON.stringify(parseUnlockedAccess(prev.unlockedAccess));
+      const nextJson = JSON.stringify(latestAccess);
+      const nextBound = latestSession.boundDeviceId || clientDeviceId;
+      if (prevJson === nextJson && prev.boundDeviceId === nextBound) return prev;
+      const updatedStudent: Student = {
+        ...prev,
+        unlockedAccess: latestAccess,
+        boundDeviceId: nextBound,
+      };
+      try {
+        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updatedStudent));
+      } catch {
+        // تجاهل
+      }
+      return updatedStudent;
+    });
+
+    return latestAccess;
+  }, [currentStudent]);
+
+  // مزامنة صلاحيات الطالب وحالة ارتباط الجهاز تلقائياً من Google Sheets عند فتح أو تحديث الصفحة
+  useEffect(() => {
+    if (!currentStudent) return;
+    let active = true;
+    const clientDeviceId = getOrCreateClientDeviceId();
+
+    fetchStudentSessionFromSheet(currentStudent).then((latestSession) => {
+      if (!active || !latestSession) return;
+
+      if (latestSession.boundDeviceId && latestSession.boundDeviceId !== clientDeviceId) {
+        setCurrentStudent(null);
+        setProgress(null);
+        try {
+          localStorage.removeItem(STORAGE_KEYS.SESSION);
+        } catch {
+          // تجاهل
+        }
+        return;
+      }
+
+      if (!latestSession.boundDeviceId) {
+        void bindStudentDeviceInSheet(currentStudent, clientDeviceId);
+      }
+
+      const latestAccess = latestSession.unlockedAccess;
+      const nextBound = latestSession.boundDeviceId || clientDeviceId;
+
+      setCurrentStudent((prev) => {
+        if (!prev || prev.id !== currentStudent.id) return prev;
+        const prevJson = JSON.stringify(parseUnlockedAccess(prev.unlockedAccess));
+        const nextJson = JSON.stringify(latestAccess);
+        if (prevJson === nextJson && prev.boundDeviceId === nextBound) return prev;
+        const updatedStudent: Student = {
+          ...prev,
+          unlockedAccess: latestAccess,
+          boundDeviceId: nextBound,
+        };
+        try {
+          localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updatedStudent));
+        } catch {
+          // تجاهل
+        }
+        return updatedStudent;
+      });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [currentStudent?.id, currentStudent?.code]);
+
+  const unlockedAccess = useMemo<UnlockedAccess>(
+    () => parseUnlockedAccess(currentStudent?.unlockedAccess),
+    [currentStudent?.unlockedAccess]
+  );
+
+  const login = useCallback(
+    (nameOrId: string, code: string, verifiedStudent?: Student): boolean => {
+      const matched = verifiedStudent ?? authenticateStudent(nameOrId, code);
+      if (!matched) return false;
+
+      const normalizedStudent: Student = {
+        ...matched,
+        unlockedAccess: parseUnlockedAccess(matched.unlockedAccess),
+      };
+
+      setCurrentStudent(normalizedStudent);
+      const loaded = loadStudentProgress(normalizedStudent.id);
+      const today = getTodayIsoDate();
+      if (!loaded.studyDates.includes(today)) {
+        loaded.studyDates = [...loaded.studyDates, today];
+      }
+      loaded.lastActive = new Date().toISOString();
+      saveStudentProgress(loaded);
+      setProgress(loaded);
+      setStudyVault(loadStudentBookmarks(normalizedStudent.id));
+
+      try {
+        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(normalizedStudent));
+      } catch {
+        // تجاهل
+      }
+      return true;
+    },
+    []
+  );
 
   const logout = useCallback(() => {
     setCurrentStudent(null);
     setProgress(null);
+    setStudyVault({});
     setLastSyncResult(null);
     try {
       localStorage.removeItem(STORAGE_KEYS.SESSION);
@@ -307,10 +601,127 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const isItemBookmarked = useCallback(
+    (itemType: StudyBookmarkItemType, itemId: string): boolean => {
+      const entry = studyVault[makeStudyBookmarkKey(itemType, itemId)];
+      return Boolean(entry?.bookmarked);
+    },
+    [studyVault]
+  );
+
+  const getItemNote = useCallback(
+    (itemType: StudyBookmarkItemType, itemId: string): string => {
+      const entry = studyVault[makeStudyBookmarkKey(itemType, itemId)];
+      return entry?.note ?? '';
+    },
+    [studyVault]
+  );
+
+  const toggleBookmark = useCallback(
+    (itemType: StudyBookmarkItemType, itemId: string, chapterId: number) => {
+      if (!currentStudent) return;
+      const key = makeStudyBookmarkKey(itemType, itemId);
+      setStudyVault((prev) => {
+        const existing = prev[key];
+        const nextBookmarked = !existing?.bookmarked;
+        const existingNote = existing?.note ?? '';
+        const next = { ...prev };
+        if (!nextBookmarked && existingNote.trim().length === 0) {
+          delete next[key];
+        } else {
+          next[key] = {
+            key,
+            itemType,
+            itemId,
+            chapterId,
+            bookmarked: nextBookmarked,
+            note: existingNote,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        saveStudentBookmarks(currentStudent.id, next);
+        return next;
+      });
+    },
+    [currentStudent]
+  );
+
+  const saveItemNote = useCallback(
+    (itemType: StudyBookmarkItemType, itemId: string, chapterId: number, note: string) => {
+      if (!currentStudent) return;
+      const key = makeStudyBookmarkKey(itemType, itemId);
+      const trimmed = note.trim();
+      setStudyVault((prev) => {
+        const existing = prev[key];
+        const nextBookmarked = trimmed.length > 0 ? true : Boolean(existing?.bookmarked);
+        const next = { ...prev };
+        if (!nextBookmarked && trimmed.length === 0) {
+          delete next[key];
+        } else {
+          next[key] = {
+            key,
+            itemType,
+            itemId,
+            chapterId,
+            bookmarked: nextBookmarked,
+            note: trimmed,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        saveStudentBookmarks(currentStudent.id, next);
+        return next;
+      });
+    },
+    [currentStudent]
+  );
+
+  const removeVaultEntry = useCallback(
+    (key: string) => {
+      if (!currentStudent) return;
+      setStudyVault((prev) => {
+        if (!prev[key]) return prev;
+        const next = { ...prev };
+        delete next[key];
+        saveStudentBookmarks(currentStudent.id, next);
+        return next;
+      });
+    },
+    [currentStudent]
+  );
+
+  const vaultCount = useMemo(() => Object.keys(studyVault).length, [studyVault]);
+
+  const addDrillElapsedTime = useCallback(
+    (drillElapsedSeconds: Partial<Record<DrillType, number>>) => {
+      const entries = Object.entries(drillElapsedSeconds).filter(
+        ([, secs]) => typeof secs === 'number' && secs > 0
+      );
+      if (entries.length === 0) return;
+
+      setProgress((prev) => {
+        if (!prev) return prev;
+        const updatedTimes = { ...prev.drillTimeSeconds };
+        for (const [dt, secs] of entries) {
+          const drillKey = dt as DrillType;
+          updatedTimes[drillKey] = (updatedTimes[drillKey] ?? 0) + (secs ?? 0);
+        }
+        const updated: StudentProgress = {
+          ...prev,
+          drillTimeSeconds: updatedTimes,
+          lastActive: new Date().toISOString(),
+        };
+        saveStudentProgress(updated);
+        return updated;
+      });
+    },
+    []
+  );
+
   const recordCompletedSession = useCallback(
     async (
-      chapterId: number,
-      records: QuestionAnswerRecord[]
+      records: QuestionAnswerRecord[],
+      drillElapsedSeconds?: Partial<Record<DrillType, number>>,
+      options?: { isMistakeReview?: boolean }
     ): Promise<SyncResult | null> => {
       if (!currentStudent || !progress || records.length === 0) {
         return null;
@@ -326,41 +737,71 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const updatedDrillStats: Record<DrillType, DrillStatEntry> = {
         ...progress.drillStats,
       };
-      const drillsTouched = new Set<DrillType>();
-
-      for (const rec of answeredRecords) {
-        drillsTouched.add(rec.drillType);
-        const existing = updatedDrillStats[rec.drillType] ?? { attempted: 0, correct: 0 };
-        updatedDrillStats[rec.drillType] = {
-          attempted: existing.attempted + 1,
-          correct: existing.correct + (rec.isCorrect ? 1 : 0),
-        };
-      }
-
-      const prevChapter = progress.chapterStats[chapterId] ?? {
-        solved: 0,
-        correct: 0,
-        completedDrills: [],
+      const updatedDrillTimes: Record<DrillType, number> = {
+        ...progress.drillTimeSeconds,
       };
-      const completedDrills = Array.from(
-        new Set<DrillType>([...prevChapter.completedDrills, ...Array.from(drillsTouched)])
-      );
+      if (drillElapsedSeconds) {
+        for (const [dt, secs] of Object.entries(drillElapsedSeconds)) {
+          if (typeof secs === 'number' && secs > 0) {
+            const key = dt as DrillType;
+            updatedDrillTimes[key] = (updatedDrillTimes[key] ?? 0) + secs;
+          }
+        }
+      }
 
       const updatedChapterStats: Record<number, ChapterStatEntry> = {
         ...progress.chapterStats,
-        [chapterId]: {
-          solved: prevChapter.solved + addedSolved,
-          correct: prevChapter.correct + addedCorrect,
-          completedDrills,
-        },
       };
+
+      const mistakesMap = new Map<string, MistakeItem>(
+        progress.mistakes.map((m) => [m.key, m])
+      );
+      const nowIso = new Date().toISOString();
+
+      for (const rec of answeredRecords) {
+        const existingDrill = updatedDrillStats[rec.drillType] ?? { attempted: 0, correct: 0 };
+        updatedDrillStats[rec.drillType] = {
+          attempted: existingDrill.attempted + 1,
+          correct: existingDrill.correct + (rec.isCorrect ? 1 : 0),
+        };
+
+        const prevCh = updatedChapterStats[rec.chapterId] ?? {
+          solved: 0,
+          correct: 0,
+          completedDrills: [],
+        };
+        const completedDrills = prevCh.completedDrills.includes(rec.drillType)
+          ? prevCh.completedDrills
+          : [...prevCh.completedDrills, rec.drillType];
+
+        updatedChapterStats[rec.chapterId] = {
+          solved: prevCh.solved + 1,
+          correct: prevCh.correct + (rec.isCorrect ? 1 : 0),
+          completedDrills,
+        };
+
+        // تحديث قائمة الأخطاء (إضافة الخطأ أو إزالته عند الإجابة الصحيحة في وضع مراجعة الأخطاء)
+        if (rec.sourceItemId) {
+          const mKey = makeMistakeKey(rec.chapterId, rec.drillType, rec.sourceItemId);
+          if (!rec.isCorrect) {
+            mistakesMap.set(mKey, {
+              key: mKey,
+              chapterId: rec.chapterId,
+              drillType: rec.drillType,
+              sourceItemId: rec.sourceItemId,
+              recordedAt: nowIso,
+            });
+          } else if (options?.isMistakeReview) {
+            mistakesMap.delete(mKey);
+          }
+        }
+      }
 
       const today = getTodayIsoDate();
       const studyDates = progress.studyDates.includes(today)
         ? progress.studyDates
         : [...progress.studyDates, today];
 
-      const nowIso = new Date().toISOString();
       const updatedProgress: StudentProgress = {
         ...progress,
         totalSolved: progress.totalSolved + addedSolved,
@@ -369,7 +810,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         studyDates,
         lastActive: nowIso,
         drillStats: updatedDrillStats,
+        drillTimeSeconds: updatedDrillTimes,
         chapterStats: updatedChapterStats,
+        mistakes: Array.from(mistakesMap.values()),
       };
 
       saveStudentProgress(updatedProgress);
@@ -398,6 +841,218 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const result = await syncStudentStatsToSheets(payload);
       setLastSyncResult(result);
       return result;
+    },
+    [currentStudent, progress]
+  );
+
+  const recordMockExamAttempt = useCallback(
+    async (
+      attempt: MockExamAttempt,
+      records: QuestionAnswerRecord[]
+    ): Promise<SyncResult | null> => {
+      if (!currentStudent || !progress) return null;
+
+      const addedSolved = records.length;
+      const addedCorrect = records.filter((r) => r.isCorrect).length;
+      const addedWrong = addedSolved - addedCorrect;
+
+      const updatedChapterStats: Record<number, ChapterStatEntry> = {
+        ...progress.chapterStats,
+      };
+      const updatedDrillStats: Record<DrillType, DrillStatEntry> = {
+        ...progress.drillStats,
+      };
+
+      for (const rec of records) {
+        const existingDrill = updatedDrillStats[rec.drillType] ?? { attempted: 0, correct: 0 };
+        updatedDrillStats[rec.drillType] = {
+          attempted: existingDrill.attempted + 1,
+          correct: existingDrill.correct + (rec.isCorrect ? 1 : 0),
+        };
+
+        const prevCh = updatedChapterStats[rec.chapterId] ?? {
+          solved: 0,
+          correct: 0,
+          completedDrills: [],
+        };
+        updatedChapterStats[rec.chapterId] = {
+          solved: prevCh.solved + 1,
+          correct: prevCh.correct + (rec.isCorrect ? 1 : 0),
+          completedDrills: prevCh.completedDrills,
+        };
+      }
+
+      const nowIso = attempt.completedAt || new Date().toISOString();
+      const today = getTodayIsoDate();
+      const studyDates = progress.studyDates.includes(today)
+        ? progress.studyDates
+        : [...progress.studyDates, today];
+
+      const prevHistory = progress.mockExamHistory ?? [];
+      const updatedProgress: StudentProgress = {
+        ...progress,
+        totalSolved: progress.totalSolved + addedSolved,
+        correctCount: progress.correctCount + addedCorrect,
+        wrongCount: progress.wrongCount + addedWrong,
+        studyDates,
+        lastActive: nowIso,
+        drillStats: updatedDrillStats,
+        chapterStats: updatedChapterStats,
+        mockExamHistory: [attempt, ...prevHistory].slice(0, 25),
+      };
+
+      saveStudentProgress(updatedProgress);
+      setProgress(updatedProgress);
+
+      const accuracyPercent =
+        updatedProgress.totalSolved > 0
+          ? Math.round((updatedProgress.correctCount / updatedProgress.totalSolved) * 100)
+          : 0;
+      const overallProgressPercent = computeOverallProgress(updatedProgress);
+      const activeMinutes = Math.round(updatedProgress.activeSeconds / 60);
+
+      const payload: SheetsSyncPayload = {
+        studentId: currentStudent.id,
+        studentName: currentStudent.name,
+        studentCode: currentStudent.code,
+        totalSolved: updatedProgress.totalSolved,
+        correctCount: updatedProgress.correctCount,
+        wrongCount: updatedProgress.wrongCount,
+        accuracyPercent,
+        activeMinutes,
+        overallProgressPercent,
+        lastActive: nowIso,
+      };
+
+      const result = await syncStudentStatsToSheets(payload);
+      setLastSyncResult(result);
+      return result;
+    },
+    [currentStudent, progress]
+  );
+
+  // تسجيل نتائج تدريبات أنماط HSK 3.0 بشكل مستقل تماماً عن إحصائيات تدريبات الفصول اليومية
+  const recordHskPatternPractice = useCallback(
+    async (
+      patternId: HskPatternId,
+      attempted: number,
+      correct: number
+    ): Promise<SyncResult | null> => {
+      if (!currentStudent || !progress || attempted <= 0) return null;
+
+      const nowIso = new Date().toISOString();
+      const today = getTodayIsoDate();
+      const studyDates = progress.studyDates.includes(today)
+        ? progress.studyDates
+        : [...progress.studyDates, today];
+
+      const currentPatternStats = {} as Record<HskPatternId, HskPatternStatEntry>;
+      for (const pid of ALL_HSK_PATTERN_IDS) {
+        currentPatternStats[pid] = normalizeHskPatternEntry(progress.hskPatternStats?.[pid]);
+      }
+
+      const prevEntry = currentPatternStats[patternId];
+      const nextSolved = prevEntry.solved + attempted;
+      const nextCorrect = prevEntry.correct + correct;
+      const nextWrong = Math.max(0, nextSolved - nextCorrect);
+      const nextAccuracy = nextSolved > 0 ? Math.round((nextCorrect / nextSolved) * 100) : 0;
+
+      currentPatternStats[patternId] = {
+        solved: nextSolved,
+        attempted: nextSolved,
+        correct: nextCorrect,
+        wrong: nextWrong,
+        accuracyPercent: nextAccuracy,
+      };
+
+      const updatedProgress: StudentProgress = {
+        ...progress,
+        studyDates,
+        lastActive: nowIso,
+        hskPatternStats: currentPatternStats,
+      };
+
+      saveStudentProgress(updatedProgress);
+      setProgress(updatedProgress);
+
+      const accuracyPercent =
+        updatedProgress.totalSolved > 0
+          ? Math.round((updatedProgress.correctCount / updatedProgress.totalSolved) * 100)
+          : 0;
+      const overallProgressPercent = computeOverallProgress(updatedProgress);
+      const activeMinutes = Math.round(updatedProgress.activeSeconds / 60);
+
+      const payload: SheetsSyncPayload = {
+        studentId: currentStudent.id,
+        studentName: currentStudent.name,
+        studentCode: currentStudent.code,
+        totalSolved: updatedProgress.totalSolved,
+        correctCount: updatedProgress.correctCount,
+        wrongCount: updatedProgress.wrongCount,
+        accuracyPercent,
+        activeMinutes,
+        overallProgressPercent,
+        lastActive: nowIso,
+        hskMockResults: updatedProgress.hskMockResults ?? [],
+        hskPatternStats: currentPatternStats,
+      };
+
+      const result = await syncStudentStatsToSheets(payload);
+      setLastSyncResult(result);
+      return result;
+    },
+    [currentStudent, progress]
+  );
+
+  // تسجيل نتيجة الامتحان التجريبي الموحّد بشكل مستقل تماماً عن تدريبات الفصول اليومية
+  const recordHskFixedMockExam = useCallback(
+    async (examResult: HskMockExamResult): Promise<SyncResult | null> => {
+      if (!currentStudent || !progress) return null;
+
+      const nowIso = examResult.completedAt || new Date().toISOString();
+      const today = getTodayIsoDate();
+      const studyDates = progress.studyDates.includes(today)
+        ? progress.studyDates
+        : [...progress.studyDates, today];
+
+      const prevResults = progress.hskMockResults ?? [];
+      const updatedHskResults = [examResult, ...prevResults].slice(0, 40);
+
+      const updatedProgress: StudentProgress = {
+        ...progress,
+        studyDates,
+        lastActive: nowIso,
+        hskMockResults: updatedHskResults,
+      };
+
+      saveStudentProgress(updatedProgress);
+      setProgress(updatedProgress);
+
+      const accuracyPercent =
+        updatedProgress.totalSolved > 0
+          ? Math.round((updatedProgress.correctCount / updatedProgress.totalSolved) * 100)
+          : 0;
+      const overallProgressPercent = computeOverallProgress(updatedProgress);
+      const activeMinutes = Math.round(updatedProgress.activeSeconds / 60);
+
+      const payload: SheetsSyncPayload = {
+        studentId: currentStudent.id,
+        studentName: currentStudent.name,
+        studentCode: currentStudent.code,
+        totalSolved: updatedProgress.totalSolved,
+        correctCount: updatedProgress.correctCount,
+        wrongCount: updatedProgress.wrongCount,
+        accuracyPercent,
+        activeMinutes,
+        overallProgressPercent,
+        lastActive: nowIso,
+        hskMockResults: updatedHskResults,
+        hskPatternStats: updatedProgress.hskPatternStats ?? ({} as Record<HskPatternId, HskPatternStatEntry>),
+      };
+
+      const syncRes = await syncStudentStatsToSheets(payload);
+      setLastSyncResult(syncRes);
+      return syncRes;
     },
     [currentStudent, progress]
   );
@@ -456,12 +1111,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     showPinyin,
     togglePinyin,
     currentStudent,
+    unlockedAccess,
+    refreshStudentAccess,
     login,
     logout,
     progress,
     analytics,
     lastSyncResult,
+    addDrillElapsedTime,
     recordCompletedSession,
+    recordMockExamAttempt,
+    recordHskPatternPractice,
+    recordHskFixedMockExam,
+    studyVault,
+    vaultCount,
+    isItemBookmarked,
+    getItemNote,
+    toggleBookmark,
+    saveItemNote,
+    removeVaultEntry,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

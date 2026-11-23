@@ -1,7 +1,22 @@
+export interface UnlockedAccess {
+  chapters: number[];
+  intlMocks: number[];
+  arabicMocks: number[];
+  patterns: number[];
+}
+
 export interface Student {
   id: string;
   name: string;
   code: string;
+  unlockedAccess?: UnlockedAccess;
+  boundDeviceId?: string;
+}
+
+export interface VocabSyllable {
+  hanzi: string;
+  pinyin: string;
+  tone: number;
 }
 
 export interface VocabItem {
@@ -9,6 +24,8 @@ export interface VocabItem {
   hanzi: string;
   pinyin: string;
   arabic: string;
+  syllables?: VocabSyllable[];
+  partOfSpeech?: string;
   /** Optional custom tone variants for Hanzi -> Pinyin drill */
   toneVariants?: [string, string];
   /** Optional custom similar-syllable distractors for Hanzi -> Pinyin drill */
@@ -44,7 +61,8 @@ export type DrillType =
   | 'match-2-col'
   | 'match-3-col'
   | 'listening'
-  | 'sentence-translation'
+  | 'sentence-hanzi-to-arabic'
+  | 'sentence-arabic-to-hanzi'
   | 'sentence-builder'
   | 'fill-in-blank';
 
@@ -52,7 +70,93 @@ export type SessionDrillKey = DrillType | 'mixed';
 
 export type QuizMode = 'practice' | 'exam';
 
-export type AppView = 'home' | 'chapters' | 'chapter-hub' | 'drill' | 'analytics';
+export type AppView =
+  | 'home'
+  | 'chapters'
+  | 'chapter-hub'
+  | 'collections'
+  | 'labs'
+  | 'vault'
+  | 'custom-builder'
+  | 'hsk-portal'
+  | 'mock-exam'
+  | 'drill'
+  | 'analytics';
+
+export type StudyBookmarkItemType = 'vocab' | 'sentence';
+
+export interface StudentStudyBookmark {
+  key: string;
+  itemType: StudyBookmarkItemType;
+  itemId: string;
+  chapterId: number;
+  bookmarked: boolean;
+  note: string;
+  updatedAt: string;
+}
+
+export type BroadcastStyle = 'info' | 'important' | 'promo';
+
+export interface TeacherBroadcast {
+  id: string;
+  enabled: boolean;
+  message: string;
+  style: BroadcastStyle;
+  ctaLabel?: string;
+  ctaUrl?: string;
+  updatedAt: string;
+}
+
+export type HskPatternId =
+  | 'listening-p1'
+  | 'listening-p2'
+  | 'listening-p3'
+  | 'listening-p4'
+  | 'reading-p1'
+  | 'reading-p2'
+  | 'reading-p3-4';
+
+export interface HskPatternStatEntry {
+  solved: number;
+  attempted: number;
+  correct: number;
+  wrong: number;
+  accuracyPercent: number;
+}
+
+export interface HskMockExamResult {
+  id: string;
+  examId: string;
+  examTitle: string;
+  examTrack: 'international' | 'arabic';
+  modelNumber: number;
+  completedAt: string;
+  listeningCorrect: number;
+  listeningTotal: number;
+  listeningScore: number;
+  readingCorrect: number;
+  readingTotal: number;
+  readingScore: number;
+  totalScore: number;
+  maxScore: number;
+  passed: boolean;
+  elapsedSeconds: number;
+}
+
+export interface CustomQuizConfig {
+  chapterIds: number[];
+  drillScope: DrillType | 'all';
+  questionLimit: 10 | 20 | 40 | 'all';
+  mode: QuizMode;
+}
+
+export interface MistakeItem {
+  key: string;
+  chapterId: number;
+  drillType: DrillType;
+  sourceItemId: string;
+  recordedAt: string;
+}
 
 export interface DrillOption {
   id: string;
@@ -71,23 +175,26 @@ export interface MatchingEntry {
 
 export interface DrillQuestion {
   id: string;
+  chapterId: number;
+  sourceItemId?: string;
   drillType: DrillType;
   promptPrimary: string;
   promptPinyin?: string;
   promptSecondary?: string;
   /** Used in Sentence Translation to indicate direction */
   direction?: 'hanzi-to-arabic' | 'arabic-to-hanzi';
-  /** Used in Listening drill for speechSynthesis */
+  /** Used in Listening or TTS buttons for speechSynthesis */
   audioText?: string;
-  /** Multiple-choice options (Drills 1, 2, 3, 6, 7, 9) */
+  /** Multiple-choice options */
   options?: DrillOption[];
   correctOptionId?: string;
   /** Matching sets (Drills 4, 5) */
   matchingEntries?: MatchingEntry[];
-  /** Sentence Builder (Drill 8) */
+  /** Sentence Builder */
   correctSegments?: string[];
   shuffledSegments?: { tileId: string; text: string }[];
-  /** Fill in the Blank (Drill 9) */
+  /** Fill in the Blank */
+  targetBlank?: string;
   sentenceWithBlank?: string;
   sentenceFullHanzi?: string;
   sentenceFullPinyin?: string;
@@ -99,6 +206,8 @@ export interface DrillQuestion {
 
 export interface QuestionAnswerRecord {
   questionId: string;
+  chapterId: number;
+  sourceItemId?: string;
   drillType: DrillType;
   isAnswered: boolean;
   isCorrect: boolean;
@@ -120,6 +229,21 @@ export interface ChapterStatEntry {
   completedDrills: DrillType[];
 }
 
+export interface MockExamAttempt {
+  id: string;
+  completedAt: string;
+  listeningCorrect: number;
+  listeningTotal: number;
+  listeningScore: number;
+  readingCorrect: number;
+  readingTotal: number;
+  readingScore: number;
+  totalScore: number;
+  maxScore: number;
+  passed: boolean;
+  elapsedSeconds: number;
+}
+
 export interface StudentProgress {
   studentId: string;
   totalSolved: number;
@@ -129,7 +253,13 @@ export interface StudentProgress {
   studyDates: string[];
   lastActive: string;
   drillStats: Record<DrillType, DrillStatEntry>;
+  drillTimeSeconds: Record<DrillType, number>;
   chapterStats: Record<number, ChapterStatEntry>;
+  mistakes: MistakeItem[];
+  mockExamHistory?: MockExamAttempt[];
+  /** Separate HSK 3.0 International Portal analytics */
+  hskPatternStats?: Record<HskPatternId, HskPatternStatEntry>;
+  hskMockResults?: HskMockExamResult[];
 }
 
 export interface SheetsSyncPayload {
@@ -143,4 +273,7 @@ export interface SheetsSyncPayload {
   activeMinutes: number;
   overallProgressPercent: number;
   lastActive: string;
+  hskMockResults?: string | HskMockExamResult[];
+  hskPatternStats?: string | Record<HskPatternId, HskPatternStatEntry>;
+  unlockedAccess?: string | UnlockedAccess;
 }
