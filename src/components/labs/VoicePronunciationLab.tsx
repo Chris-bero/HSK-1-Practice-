@@ -96,8 +96,8 @@ function normalizeChineseForCompare(text: string): string {
 }
 
 /**
- * محاذاة دقيقة بالـ LCS لمقارنة النص الصيني المنطوق بالهدف
- * مع تمييز كل رمز: مطابق (أخضر) أو مفقود/مختلف (أحمر/كهرماني).
+ * LCS alignment comparing spoken Chinese transcript against the target text,
+ * highlighting each character as matched (green) or missed/mismatched (red).
  */
 function evaluatePronunciation(
   targetHanzi: string,
@@ -110,7 +110,7 @@ function evaluatePronunciation(
     const n = targetCleanChars.length;
     const m = heardCleanChars.length;
 
-    // جدول أطول تسلسل مشترك (LCS)
+    // Longest Common Subsequence (LCS) DP table
     const dp: number[][] = Array.from({ length: n + 1 }, () =>
       Array<number>(m + 1).fill(0)
     );
@@ -322,7 +322,9 @@ export function VoicePronunciationLab({
     const w = window as WindowWithSpeechRecognition;
     const SpeechRecCtor = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!SpeechRecCtor) {
-      setMicError('متصفحك الحالي لا يدعم التعرّف الصوتي التلقائي. يُنصح باستخدام Google Chrome أو Microsoft Edge.');
+      setMicError(
+        'Your current browser does not support automatic speech recognition. We recommend Google Chrome or Microsoft Edge.'
+      );
       return;
     }
 
@@ -369,14 +371,18 @@ export function VoicePronunciationLab({
         setIsListening(false);
         if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
           setMicError(
-            'لم يتم السماح بالوصول إلى المايكروفون. يرجى تفعيل إذن المايكروفون من إعدادات المتصفح ثم المحاولة مجدداً.'
+            'Microphone access was denied. Please enable microphone permission in your browser settings and try again.'
           );
         } else if (event.error === 'no-speech') {
-          setMicError('لم نسمع صوتاً واضحاً — اضغط «ابدأ التحدث» وتحدث بالقرب من المايكروفون.');
+          setMicError(
+            'No clear speech detected — tap "Start Speaking" and speak clearly near your microphone.'
+          );
         } else if (event.error === 'network') {
-          setMicError('تعذّر الاتصال بخدمة التعرّف الصوتي في المتصفح. تحقق من اتصال الإنترنت.');
+          setMicError(
+            'Could not reach the browser speech recognition service. Please check your internet connection.'
+          );
         } else if (event.error !== 'aborted') {
-          setMicError('حدث خطأ أثناء التقاط الصوت. يرجى المحاولة مرة أخرى.');
+          setMicError('An error occurred while capturing audio. Please try again.');
         }
       };
 
@@ -389,35 +395,37 @@ export function VoicePronunciationLab({
       recognition.start();
     } catch {
       setIsListening(false);
-      setMicError('تعذّر تشغيل المايكروفون. تأكد من عدم استخدامه في تطبيق آخر ثم حاول مجدداً.');
+      setMicError(
+        'Unable to start the microphone. Make sure no other app is using it and try again.'
+      );
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* تنبيه لطيف في حال عدم دعم المتصفح لـ SpeechRecognition */}
+      {/* Browser compatibility notice if SpeechRecognition is unavailable */}
       {!speechApiSupported && (
         <div className="rounded-xl border border-[#D97706]/40 dark:border-[#F59E0B]/40 bg-[#D97706]/10 dark:bg-[#F59E0B]/15 p-4 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-[#B45309] dark:text-[#F59E0B] shrink-0 mt-0.5" />
           <div className="space-y-1 text-xs sm:text-sm text-[#78350F] dark:text-[#FDE68A]">
             <p className="font-bold">
-              متصفحك الحالي لا يدعم ميزة التعرّف الصوتي المباشر (Web Speech API)
+              Your browser does not support live speech recognition (Web Speech API)
             </p>
             <p className="leading-relaxed">
-              للاستفادة من مدرّب النطق الصوتي بالمايكروفون، يُرجى فتح البوابة عبر متصفح{' '}
-              <strong>Google Chrome</strong> أو <strong>Microsoft Edge</strong>. لا يزال بإمكانك
-              الاستماع إلى النطق الصيني الصحيح بسرعتين (1.0x و0.7x) أدناه.
+              To use the microphone Speaking Voice Trainer, please open the portal in{' '}
+              <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong>. You can still
+              listen to native Chinese pronunciation at two speeds (1.0x and 0.7x) below.
             </p>
           </div>
         </div>
       )}
 
-      {/* شريط اختيار الفصل + التبديل بين المفردات والجمل */}
+      {/* Chapter selector + Vocabulary / Sentences toggle */}
       <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-4 sm:p-5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div
             role="radiogroup"
-            aria-label="نوع التدريب الصوتي"
+            aria-label="Speaking practice mode"
             className="inline-flex flex-wrap max-w-full p-1 rounded-lg border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F2ECE1] dark:bg-[#141312] gap-1 self-start"
           >
             <button
@@ -432,7 +440,7 @@ export function VoicePronunciationLab({
               }`}
             >
               <BookOpen className="w-4 h-4 shrink-0" />
-              <span>مفردات الفصل ({activeChapter.vocab.length})</span>
+              <span>Chapter Vocabulary ({activeChapter.vocab.length})</span>
             </button>
 
             <button
@@ -447,7 +455,7 @@ export function VoicePronunciationLab({
               }`}
             >
               <MessageSquareText className="w-4 h-4 shrink-0" />
-              <span>جمل ومحادثات ({activeChapter.sentences.length})</span>
+              <span>Sentences & Dialogues ({activeChapter.sentences.length})</span>
             </button>
           </div>
 
@@ -462,7 +470,7 @@ export function VoicePronunciationLab({
             }`}
           >
             {showPinyin ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            <span>{showPinyin ? 'إخفاء البينين' : 'إظهار البينين'}</span>
+            <span>{showPinyin ? 'Hide Pinyin' : 'Show Pinyin'}</span>
           </button>
         </div>
 
@@ -493,13 +501,13 @@ export function VoicePronunciationLab({
         </div>
       </div>
 
-      {/* مساحة التدريب الصوتي التفاعلي */}
+      {/* Interactive speaking practice workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* قائمة عناصر الفصل للاختيار السريع */}
+        {/* Quick item picker sidebar */}
         <aside className="order-2 lg:order-1 lg:col-span-4 rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] overflow-hidden">
           <div className="px-4 py-3 bg-[#F2ECE1]/75 dark:bg-[#25221F] border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10 flex items-center justify-between">
             <h3 className="text-sm font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-              {practiceType === 'vocab' ? 'مفردات' : 'جمل'} {activeChapter.titleAr}
+              {activeChapter.titleAr} {practiceType === 'vocab' ? 'Vocabulary' : 'Sentences'}
             </h3>
             <span className="text-xs font-semibold text-[#57534E] dark:text-[#A8A29E] tabular-nums">
               {safeIndex + 1} / {items.length}
@@ -514,9 +522,9 @@ export function VoicePronunciationLab({
                   key={item.id}
                   type="button"
                   onClick={() => handleSelectIndex(idx)}
-                  className={`w-full text-right px-4 py-3 flex items-center justify-between gap-2.5 transition-colors ${
+                  className={`w-full text-left px-4 py-3 flex items-center justify-between gap-2.5 transition-colors ${
                     isSelected
-                      ? 'bg-[#B91C1C]/10 dark:bg-[#EF4444]/15 border-r-4 border-[#B91C1C] dark:border-[#EF4444]'
+                      ? 'bg-[#B91C1C]/10 dark:bg-[#EF4444]/15 border-l-4 border-[#B91C1C] dark:border-[#EF4444]'
                       : 'hover:bg-[#F9F6F0] dark:hover:bg-[#25221F]'
                   }`}
                 >
@@ -537,13 +545,13 @@ export function VoicePronunciationLab({
           </div>
         </aside>
 
-        {/* بطاقة النطق والمايكروفون */}
+        {/* Pronunciation & microphone card */}
         {currentItem && (
           <div className="order-1 lg:order-2 lg:col-span-8 rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-6 sm:p-8 space-y-6">
-            {/* التنقل العلوي بين العناصر */}
+            {/* Top item pagination */}
             <div className="flex items-center justify-between gap-2 pb-4 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
               <span className="text-xs font-bold text-[#57534E] dark:text-[#A8A29E] tabular-nums">
-                {activeChapter.titleAr} (第{activeChapter.id}课) · العنصر {safeIndex + 1} من{' '}
+                {activeChapter.titleAr} (第{activeChapter.id}课) · Item {safeIndex + 1} of{' '}
                 {items.length}
               </span>
               <div className="flex items-center gap-1.5">
@@ -553,8 +561,8 @@ export function VoicePronunciationLab({
                   onClick={() => handleSelectIndex(safeIndex - 1)}
                   className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB] disabled:opacity-40"
                 >
-                  <ChevronRight className="w-4 h-4" />
-                  <span>السابق</span>
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Previous</span>
                 </button>
                 <button
                   type="button"
@@ -562,13 +570,13 @@ export function VoicePronunciationLab({
                   onClick={() => handleSelectIndex(safeIndex + 1)}
                   className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB] disabled:opacity-40"
                 >
-                  <span>التالي</span>
-                  <ChevronLeft className="w-4 h-4" />
+                  <span>Next</span>
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* النص المستهدف + الاستماع */}
+            {/* Target Chinese text + audio playback */}
             <div className="text-center space-y-4 py-2">
               <div className="text-2xl sm:text-4xl font-bold text-[#1C1917] dark:text-[#F5F2EB] flex justify-center">
                 <RubyChinese
@@ -593,7 +601,7 @@ export function VoicePronunciationLab({
                   }`}
                 >
                   <Volume2 className="w-4 h-4 shrink-0" />
-                  <span>استمع للنطق الصحيح (1.0x)</span>
+                  <span>Listen (1.0x)</span>
                 </button>
 
                 <button
@@ -605,12 +613,12 @@ export function VoicePronunciationLab({
                       : 'border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#141312] text-[#57534E] dark:text-[#A8A29E] hover:border-[#D97706]/50'
                   }`}
                 >
-                  <span>استماع بطيء (0.7x)</span>
+                  <span>Slow Audio (0.7x)</span>
                 </button>
               </div>
             </div>
 
-            {/* زر المايكروفون المتحرك */}
+            {/* Animated microphone trigger */}
             <div className="flex flex-col items-center justify-center gap-3 pt-2">
               <div className="relative">
                 {isListening && (
@@ -632,12 +640,12 @@ export function VoicePronunciationLab({
                   {isListening ? (
                     <>
                       <MicOff className="w-5 h-5 shrink-0" />
-                      <span>جارٍ الاستماع... اضغط للإيقاف</span>
+                      <span>Listening... Tap to Stop</span>
                     </>
                   ) : (
                     <>
                       <Mic className="w-5 h-5 shrink-0" />
-                      <span>ابدأ التحدث بالصينية</span>
+                      <span>Start Speaking in Chinese</span>
                     </>
                   )}
                 </button>
@@ -646,8 +654,8 @@ export function VoicePronunciationLab({
               {isListening && (
                 <p className="text-xs font-semibold text-[#B91C1C] dark:text-[#EF4444]">
                   {interimText
-                    ? `نسمع الآن: «${interimText}»`
-                    : 'انطق الكلمة أو الجملة بوضوح باللغة الصينية (zh-CN)...'}
+                    ? `Hearing: "${interimText}"`
+                    : 'Speak the word or sentence clearly in Mandarin Chinese (zh-CN)...'}
                 </p>
               )}
 
@@ -658,7 +666,7 @@ export function VoicePronunciationLab({
               )}
             </div>
 
-            {/* بطاقة تحليل النطق والنتيجة */}
+            {/* Pronunciation evaluation & character diff card */}
             {evaluation && (
               <div
                 className={`rounded-xl border p-5 space-y-4 ${
@@ -682,10 +690,10 @@ export function VoicePronunciationLab({
                     />
                     <span className="text-sm sm:text-base font-bold text-[#1C1917] dark:text-[#F5F2EB]">
                       {evaluation.matchPercent >= 85
-                        ? 'ممتاز! نطقك واضح ودقيق جداً'
+                        ? 'Excellent! Very clear and accurate pronunciation.'
                         : evaluation.matchPercent >= 60
-                          ? 'جيد جداً! حاول تحسين الرموز المظلّلة بالأحمر'
-                          : 'محاولة طيبة! استمع للنطق البطيء (0.7x) وحاول مجدداً'}
+                          ? 'Very good! Practice the characters highlighted in red.'
+                          : 'Good effort! Listen to the slow audio (0.7x) and try again.'}
                     </span>
                   </div>
 
@@ -698,15 +706,15 @@ export function VoicePronunciationLab({
                           : 'bg-[#B91C1C] text-white'
                     }`}
                   >
-                    نسبة التطابق: {evaluation.matchPercent}%
+                    Match: {evaluation.matchPercent}%
                   </span>
                 </div>
 
-                {/* مقارنة الرموز: الأخضر مطابق، الأحمر/الكهرماني مفقود أو مختلف */}
+                {/* Character comparison: green = matched, red = retry */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="rounded-lg bg-white dark:bg-[#1E1C1A] border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 p-3.5 space-y-1.5">
                     <p className="text-[11px] font-bold text-[#57534E] dark:text-[#A8A29E]">
-                      تحليل رموز الهدف (الأخضر مطابق · الأحمر يحتاج إعادة):
+                      Target analysis (Green = matched · Red = needs practice):
                     </p>
                     <div className="font-hanzi text-2xl font-bold tracking-wide" dir="ltr">
                       {evaluation.charResults.map((res, i) => (
@@ -728,7 +736,7 @@ export function VoicePronunciationLab({
 
                   <div className="rounded-lg bg-white dark:bg-[#1E1C1A] border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 p-3.5 space-y-1.5">
                     <p className="text-[11px] font-bold text-[#57534E] dark:text-[#A8A29E]">
-                      ما سمعه المايكروفون:
+                      Detected speech:
                     </p>
                     <p
                       className="font-hanzi text-2xl font-bold text-[#1C1917] dark:text-[#F5F2EB]"
@@ -746,7 +754,7 @@ export function VoicePronunciationLab({
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-white dark:bg-[#1E1C1A] text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB] hover:border-[#B91C1C]/50"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    <span>حاول مجدداً</span>
+                    <span>Try Again</span>
                   </button>
 
                   {safeIndex < items.length - 1 && (
@@ -755,8 +763,8 @@ export function VoicePronunciationLab({
                       onClick={() => handleSelectIndex(safeIndex + 1)}
                       className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#15803D] hover:bg-[#166534] dark:bg-[#22C55E] dark:text-[#121110] text-white text-xs font-bold"
                     >
-                      <span>العنصر التالي</span>
-                      <ChevronLeft className="w-3.5 h-3.5" />
+                      <span>Next Item</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>

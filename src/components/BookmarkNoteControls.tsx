@@ -72,8 +72,8 @@ export function BookmarkNoteControls({
           type="button"
           onClick={() => toggleBookmark(itemType, itemId, chapterId)}
           aria-pressed={bookmarked}
-          aria-label={bookmarked ? `إزالة ${hanzi} من محفوظاتي` : `حفظ ${hanzi} في محفوظاتي`}
-          title={bookmarked ? 'محفوظ في محفوظاتي (اضغط للإزالة)' : 'إضافة إلى محفوظاتي'}
+          aria-label={bookmarked ? `Remove ${hanzi} from Saved` : `Save ${hanzi} to Saved`}
+          title={bookmarked ? 'Saved in Study Vault (click to remove)' : 'Save to Study Vault'}
           className={`inline-flex items-center justify-center ${btnSize} border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97706] ${
             bookmarked
               ? 'border-[#D97706]/55 dark:border-[#F59E0B]/55 bg-[#D97706]/14 dark:bg-[#F59E0B]/18 text-[#B45309] dark:text-[#F59E0B]'
@@ -86,8 +86,8 @@ export function BookmarkNoteControls({
         <button
           type="button"
           onClick={() => setIsNoteOpen(true)}
-          aria-label={hasNote ? `تعديل ملاحظة ${hanzi}` : `إضافة ملاحظة شخصية لـ ${hanzi}`}
-          title={hasNote ? `ملاحظتك: ${existingNote}` : 'أضف ملاحظة شخصية'}
+          aria-label={hasNote ? `Edit note for ${hanzi}` : `Add personal study note for ${hanzi}`}
+          title={hasNote ? `Your note: ${existingNote}` : 'Add personal study note'}
           className={`inline-flex items-center justify-center ${btnSize} border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] ${
             hasNote
               ? 'border-[#B91C1C]/45 dark:border-[#EF4444]/45 bg-[#B91C1C]/10 dark:bg-[#EF4444]/16 text-[#B91C1C] dark:text-[#EF4444]'
@@ -104,19 +104,18 @@ export function BookmarkNoteControls({
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="ملاحظة دراسية شخصية"
+            aria-label="Personal Study Note"
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] p-4"
             onClick={() => setIsNoteOpen(false)}
           >
             <div
-              dir="rtl"
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-white dark:bg-[#1E1C1A] shadow-xl p-5 sm:p-6 space-y-4"
             >
               <div className="flex items-start justify-between gap-3 pb-3 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
                 <div className="space-y-0.5 min-w-0">
                   <div className="text-xs font-bold text-[#B91C1C] dark:text-[#EF4444]">
-                    ملاحظة ليلة الامتحان · 第{chapterId}课
+                    Study Note · Chapter {chapterId} (第{chapterId}课)
                   </div>
                   <div className="flex flex-wrap items-baseline gap-2">
                     <span className="font-hanzi text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
@@ -132,7 +131,7 @@ export function BookmarkNoteControls({
                 <button
                   type="button"
                   onClick={() => setIsNoteOpen(false)}
-                  aria-label="إغلاق"
+                  aria-label="Close"
                   className="w-8 h-8 rounded-md border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 flex items-center justify-center text-[#57534E] dark:text-[#A8A29E] hover:text-[#1C1917] dark:hover:text-[#F5F2EB]"
                 >
                   <X className="w-4 h-4" />
@@ -144,19 +143,19 @@ export function BookmarkNoteControls({
                   htmlFor={`study-note-input-${itemId}`}
                   className="block text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB]"
                 >
-                  ملاحظتك الشخصية (تلميح حفظ، فرق نحوي، أو تنبيه للامتحان):
+                  Personal Study Note (mnemonic, grammar tip, or exam reminder):
                 </label>
                 <textarea
                   id={`study-note-input-${itemId}`}
                   rows={3}
                   value={draftNote}
                   onChange={(e) => setDraftNote(e.target.value)}
-                  placeholder="مثال: انتبه للنغمة الثالثة، أو لا تخلط بينها وبين..."
+                  placeholder="e.g., Watch the 3rd tone sandhi, or don't confuse with..."
                   className="w-full rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#121110] px-3.5 py-2.5 text-sm text-[#1C1917] dark:text-[#F5F2EB] placeholder:text-[#57534E]/70 dark:placeholder:text-[#A8A29E]/70 focus:outline-none focus:border-[#B91C1C] dark:focus:border-[#EF4444] resize-none"
                 />
                 <p className="text-[11px] text-[#57534E] dark:text-[#A8A29E]">
-                  تُحفظ الملاحظة تلقائياً في خزنتك الشخصية (محفوظاتي) وتظهر عند طباعة ورقة ليلة
-                  الامتحان.
+                  Notes are saved automatically to your personal Study Vault and included in
+                  printable Exam-Night PDF sheets.
                 </p>
               </div>
 
@@ -168,7 +167,7 @@ export function BookmarkNoteControls({
                     className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-lg border border-[#B91C1C]/30 dark:border-[#EF4444]/30 text-xs font-bold text-[#B91C1C] dark:text-[#EF4444] hover:bg-[#B91C1C]/8 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    <span>مسح الملاحظة</span>
+                    <span>Delete Note</span>
                   </button>
                 ) : (
                   <span />
@@ -180,7 +179,7 @@ export function BookmarkNoteControls({
                     onClick={() => setIsNoteOpen(false)}
                     className="px-4 py-2 min-h-[40px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 text-xs font-bold text-[#57534E] dark:text-[#A8A29E] hover:text-[#1C1917] dark:hover:text-[#F5F2EB]"
                   >
-                    إلغاء
+                    Cancel
                   </button>
                   <button
                     type="button"
@@ -188,7 +187,7 @@ export function BookmarkNoteControls({
                     className="inline-flex items-center gap-1.5 px-5 py-2 min-h-[40px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-xs font-bold transition-colors"
                   >
                     <Check className="w-4 h-4" />
-                    <span>{savedFlash ? 'تم الحفظ' : 'حفظ الملاحظة'}</span>
+                    <span>{savedFlash ? 'Saved' : 'Save Note'}</span>
                   </button>
                 </div>
               </div>

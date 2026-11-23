@@ -29,8 +29,8 @@ export function SentenceTranslationDrill({
       <div className="neo-frame rounded-xl py-9 px-6 text-center space-y-3 bg-white dark:bg-[#1E1C1A]">
         <p className="text-xs font-semibold text-[#57534E] dark:text-[#A8A29E]">
           {isHanziPrompt
-            ? 'اقرأ الجملة الصينية واختر الترجمة العربية الصحيحة'
-            : 'اقرأ الجملة العربية واختر الجملة الصينية المطابقة لها'}
+            ? 'Read the Chinese sentence and select the accurate translation'
+            : 'Read the sentence and select the matching Chinese translation'}
         </p>
 
         <div
@@ -88,7 +88,7 @@ export function SentenceTranslationDrill({
               onClick={() => onSelectOption(opt.id, opt.label, isCorrectOption)}
               className={`min-h-[68px] px-5 py-4 rounded-xl border flex items-center justify-between gap-4 transition-all duration-150 ${cardClass}`}
             >
-              <div className="flex flex-col items-start text-right">
+              <div className="flex flex-col items-start text-left">
                 <span
                   className={
                     opt.isHanzi

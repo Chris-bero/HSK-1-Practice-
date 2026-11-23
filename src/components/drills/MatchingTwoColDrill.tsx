@@ -24,7 +24,7 @@ export function MatchingTwoColDrill({
   const [selectedHanziId, setSelectedHanziId] = useState<string | null>(null);
   const [selectedArabicId, setSelectedArabicId] = useState<string | null>(null);
 
-  // خريطة الربط: hanziId -> arabicId
+  // Pair map: hanziId -> meaningId
   const [pairs, setPairs] = useState<Record<string, string>>({});
   const [wrongFlash, setWrongFlash] = useState<{ hanziId: string; arabicId: string } | null>(null);
   const [mistakesCount, setMistakesCount] = useState(0);
@@ -50,8 +50,8 @@ export function MatchingTwoColDrill({
           const effectiveCorrect = Math.max(0, entries.length - mistakesCount);
           const summary =
             mistakesCount === 0
-              ? `تم توصيل جميع الأزواج (${entries.length}/${entries.length}) دون أخطاء`
-              : `تم إكمال التوصيل مع ${mistakesCount} محاولة خاطئة`;
+              ? `Matched all pairs (${entries.length}/${entries.length}) with no mistakes`
+              : `Completed matching with ${mistakesCount} incorrect ${mistakesCount === 1 ? 'attempt' : 'attempts'}`;
           onComplete(effectiveCorrect, entries.length, summary);
         }
       } else {
@@ -66,7 +66,7 @@ export function MatchingTwoColDrill({
       return;
     }
 
-    // وضع الامتحان: يسمح بربط وتعديل أي زوج بحرية قبل التسليم النهائي
+    // Exam mode: allow pairing and editing freely before final submission
     const cleanedPairs: Record<string, string> = {};
     Object.entries(pairs).forEach(([k, v]) => {
       if (k !== hId && v !== aId) {
@@ -83,7 +83,7 @@ export function MatchingTwoColDrill({
       onComplete(
         correctCount,
         entries.length,
-        `تم ربط ${correctCount} من ${entries.length} أزواج بشكل صحيح`
+        `Matched ${correctCount} of ${entries.length} pairs correctly`
       );
     }
   };
@@ -112,7 +112,7 @@ export function MatchingTwoColDrill({
     setSelectedArabicId(null);
   };
 
-  // أرقام الأزواج المربوطة في وضع الامتحان لسهولة المراجعة البصرية
+  // Visual pair numbers in Exam Mode for easy verification
   const pairIndexByHanzi: Record<string, number> = {};
   const pairIndexByArabic: Record<string, number> = {};
   Object.entries(pairs).forEach(([hId, aId], idx) => {
@@ -124,12 +124,16 @@ export function MatchingTwoColDrill({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm font-semibold text-[#57534E] dark:text-[#A8A29E]">
-          اختر رمزاً صينياً من العمود الأول ثم اضغط على معناه العربي في العمود الثاني.
+          Select a Chinese character from the first column, then tap its matching meaning in the
+          second column.
         </p>
 
         <div className="flex items-center gap-3 text-xs tabular-nums">
           <span className="text-[#57534E] dark:text-[#A8A29E]">
-            الموصول: <strong className="text-[#1C1917] dark:text-[#F5F2EB]">{Object.keys(pairs).length}/{entries.length}</strong>
+            Paired:{' '}
+            <strong className="text-[#1C1917] dark:text-[#F5F2EB]">
+              {Object.keys(pairs).length}/{entries.length}
+            </strong>
           </span>
           {mode === 'exam' && Object.keys(pairs).length > 0 && (
             <button
@@ -138,17 +142,17 @@ export function MatchingTwoColDrill({
               className="inline-flex items-center gap-1 text-[#B91C1C] dark:text-[#EF4444] font-semibold hover:underline"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>إعادة التوصيل</span>
+              <span>Reset Matching</span>
             </button>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:gap-6">
-        {/* عمود الرموز الصينية */}
+        {/* Column 1: Chinese characters */}
         <div className="space-y-3">
           <h3 className="text-xs font-bold text-[#57534E] dark:text-[#A8A29E] pb-1 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
-            الرموز الصينية
+            Chinese Characters
           </h3>
           {leftItems.map((item) => {
             const isMatched = Boolean(pairs[item.id]);
@@ -180,7 +184,7 @@ export function MatchingTwoColDrill({
                 onClick={() => handleSelectHanzi(item.id)}
                 className={`w-full min-h-[74px] px-4 py-3 rounded-xl border flex items-center justify-between gap-2 transition-all duration-150 ${cls}`}
               >
-                <div className="flex flex-col items-start">
+                <div className="flex flex-col items-start text-left">
                   <span className="font-hanzi text-2xl sm:text-3xl font-bold">{item.hanzi}</span>
                   {showPinyin && (
                     <span className="font-pinyin text-xs text-[#57534E] dark:text-[#A8A29E] mt-0.5">
@@ -192,7 +196,7 @@ export function MatchingTwoColDrill({
                 {isWrong && <XCircle className="w-5 h-5 shrink-0" />}
                 {mode === 'exam' && pairNum && (
                   <span className="text-xs font-bold tabular-nums text-[#D97706] dark:text-[#F59E0B]">
-                    زوج {pairNum}
+                    Pair {pairNum}
                   </span>
                 )}
               </button>
@@ -200,10 +204,10 @@ export function MatchingTwoColDrill({
           })}
         </div>
 
-        {/* عمود المعاني العربية */}
+        {/* Column 2: Meanings */}
         <div className="space-y-3">
           <h3 className="text-xs font-bold text-[#57534E] dark:text-[#A8A29E] pb-1 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
-            المعنى العربي
+            Meaning
           </h3>
           {rightItems.map((item) => {
             const isMatched = pairedArabicIds.has(item.id);
@@ -233,14 +237,14 @@ export function MatchingTwoColDrill({
                 type="button"
                 disabled={mode === 'practice' && isMatched}
                 onClick={() => handleSelectArabic(item.id)}
-                className={`w-full min-h-[74px] px-4 py-3 rounded-xl border flex items-center justify-between gap-2 text-right font-semibold text-base transition-all duration-150 ${cls}`}
+                className={`w-full min-h-[74px] px-4 py-3 rounded-xl border flex items-center justify-between gap-2 text-left font-semibold text-base transition-all duration-150 ${cls}`}
               >
                 <span>{item.arabic}</span>
                 {mode === 'practice' && isMatched && <CheckCircle2 className="w-5 h-5 shrink-0" />}
                 {isWrong && <XCircle className="w-5 h-5 shrink-0" />}
                 {mode === 'exam' && pairNum && (
                   <span className="text-xs font-bold tabular-nums text-[#D97706] dark:text-[#F59E0B]">
-                    زوج {pairNum}
+                    Pair {pairNum}
                   </span>
                 )}
               </button>

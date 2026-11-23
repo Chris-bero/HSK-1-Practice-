@@ -14,13 +14,12 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems: { view: AppView; label: string; count?: number }[] = [
-    { view: 'home', label: 'الرئيسية' },
-    { view: 'chapters', label: 'الفصول' },
-    { view: 'collections', label: 'التجميعات' },
-    { view: 'labs', label: 'المختبرات' },
-    { view: 'vault', label: 'محفوظاتي', count: vaultCount },
-    { view: 'hsk-portal', label: 'امتحانات HSK' },
-    { view: 'analytics', label: 'إحصائياتي' },
+    { view: 'home', label: 'Home' },
+    { view: 'chapters', label: 'Chapters' },
+    { view: 'collections', label: 'Study Packs' },
+    { view: 'labs', label: 'Labs' },
+    { view: 'vault', label: 'Saved', count: vaultCount },
+    { view: 'analytics', label: 'Analytics' },
   ];
 
   const isNavActive = (view: AppView) => {
@@ -31,9 +30,6 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
         currentView === 'custom-builder' ||
         currentView === 'drill'
       );
-    }
-    if (view === 'hsk-portal') {
-      return currentView === 'hsk-portal' || currentView === 'mock-exam';
     }
     return currentView === view;
   };
@@ -46,11 +42,11 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-[#F9F6F0]/95 dark:bg-[#121110]/95 backdrop-blur-sm">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between gap-3 sm:gap-5">
-        {/* العلامة التجارية */}
+        {/* Brand */}
         <button
           type="button"
           onClick={() => handleNavClick('home')}
-          className="flex items-center gap-2.5 text-right min-w-0 lg:shrink-0 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] rounded-md py-1"
+          className="flex items-center gap-2.5 text-left min-w-0 lg:shrink-0 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] rounded-md py-1"
         >
           <span
             aria-hidden="true"
@@ -59,13 +55,13 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
             汉
           </span>
           <span className="text-sm sm:text-base xl:text-lg font-bold tracking-tight text-[#1C1917] dark:text-[#F5F2EB] truncate">
-            بوابة اللغة الصينية - المستوى الأول
+            HSK 3.0 · Level 1
           </span>
         </button>
 
-        {/* روابط التنقل الرئيسية */}
+        {/* Primary Navigation */}
         <nav
-          aria-label="التنقل الرئيسي"
+          aria-label="Primary Navigation"
           className="hidden lg:flex items-center gap-3.5 xl:gap-5 text-xs xl:text-sm font-semibold"
         >
           {navItems.map((item) => {
@@ -98,13 +94,13 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
           })}
         </nav>
 
-        {/* أدوات التحكم العالمية */}
+        {/* Global Controls */}
         <div className="hidden md:flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={togglePinyin}
             aria-pressed={showPinyin}
-            title={showPinyin ? 'إخفاء البينين في جميع الصفحات' : 'إظهار البينين في جميع الصفحات'}
+            title={showPinyin ? 'Hide Pinyin across all views' : 'Show Pinyin across all views'}
             className={`inline-flex items-center gap-2 px-3 py-2 min-h-[40px] text-xs font-semibold rounded-md border transition-colors duration-150 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] ${
               showPinyin
                 ? 'border-[#D97706]/40 dark:border-[#F59E0B]/40 bg-[#D97706]/10 dark:bg-[#F59E0B]/15 text-[#92400E] dark:text-[#F59E0B]'
@@ -112,14 +108,14 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
             }`}
           >
             {showPinyin ? <Eye className="w-4 h-4 shrink-0" /> : <EyeOff className="w-4 h-4 shrink-0" />}
-            <span>{showPinyin ? 'إخفاء البينين' : 'إظهار البينين'}</span>
+            <span>{showPinyin ? 'Hide Pinyin' : 'Show Pinyin'}</span>
           </button>
 
           <button
             type="button"
             onClick={toggleTheme}
-            aria-label={theme === 'light' ? 'التبديل إلى الوضع الليلي' : 'التبديل إلى الوضع النهاري'}
-            title={theme === 'light' ? 'الوضع الليلي' : 'الوضع النهاري'}
+            aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+            title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
             className="inline-flex items-center justify-center w-10 h-10 rounded-md border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-white dark:bg-[#1E1C1A] text-[#1C1917] dark:text-[#F5F2EB] hover:border-[#B91C1C]/40 dark:hover:border-[#EF4444]/40 transition-colors duration-150 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444]"
           >
             {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-[#F59E0B]" />}
@@ -132,23 +128,23 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
               className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] text-xs font-semibold rounded-md border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 text-[#57534E] dark:text-[#A8A29E] hover:text-[#B91C1C] dark:hover:text-[#EF4444] hover:border-[#B91C1C]/40 dark:hover:border-[#EF4444]/40 transition-colors duration-150 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444]"
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              <span>خروج</span>
+              <span>Sign Out</span>
             </button>
           )}
         </div>
 
-        {/* زر القائمة للشاشات الصغيرة */}
+        {/* Mobile Menu Button */}
         <button
           type="button"
           onClick={() => setMobileMenuOpen((prev) => !prev)}
-          aria-label={mobileMenuOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
+          aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
           className="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-md border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-white dark:bg-[#1E1C1A] text-[#1C1917] dark:text-[#F5F2EB]"
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* القائمة المنسدلة للجوال */}
+      {/* Mobile Dropdown */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-white dark:bg-[#1E1C1A] px-4 py-4 space-y-3">
           <div className="flex flex-col gap-1">
@@ -159,7 +155,7 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
                   key={item.view}
                   type="button"
                   onClick={() => handleNavClick(item.view)}
-                  className={`w-full text-right px-3 py-2.5 rounded-md text-sm font-semibold flex items-center justify-between transition-colors ${
+                  className={`w-full text-left px-3 py-2.5 rounded-md text-sm font-semibold flex items-center justify-between transition-colors ${
                     active
                       ? 'bg-[#B91C1C]/10 dark:bg-[#EF4444]/15 text-[#B91C1C] dark:text-[#EF4444]'
                       : 'text-[#1C1917] dark:text-[#F5F2EB] hover:bg-[#F9F6F0] dark:hover:bg-[#292623]'
@@ -187,7 +183,7 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
               }`}
             >
               {showPinyin ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-              <span>{showPinyin ? 'إخفاء البينين' : 'إظهار البينين'}</span>
+              <span>{showPinyin ? 'Hide Pinyin' : 'Show Pinyin'}</span>
             </button>
 
             <button
@@ -196,7 +192,7 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
               className="inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-semibold rounded-md border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 text-[#1C1917] dark:text-[#F5F2EB]"
             >
               {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-[#F59E0B]" />}
-              <span>{theme === 'light' ? 'ليلي' : 'نهاري'}</span>
+              <span>{theme === 'light' ? 'Dark' : 'Light'}</span>
             </button>
 
             {currentStudent && (
@@ -206,7 +202,7 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
                 className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] text-xs font-semibold rounded-md border border-[#B91C1C]/30 dark:border-[#EF4444]/30 text-[#B91C1C] dark:text-[#EF4444]"
               >
                 <LogOut className="w-4 h-4" />
-                <span>خروج</span>
+                <span>Sign Out</span>
               </button>
             )}
           </div>

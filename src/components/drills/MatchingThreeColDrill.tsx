@@ -16,8 +16,8 @@ interface TripleLink {
 }
 
 /**
- * محرك التوصيل الثلاثي (رمز صيني ↔ بينين ↔ معنى عربي).
- * يعرض عمود البينين دائماً كونه جزءاً أساسياً من التمرين.
+ * 3-column matching engine (Chinese Character ↔ Pinyin ↔ Meaning).
+ * Always displays the Pinyin column as a core part of the drill.
  */
 export function MatchingThreeColDrill({ question, mode, onComplete }: MatchingThreeColProps) {
   const entries = question.matchingEntries ?? [];
@@ -56,8 +56,8 @@ export function MatchingThreeColDrill({ question, mode, onComplete }: MatchingTh
           const effectiveCorrect = Math.max(0, entries.length - mistakesCount);
           const summary =
             mistakesCount === 0
-              ? `تم ربط جميع المجموعات الثلاثية (${entries.length}/${entries.length}) بنجاح`
-              : `تم إكمال التوصيل الثلاثي مع ${mistakesCount} محاولة خاطئة`;
+              ? `Matched all 3-way sets (${entries.length}/${entries.length}) successfully`
+              : `Completed 3-column matching with ${mistakesCount} incorrect ${mistakesCount === 1 ? 'attempt' : 'attempts'}`;
           onComplete(effectiveCorrect, entries.length, summary);
         }
       } else {
@@ -73,7 +73,7 @@ export function MatchingThreeColDrill({ question, mode, onComplete }: MatchingTh
       return;
     }
 
-    // وضع الامتحان: استبدال أي عنصر مرتبط سابقاً وتحديث التقييم تلقائياً
+    // Exam mode: replace any previously linked item and evaluate automatically
     const filtered = triples.filter(
       (t) => t.hanziId !== hId && t.pinyinId !== pId && t.arabicId !== aId
     );
@@ -90,7 +90,7 @@ export function MatchingThreeColDrill({ question, mode, onComplete }: MatchingTh
       onComplete(
         correctCount,
         entries.length,
-        `تم ربط ${correctCount} من ${entries.length} مجموعات ثلاثية بشكل صحيح`
+        `Matched ${correctCount} of ${entries.length} 3-way sets correctly`
       );
     }
   };
@@ -147,12 +147,13 @@ export function MatchingThreeColDrill({ question, mode, onComplete }: MatchingTh
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm font-semibold text-[#57534E] dark:text-[#A8A29E]">
-          اختر عنصراً من كل عمود (الرمز الصيني، النطق الصوتي، المعنى العربي) لتكوين ثلاثية متطابقة.
+          Select one item from each column (Chinese Character, Pinyin, Meaning) to form a matching
+          trio.
         </p>
 
         <div className="flex items-center gap-3 text-xs tabular-nums">
           <span className="text-[#57534E] dark:text-[#A8A29E]">
-            المجموعات المكتملة:{' '}
+            Completed sets:{' '}
             <strong className="text-[#1C1917] dark:text-[#F5F2EB]">
               {triples.length}/{entries.length}
             </strong>
@@ -169,17 +170,17 @@ export function MatchingThreeColDrill({ question, mode, onComplete }: MatchingTh
               className="inline-flex items-center gap-1 text-[#B91C1C] dark:text-[#EF4444] font-semibold hover:underline"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>إعادة</span>
+              <span>Reset</span>
             </button>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* العمود ١: الرموز الصينية */}
+        {/* Column 1: Chinese Character */}
         <div className="space-y-2.5">
           <h3 className="text-xs font-bold text-[#57534E] dark:text-[#A8A29E] pb-1 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
-            ١. الرمز الصيني
+            1. Chinese Character
           </h3>
           {colHanzi.map((item) => {
             const tIdx = getTripleIndex('h', item.id);
@@ -208,10 +209,10 @@ export function MatchingThreeColDrill({ question, mode, onComplete }: MatchingTh
           })}
         </div>
 
-        {/* العمود ٢: النطق الصوتي (البينين) */}
+        {/* Column 2: Pronunciation (Pinyin) */}
         <div className="space-y-2.5">
           <h3 className="text-xs font-bold text-[#57534E] dark:text-[#A8A29E] pb-1 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
-            ٢. النطق الصوتي (البينين)
+            2. Pronunciation (Pinyin)
           </h3>
           {colPinyin.map((item) => {
             const tIdx = getTripleIndex('p', item.id);
@@ -240,10 +241,10 @@ export function MatchingThreeColDrill({ question, mode, onComplete }: MatchingTh
           })}
         </div>
 
-        {/* العمود ٣: المعنى العربي */}
+        {/* Column 3: Meaning */}
         <div className="space-y-2.5">
           <h3 className="text-xs font-bold text-[#57534E] dark:text-[#A8A29E] pb-1 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
-            ٣. المعنى العربي
+            3. Meaning
           </h3>
           {colArabic.map((item) => {
             const tIdx = getTripleIndex('a', item.id);
@@ -254,7 +255,7 @@ export function MatchingThreeColDrill({ question, mode, onComplete }: MatchingTh
                 type="button"
                 disabled={mode === 'practice' && tIdx !== null}
                 onClick={() => handlePick('a', item.id)}
-                className={`w-full min-h-[66px] px-4 py-3 rounded-xl border flex items-center justify-between gap-2 text-right font-semibold text-base transition-all duration-150 ${getCardStyle(
+                className={`w-full min-h-[66px] px-4 py-3 rounded-xl border flex items-center justify-between gap-2 text-left font-semibold text-base transition-all duration-150 ${getCardStyle(
                   'a',
                   item.id
                 )}`}

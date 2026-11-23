@@ -1,6 +1,6 @@
 /**
- * مؤثرات صوتية خفيفة ومولّدة برمجياً عبر Web Audio API
- * لتحدي السرعة 60 ثانية بدون الحاجة لملفات صوتية خارجية.
+ * Lightweight Web Audio API sound effects synthesized programmatically
+ * for the 60-second Speed Match Challenge with zero external audio files.
  */
 
 let sharedAudioCtx: AudioContext | null = null;
@@ -22,7 +22,7 @@ function getAudioContext(): AudioContext | null {
 }
 
 /**
- * نغمة نجاح خفيفة تتصاعد بنعومة مع ارتفاع مضاعف السلسلة (Combo)
+ * Gentle ascending success chime that rises with the combo multiplier.
  */
 export function playMatchSuccessTone(comboMultiplier: number, muted: boolean): void {
   if (muted) return;
@@ -31,7 +31,7 @@ export function playMatchSuccessTone(comboMultiplier: number, muted: boolean): v
 
   try {
     const now = ctx.currentTime;
-    // سلم خماسي هادئ (C5, D5, E5, G5, A5, C6)
+    // Soft pentatonic scale (C5, D5, E5, G5, A5, C6)
     const pentatonic = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5];
     const baseFreq = pentatonic[Math.min(Math.max(0, comboMultiplier - 1), pentatonic.length - 1)];
 
@@ -52,12 +52,12 @@ export function playMatchSuccessTone(comboMultiplier: number, muted: boolean): v
     osc.start(now);
     osc.stop(now + 0.18);
   } catch {
-    // تجاهل أي قيود صوتية من المتصفح
+    // Ignore browser audio playback restrictions
   }
 }
 
 /**
- * نغمة تنبيه خفيفة جداً عند اختيار زوج غير متطابق
+ * Subtle alert tone when a mismatched pair is selected.
  */
 export function playMatchErrorTone(muted: boolean): void {
   if (muted) return;
@@ -83,12 +83,12 @@ export function playMatchErrorTone(muted: boolean): void {
     osc.start(now);
     osc.stop(now + 0.15);
   } catch {
-    // تجاهل
+    // Ignore audio errors
   }
 }
 
 /**
- * نغمة ختام لطيفة عند انتهاء جولة الـ 60 ثانية
+ * Pleasant closing triad when the 60-second round completes.
  */
 export function playRoundFinishTone(muted: boolean): void {
   if (muted) return;
@@ -113,6 +113,6 @@ export function playRoundFinishTone(muted: boolean): void {
       osc.stop(start + 0.25);
     });
   } catch {
-    // تجاهل
+    // Ignore audio errors
   }
 }

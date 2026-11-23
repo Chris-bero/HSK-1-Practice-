@@ -141,7 +141,7 @@ export function HanziWritingLab({
     setQuizCompleted(false);
     setQuizMistakes(0);
     setStrokesDone(0);
-    setQuizHintMessage('ارسم الخط الأول على الشبكة بالماوس أو اللمس.');
+    setQuizHintMessage('Draw the first stroke on the grid using your mouse or touch.');
 
     writer.quiz({
       leniency: 1.15,
@@ -151,16 +151,16 @@ export function HanziWritingLab({
         setStrokesDone(data.strokeNum + 1);
         setQuizHintMessage(
           data.strokesRemaining > 0
-            ? `أحسنت! متبقٍّ ${data.strokesRemaining} خط لإكمال الرمز.`
-            : 'رائع! اكتمل الرمز بنجاح!'
+            ? `Well done! ${data.strokesRemaining} ${data.strokesRemaining === 1 ? 'stroke' : 'strokes'} remaining.`
+            : 'Excellent! Character complete!'
         );
       },
       onMistake: (data) => {
         setQuizMistakes(data.totalMistakes);
         if (data.mistakesOnStroke >= 2) {
-          setQuizHintMessage('تلميح: اتّبع الخط المضيء باللون الذهبي في نفس الاتجاه.');
+          setQuizHintMessage('Hint: Follow the glowing amber stroke in the same direction.');
         } else {
-          setQuizHintMessage('حاول مرة أخرى — راقب بداية الخط واتجاهه الصحيح.');
+          setQuizHintMessage('Try again — check the starting point and stroke direction.');
         }
       },
       onComplete: (summary) => {
@@ -168,8 +168,8 @@ export function HanziWritingLab({
         setQuizMistakes(summary.totalMistakes);
         setQuizHintMessage(
           summary.totalMistakes === 0
-            ? `ممتاز! كتبت الرمز «${summary.character}» بإتقان تام دون أي خطأ!`
-            : `أحسنت! أتممت كتابة الرمز «${summary.character}» بنجاح (${summary.totalMistakes} محاولات تصحيح).`
+            ? `Perfect! You wrote "${summary.character}" with zero mistakes.`
+            : `Great job! You completed "${summary.character}" (${summary.totalMistakes} correction ${summary.totalMistakes === 1 ? 'attempt' : 'attempts'}).`
         );
       },
     });
@@ -310,14 +310,14 @@ export function HanziWritingLab({
 
   return (
     <div className="space-y-6">
-      {/* شريط اختيار الفصل */}
+      {/* Chapter selector bar */}
       <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-4 sm:p-5 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-bold text-[#57534E] dark:text-[#A8A29E]">
-            اختر الفصل للتدرب على كتابة مفرداته:
+            Select a chapter to practice writing its vocabulary:
           </p>
           <span className="text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB] tabular-nums">
-            {activeChapter.titleAr} (第{activeChapter.id}课) · {activeChapter.vocab.length} مفردة
+            {activeChapter.titleAr} (第{activeChapter.id}课) · {activeChapter.vocab.length} words
           </span>
         </div>
 
@@ -348,16 +348,16 @@ export function HanziWritingLab({
         </div>
       </div>
 
-      {/* مساحة العمل الرئيسية: اللوح التفاعلي أولاً على الجوال + قائمة مفردات الفصل */}
+      {/* Main workspace: interactive canvas first on mobile + chapter vocabulary list */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* العمود الأيمن: قائمة مفردات الفصل */}
+        {/* Sidebar: chapter vocabulary list */}
         <aside className="order-2 lg:order-1 lg:col-span-4 rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] overflow-hidden">
           <div className="px-4 py-3 bg-[#F2ECE1]/75 dark:bg-[#25221F] border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10 flex items-center justify-between">
             <h3 className="text-sm font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-              مفردات {activeChapter.titleAr}
+              {activeChapter.titleAr} Vocabulary
             </h3>
             <span className="text-xs font-semibold text-[#57534E] dark:text-[#A8A29E] tabular-nums">
-              {activeChapter.vocab.length} كلمة
+              {activeChapter.vocab.length} words
             </span>
           </div>
 
@@ -369,9 +369,9 @@ export function HanziWritingLab({
                   key={word.id}
                   type="button"
                   onClick={() => handleSelectWord(word)}
-                  className={`w-full text-right px-4 py-3 flex items-center justify-between gap-3 transition-colors ${
+                  className={`w-full text-left px-4 py-3 flex items-center justify-between gap-3 transition-colors ${
                     isSelected
-                      ? 'bg-[#B91C1C]/10 dark:bg-[#EF4444]/15 border-r-4 border-[#B91C1C] dark:border-[#EF4444]'
+                      ? 'bg-[#B91C1C]/10 dark:bg-[#EF4444]/15 border-l-4 border-[#B91C1C] dark:border-[#EF4444]'
                       : 'hover:bg-[#F9F6F0] dark:hover:bg-[#25221F]'
                   }`}
                 >
@@ -395,9 +395,9 @@ export function HanziWritingLab({
           </div>
         </aside>
 
-        {/* العمود الأيسر: مختبر الرسم والخطوط (米字格) */}
+        {/* Drawing & stroke-order lab (米字格) */}
         <div className="order-1 lg:order-2 lg:col-span-8 rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-5 sm:p-6 space-y-6">
-          {/* بطاقة الكلمة المختارة + الصوت + تبويبات تقسيم الرموز */}
+          {/* Active word card + audio + character selector */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-3">
@@ -424,7 +424,7 @@ export function HanziWritingLab({
                 }`}
               >
                 <Volume2 className="w-4 h-4 shrink-0" />
-                <span>نطق 1.0x</span>
+                <span>Audio 1.0x</span>
               </button>
 
               <button
@@ -436,16 +436,16 @@ export function HanziWritingLab({
                     : 'border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#141312] text-[#57534E] dark:text-[#A8A29E] hover:border-[#D97706]/50'
                 }`}
               >
-                <span>بطيء 0.7x</span>
+                <span>Slow 0.7x</span>
               </button>
             </div>
           </div>
 
-          {/* تبويبات اختيار الرمز الفردي عند وجود أكثر من رمز في الكلمة */}
+          {/* Individual character picker for multi-character words */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-bold text-[#57534E] dark:text-[#A8A29E]">
-                اختر الرمز للتدريب:
+                Select character to practice:
               </span>
               {hanziChars.map((ch, idx) => {
                 const isSelected = idx === selectedCharIdx;
@@ -468,23 +468,23 @@ export function HanziWritingLab({
 
             {strokeCount !== null && (
               <div className="inline-flex items-center gap-2 text-xs font-bold text-[#57534E] dark:text-[#A8A29E] tabular-nums">
-                <span>عدد الخطوط:</span>
+                <span>Stroke count:</span>
                 <span className="px-2.5 py-1 rounded-md bg-[#F2ECE1] dark:bg-[#292623] text-[#1C1917] dark:text-[#F5F2EB]">
-                  {strokeCount} خط
+                  {strokeCount} {strokeCount === 1 ? 'stroke' : 'strokes'}
                 </span>
               </div>
             )}
           </div>
 
-          {/* لوح الكتابة الصينية 米字格 + أزرار التحكم */}
+          {/* Chinese 米字格 writing canvas + controls */}
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-            {/* شبكة 米字格 Mizige */}
+            {/* 米字格 Mizige grid */}
             <div className="flex flex-col items-center gap-3 shrink-0">
               <div
                 className="relative w-[260px] h-[260px] md:w-[300px] md:h-[300px] rounded-xl border-2 border-[#B91C1C]/45 dark:border-[#EF4444]/45 bg-[#FCFBF8] dark:bg-[#161513] overflow-hidden select-none touch-none shadow-xs"
                 dir="ltr"
               >
-                {/* خطوط الشبكة الصينية التقليدية 米字格 */}
+                {/* Traditional 米字格 grid lines */}
                 <svg
                   aria-hidden="true"
                   viewBox="0 0 260 260"
@@ -532,7 +532,7 @@ export function HanziWritingLab({
                   />
                 </svg>
 
-                {/* حاوية HanziWriter */}
+                {/* HanziWriter mount container */}
                 <div
                   ref={mountRef}
                   className="relative z-10 w-[260px] h-[260px] md:w-[300px] md:h-[300px] cursor-crosshair touch-none"
@@ -542,7 +542,7 @@ export function HanziWritingLab({
                   <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#FCFBF8]/85 dark:bg-[#161513]/85 gap-2">
                     <Loader2 className="w-6 h-6 animate-spin text-[#B91C1C] dark:text-[#EF4444]" />
                     <span className="text-xs font-semibold text-[#57534E] dark:text-[#A8A29E]">
-                      جارٍ تحميل خطوط الرمز...
+                      Loading character strokes...
                     </span>
                   </div>
                 )}
@@ -553,18 +553,19 @@ export function HanziWritingLab({
                       {activeChar}
                     </span>
                     <span className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-                      تعذّر تحميل بيانات الخطوط — تحقق من الاتصال بالإنترنت.
+                      Unable to load stroke data — please check your internet connection.
                     </span>
                   </div>
                 )}
               </div>
 
               <p className="text-[11px] text-[#57534E] dark:text-[#A8A29E] text-center">
-                الخطوط الحمراء تميّز <strong className="text-[#B91C1C] dark:text-[#EF4444]">جذر الرمز (Radical)</strong> تلقائياً
+                Red strokes automatically highlight the character's{' '}
+                <strong className="text-[#B91C1C] dark:text-[#EF4444]">Radical</strong>
               </p>
             </div>
 
-            {/* لوحة التحكم والتغذية الراجعة */}
+            {/* Controls & live feedback panel */}
             <div className="flex-1 w-full space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <button
@@ -577,7 +578,7 @@ export function HanziWritingLab({
                   }`}
                 >
                   <Play className="w-4 h-4 shrink-0" />
-                  <span>عرض ترتيب الخطوط</span>
+                  <span>Animate Strokes</span>
                 </button>
 
                 <button
@@ -590,7 +591,7 @@ export function HanziWritingLab({
                   }`}
                 >
                   <PenTool className="w-4 h-4 shrink-0" />
-                  <span>تدرّب على الكتابة</span>
+                  <span>Practice Writing</span>
                 </button>
               </div>
 
@@ -601,7 +602,7 @@ export function HanziWritingLab({
                   className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[38px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#141312] text-xs font-bold text-[#57534E] dark:text-[#A8A29E] hover:text-[#1C1917] dark:hover:text-[#F5F2EB]"
                 >
                   {showOutline ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  <span>{showOutline ? 'إخفاء التظليل (تحدي الذاكرة)' : 'إظهار التظليل الإرشادي'}</span>
+                  <span>{showOutline ? 'Hide Outline (Memory Mode)' : 'Show Guide Outline'}</span>
                 </button>
 
                 {canvasMode === 'quiz' && (
@@ -611,12 +612,12 @@ export function HanziWritingLab({
                     className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[38px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-white dark:bg-[#1E1C1A] text-xs font-bold text-[#57534E] dark:text-[#A8A29E] hover:text-[#B91C1C]"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    <span>إعادة الرسم</span>
+                    <span>Clear Canvas</span>
                   </button>
                 )}
               </div>
 
-              {/* حالة التدريب والتغذية الراجعة */}
+              {/* Practice status & feedback */}
               {canvasMode === 'quiz' ? (
                 <div
                   className={`rounded-xl border p-4 space-y-2.5 ${
@@ -639,13 +640,13 @@ export function HanziWritingLab({
                             : 'text-[#1C1917] dark:text-[#F5F2EB]'
                         }
                       >
-                        {quizCompleted ? 'أتممت كتابة الرمز بنجاح!' : 'وضع التتبّع التفاعلي نشط'}
+                        {quizCompleted ? 'Character Completed!' : 'Interactive Tracing Active'}
                       </span>
                     </div>
 
                     {strokeCount !== null && (
                       <span className="text-xs font-bold tabular-nums text-[#57534E] dark:text-[#A8A29E]">
-                        {strokesDone} / {strokeCount} خط
+                        {strokesDone} / {strokeCount} strokes
                       </span>
                     )}
                   </div>
@@ -658,7 +659,7 @@ export function HanziWritingLab({
 
                   {quizMistakes > 0 && !quizCompleted && (
                     <p className="text-[11px] text-[#B45309] dark:text-[#F59E0B] font-semibold tabular-nums">
-                      محاولات التصحيح حتى الآن: {quizMistakes} (يظهر التلميح المضيء بعد خطأين)
+                      Mistakes so far: {quizMistakes} (a glowing hint appears after 2 misses)
                     </p>
                   )}
 
@@ -671,8 +672,8 @@ export function HanziWritingLab({
                       >
                         <span>
                           {selectedCharIdx + 1 < hanziChars.length
-                            ? 'الانتقال للرمز التالي في الكلمة'
-                            : 'الانتقال للمفردة التالية'}
+                            ? 'Next Character in Word'
+                            : 'Next Vocabulary Word'}
                         </span>
                       </button>
                       <button
@@ -681,7 +682,7 @@ export function HanziWritingLab({
                         className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#15803D]/35 text-xs font-bold text-[#15803D] dark:text-[#22C55E]"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
-                        <span>أعد كتابته</span>
+                        <span>Write Again</span>
                       </button>
                     </div>
                   )}
@@ -689,15 +690,15 @@ export function HanziWritingLab({
               ) : (
                 <div className="rounded-xl border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-[#F9F6F0] dark:bg-[#141312] p-4 space-y-1.5 text-xs text-[#57534E] dark:text-[#A8A29E] leading-relaxed">
                   <p className="font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                    كيف تتقن كتابة الرمز الصيني؟
+                    How to master Hanzi stroke order
                   </p>
                   <p>
-                    ١. اضغط على <strong>«عرض ترتيب الخطوط»</strong> لمشاهدة التسلسل الصحيح (من أعلى
-                    لأسفل ومن اليسار لليمين).
+                    1. Click <strong>"Animate Strokes"</strong> to watch the standard sequence
+                    (top-to-bottom, left-to-right).
                   </p>
                   <p>
-                    ٢. انتقل إلى <strong>«تدرّب على الكتابة»</strong> وارسم كل خط مباشرة على شبكة
-                    米字格 بالماوس أو بإصبعك على الشاشة.
+                    2. Switch to <strong>"Practice Writing"</strong> and trace each stroke directly
+                    on the 米字格 grid with your mouse or finger.
                   </p>
                 </div>
               )}

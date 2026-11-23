@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  ArrowRight,
+  ArrowLeft,
   BookOpen,
   Check,
   CheckCircle2,
@@ -68,14 +68,14 @@ export function VaultView({ onNavigate }: VaultViewProps) {
   const [editingNoteKey, setEditingNoteKey] = useState<string | null>(null);
   const [editingNoteText, setEditingNoteText] = useState('');
 
-  // وضع مراجعة محفوظاتي التفاعلي (بطاقات مراجعة / اختبار سريع)
+  // Interactive Study Vault review mode (Flashcards / Quick Quiz)
   const [isPracticing, setIsPracticing] = useState(false);
   const [practiceMode, setPracticeMode] = useState<VaultPracticeMode>('flashcards');
   const [practiceDeck, setPracticeDeck] = useState<ResolvedVaultItem[]>([]);
   const [cardIdx, setCardIdx] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
-  // حالة الاختبار السريع داخل محفوظاتي
+  // Quick Quiz state
   const [quizSelectedAnswer, setQuizSelectedAnswer] = useState<string | null>(null);
   const [quizScore, setQuizScore] = useState(0);
   const [quizDone, setQuizDone] = useState(false);
@@ -88,7 +88,7 @@ export function VaultView({ onNavigate }: VaultViewProps) {
     };
   }, []);
 
-  // ضبط صفحة الطباعة لـ A4 عمودي أثناء عرض خزنة ليلة الامتحان
+  // Configure A4 portrait page sizing when printing the Exam-Night Vault sheet
   useEffect(() => {
     const styleId = 'vault-dynamic-print-page';
     let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
@@ -104,7 +104,6 @@ export function VaultView({ onNavigate }: VaultViewProps) {
     };
   }, []);
 
-  // فهرس سريع لكل المفردات والجمل من المنهج لاسترجاع بيانات العنصر المحفوظ
   const curriculumLookup = useMemo(() => {
     const vocabMap = new Map<
       string,
@@ -232,7 +231,6 @@ export function VaultView({ onNavigate }: VaultViewProps) {
     setIsPracticing(true);
   };
 
-  // بناء خيارات الاختبار السريع (4 اختيارات عربية) للبطاقة الحالية
   const activePracticeItem = practiceDeck[cardIdx];
   const quizOptions = useMemo(() => {
     if (!activePracticeItem) return [];
@@ -279,9 +277,6 @@ export function VaultView({ onNavigate }: VaultViewProps) {
     setQuizSelectedAnswer(null);
   };
 
-  // =========================================================================
-  // واجهة جلسة مراجعة محفوظاتي (بطاقات المراجعة السريعة + الاختبار السريع)
-  // =========================================================================
   if (isPracticing && practiceDeck.length > 0) {
     return (
       <section className="mx-auto max-w-4xl px-4 sm:px-6 py-8 sm:py-10 space-y-6">
@@ -294,8 +289,8 @@ export function VaultView({ onNavigate }: VaultViewProps) {
             }}
             className="inline-flex items-center gap-2 text-sm font-semibold text-[#57534E] dark:text-[#A8A29E] hover:text-[#B91C1C] dark:hover:text-[#EF4444] transition-colors"
           >
-            <ArrowRight className="w-4 h-4" />
-            <span>العودة إلى محفوظاتي وملاحظاتي</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Study Vault</span>
           </button>
 
           <div className="inline-flex p-1 rounded-lg border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F2ECE1] dark:bg-[#1E1C1A]">
@@ -308,7 +303,7 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                   : 'text-[#57534E] dark:text-[#A8A29E]'
               }`}
             >
-              بطاقات سريعة
+              Flashcards
             </button>
             <button
               type="button"
@@ -319,7 +314,7 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                   : 'text-[#57534E] dark:text-[#A8A29E]'
               }`}
             >
-              اختبار سريع
+              Quick Quiz
             </button>
           </div>
         </div>
@@ -331,10 +326,10 @@ export function VaultView({ onNavigate }: VaultViewProps) {
             </div>
             <div className="space-y-1">
               <h2 className="text-2xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                أحسنت! أنهيت مراجعة محفوظاتك
+                Vault Review Complete!
               </h2>
               <p className="text-sm text-[#57534E] dark:text-[#A8A29E] tabular-nums">
-                نتيجتك: {quizScore} من {practiceDeck.length} (
+                Score: {quizScore} of {practiceDeck.length} (
                 {Math.round((quizScore / practiceDeck.length) * 100)}%)
               </p>
             </div>
@@ -345,14 +340,14 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                 className="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-sm font-bold"
               >
                 <RotateCcw className="w-4 h-4" />
-                <span>إعادة الاختبار السريع</span>
+                <span>Retake Quick Quiz</span>
               </button>
               <button
                 type="button"
                 onClick={() => setIsPracticing(false)}
                 className="px-5 py-2.5 min-h-[44px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 text-sm font-bold text-[#1C1917] dark:text-[#F5F2EB]"
               >
-                العودة للقائمة
+                Back to List
               </button>
             </div>
           </div>
@@ -361,13 +356,13 @@ export function VaultView({ onNavigate }: VaultViewProps) {
             <div className="neo-frame rounded-xl p-6 sm:p-8 space-y-6">
               <div className="flex items-center justify-between gap-3 text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums">
                 <span>
-                  البطاقة {cardIdx + 1} من {practiceDeck.length} ·{' '}
+                  Card {cardIdx + 1} of {practiceDeck.length} ·{' '}
                   <span className="font-hanzi">第{activePracticeItem.chapterId}课</span> (
-                  {activePracticeItem.itemType === 'vocab' ? 'مفردة' : 'جملة'})
+                  {activePracticeItem.itemType === 'vocab' ? 'Vocab' : 'Sentence'})
                 </span>
                 {practiceMode === 'quiz' && (
                   <span className="font-bold text-[#15803D] dark:text-[#22C55E]">
-                    الصحيحة: {quizScore}
+                    Correct: {quizScore}
                   </span>
                 )}
               </div>
@@ -390,7 +385,7 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#121110] text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB] hover:border-[#B91C1C]/50"
                   >
                     <Volume2 className="w-4 h-4 text-[#B91C1C] dark:text-[#EF4444]" />
-                    <span>استماع (1.0x)</span>
+                    <span>Listen (1.0x)</span>
                   </button>
                   <button
                     type="button"
@@ -400,7 +395,7 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#121110] text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB] hover:border-[#D97706]/50"
                   >
                     <Volume2 className="w-4 h-4 text-[#D97706] dark:text-[#F59E0B]" />
-                    <span>بطيء (0.7x)</span>
+                    <span>Slow (0.7x)</span>
                   </button>
                 </div>
               </div>
@@ -417,8 +412,8 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                       </p>
                       {activePracticeItem.note && (
                         <div className="mt-3 pt-3 border-t border-[#15803D]/20 dark:border-[#22C55E]/20 text-xs text-[#1C1917] dark:text-[#F5F2EB]">
-                          <strong className="text-[#B91C1C] dark:text-[#EF4444] ml-1">
-                            ملاحظتك:
+                          <strong className="text-[#B91C1C] dark:text-[#EF4444] mr-1">
+                            Your Note:
                           </strong>
                           {activePracticeItem.note}
                         </div>
@@ -430,7 +425,7 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                       onClick={() => setIsFlipped(true)}
                       className="w-full py-4 rounded-xl border border-dashed border-[#B91C1C]/45 dark:border-[#EF4444]/45 bg-[#F9F6F0]/70 dark:bg-[#141312] text-sm font-bold text-[#B91C1C] dark:text-[#EF4444] hover:bg-[#B91C1C]/8 transition-colors"
                     >
-                      اضغط لإظهار المعنى والملاحظة الشخصية
+                      Tap to Reveal Meaning &amp; Personal Note
                     </button>
                   )}
 
@@ -440,16 +435,16 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                       onClick={handlePrevPracticeCard}
                       className="inline-flex items-center gap-1.5 px-4 py-2.5 min-h-[42px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB]"
                     >
-                      <ChevronRight className="w-4 h-4" />
-                      <span>السابق</span>
+                      <ChevronLeft className="w-4 h-4" />
+                      <span>Previous</span>
                     </button>
                     <button
                       type="button"
                       onClick={handleNextPracticeCard}
                       className="inline-flex items-center gap-1.5 px-5 py-2.5 min-h-[42px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-xs font-bold"
                     >
-                      <span>التالي</span>
-                      <ChevronLeft className="w-4 h-4" />
+                      <span>Next</span>
+                      <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -479,7 +474,7 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                           type="button"
                           disabled={quizSelectedAnswer !== null}
                           onClick={() => handleAnswerQuiz(opt)}
-                          className={`text-right px-4 py-3.5 min-h-[50px] rounded-lg border text-sm font-bold transition-colors ${stateCls}`}
+                          className={`text-left px-4 py-3.5 min-h-[50px] rounded-lg border text-sm font-bold transition-colors ${stateCls}`}
                         >
                           {opt}
                         </button>
@@ -492,16 +487,16 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                       <div className="text-xs text-[#57534E] dark:text-[#A8A29E]">
                         {activePracticeItem.note ? (
                           <span>
-                            <strong className="text-[#B91C1C] dark:text-[#EF4444] ml-1">
-                              ملاحظتك:
+                            <strong className="text-[#B91C1C] dark:text-[#EF4444] mr-1">
+                              Your Note:
                             </strong>
                             {activePracticeItem.note}
                           </span>
                         ) : (
                           <span>
                             {quizSelectedAnswer === activePracticeItem.arabic
-                              ? 'إجابة صحيحة! استمر في التثبيت.'
-                              : `الإجابة الصحيحة: ${activePracticeItem.arabic}`}
+                              ? 'Correct! Keep reinforcing.'
+                              : `Correct answer: ${activePracticeItem.arabic}`}
                           </span>
                         )}
                       </div>
@@ -511,9 +506,9 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                         className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 min-h-[42px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-xs font-bold shrink-0"
                       >
                         <span>
-                          {cardIdx + 1 >= practiceDeck.length ? 'عرض النتيجة' : 'السؤال التالي'}
+                          {cardIdx + 1 >= practiceDeck.length ? 'View Results' : 'Next Question'}
                         </span>
-                        <ChevronLeft className="w-4 h-4" />
+                        <ChevronRight className="w-4 h-4" />
                       </button>
                     </div>
                   )}
@@ -528,27 +523,27 @@ export function VaultView({ onNavigate }: VaultViewProps) {
 
   return (
     <section className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-10 space-y-6">
-      {/* الترويسة وشريط الإجراءات الرئيسي (تُخفى عند الطباعة) */}
+      {/* Header & Action Bar (hidden when printing) */}
       <div className="no-print neo-frame rounded-xl p-6 sm:p-7 space-y-5">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums">
               <span className="font-bold text-[#D97706] dark:text-[#F59E0B]">
-                خزنة ليلة الامتحان
+                Exam-Night Study Vault
               </span>
               <span aria-hidden="true">·</span>
-              <span>{counts.vocab} مفردة</span>
+              <span>{counts.vocab} vocab</span>
               <span aria-hidden="true">·</span>
-              <span>{counts.sentence} جملة</span>
+              <span>{counts.sentence} sentences</span>
               <span aria-hidden="true">·</span>
-              <span>{counts.notesOnly} ملاحظة شخصية</span>
+              <span>{counts.notesOnly} personal notes</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-              محفوظاتي وملاحظاتي
+              Saved Items &amp; Study Notes
             </h1>
             <p className="text-sm text-[#57534E] dark:text-[#A8A29E] max-w-2xl">
-              احفظ الكلمات والجمل الصعبة بنجمة ⭐ وأضف ملاحظاتك الشخصية لتراجعها بسرعة قبل الامتحان
-              أو تطبعها كورقة مراجعة منظمة.
+              Bookmark challenging words and sentences with a star and attach personal study notes
+              for rapid pre-exam review or clean A4 PDF printing.
             </p>
           </div>
 
@@ -560,7 +555,7 @@ export function VaultView({ onNavigate }: VaultViewProps) {
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-xs sm:text-sm font-bold transition-colors disabled:opacity-45 whitespace-nowrap shrink-0"
             >
               <Play className="w-4 h-4 shrink-0" />
-              <span>ابدأ مراجعة محفوظاتي</span>
+              <span>Practice Saved Items</span>
             </button>
 
             <button
@@ -570,20 +565,20 @@ export function VaultView({ onNavigate }: VaultViewProps) {
               className="inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg border border-[#1C1917]/18 dark:border-[#F5F2EB]/18 bg-[#F9F6F0] dark:bg-[#121110] hover:border-[#B91C1C]/50 dark:hover:border-[#EF4444]/50 text-[#1C1917] dark:text-[#F5F2EB] text-xs sm:text-sm font-bold transition-colors disabled:opacity-45 whitespace-nowrap shrink-0"
             >
               <Printer className="w-4 h-4 text-[#D97706] dark:text-[#F59E0B] shrink-0" />
-              <span>طباعة ورقة ليلة الامتحان (PDF)</span>
+              <span>Print Exam-Night Sheet (PDF)</span>
             </button>
           </div>
         </div>
 
-        {/* شريط التصفية + مفتاح البينين */}
+        {/* Filters + Pinyin Toggle */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
           <div className="inline-flex flex-wrap items-center gap-1 p-1 rounded-lg bg-[#F2ECE1] dark:bg-[#141312] border border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
             {(
               [
-                { id: 'all', label: `الكل (${counts.all})` },
-                { id: 'vocab', label: `المفردات (${counts.vocab})` },
-                { id: 'sentence', label: `الجمل (${counts.sentence})` },
-                { id: 'notes-only', label: `بها ملاحظات فقط (${counts.notesOnly})` },
+                { id: 'all', label: `All (${counts.all})` },
+                { id: 'vocab', label: `Vocabulary (${counts.vocab})` },
+                { id: 'sentence', label: `Sentences (${counts.sentence})` },
+                { id: 'notes-only', label: `With Notes (${counts.notesOnly})` },
               ] as { id: VaultFilter; label: string }[]
             ).map((btn) => (
               <button
@@ -612,12 +607,12 @@ export function VaultView({ onNavigate }: VaultViewProps) {
             }`}
           >
             {showPinyin ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            <span>{showPinyin ? 'إخفاء البينين (Ruby)' : 'إظهار البينين (Ruby)'}</span>
+            <span>{showPinyin ? 'Hide Pinyin (Ruby)' : 'Show Pinyin (Ruby)'}</span>
           </button>
         </div>
       </div>
 
-      {/* قائمة العناصر المحفوظة على الشاشة */}
+      {/* Screen Vault List */}
       <div className="no-print">
         {resolvedItems.length === 0 ? (
           <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-10 sm:p-14 text-center space-y-4">
@@ -626,11 +621,11 @@ export function VaultView({ onNavigate }: VaultViewProps) {
             </div>
             <div className="space-y-1.5 max-w-md mx-auto">
               <h2 className="text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                خزنة محفوظاتك فارغة حالياً
+                Your Study Vault is Empty
               </h2>
               <p className="text-sm text-[#57534E] dark:text-[#A8A29E] leading-relaxed">
-                اضغط على نجمة الحفظ ⭐ أو أيقونة الملاحظة 📝 بجانب أي كلمة أو جملة داخل الفصول أو
-                صفحة التجميعات لتجميع ورقة ليلة الامتحان الخاصة بك.
+                Click the star or note icon beside any vocabulary word or sentence in Chapters or
+                Study Packs to build your personal Exam-Night review sheet.
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
@@ -640,24 +635,24 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                 className="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-sm font-bold"
               >
                 <BookOpen className="w-4 h-4" />
-                <span>تصفح الفصول</span>
+                <span>Browse Chapters</span>
               </button>
               <button
                 type="button"
                 onClick={() => onNavigate('collections')}
                 className="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#121110] text-sm font-bold text-[#1C1917] dark:text-[#F5F2EB]"
               >
-                <span>فتح التجميعات</span>
+                <span>Open Study Packs</span>
               </button>
             </div>
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-10 text-center space-y-2">
             <p className="text-base font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-              لا توجد عناصر مطابقة لهذا التصنيف
+              No items match this filter
             </p>
             <p className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-              جرّب اختيار «الكل» لعرض جميع محفوظاتك.
+              Try selecting “All” to view all saved items.
             </p>
           </div>
         ) : (
@@ -673,7 +668,6 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                   className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-5 flex flex-col justify-between gap-4"
                 >
                   <div className="space-y-3">
-                    {/* سطر معلومات الفصل والنوع بدون كبسولات مبالغ فيها */}
                     <div className="flex items-center justify-between gap-2 text-xs text-[#57534E] dark:text-[#A8A29E]">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="font-hanzi font-bold text-[#B91C1C] dark:text-[#EF4444]">
@@ -682,22 +676,21 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                         <span aria-hidden="true">·</span>
                         <span className="truncate">{item.chapterTitleAr}</span>
                         <span aria-hidden="true">·</span>
-                        <span>{item.itemType === 'vocab' ? 'مفردة' : 'جملة'}</span>
+                        <span>{item.itemType === 'vocab' ? 'Vocab' : 'Sentence'}</span>
                       </div>
 
                       <button
                         type="button"
                         onClick={() => removeVaultEntry(item.key)}
-                        aria-label={`إزالة ${item.hanzi} من محفوظاتي`}
-                        title="إزالة من محفوظاتي"
+                        aria-label={`Remove ${item.hanzi} from Saved`}
+                        title="Remove from Saved"
                         className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-semibold text-[#57534E] dark:text-[#A8A29E] hover:text-[#B91C1C] dark:hover:text-[#EF4444] transition-colors shrink-0"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                        <span>إزالة</span>
+                        <span>Remove</span>
                       </button>
                     </div>
 
-                    {/* الرمز الصيني + البينين + المعنى العربي */}
                     <div className="space-y-1.5">
                       <div className="text-xl sm:text-2xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
                         <RubyChinese
@@ -711,7 +704,6 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                       </p>
                     </div>
 
-                    {/* الملاحظة الشخصية القابلة للتعديل */}
                     <div className="pt-2 border-t border-[#1C1917]/8 dark:border-[#F5F2EB]/8">
                       {isEditing ? (
                         <div className="space-y-2">
@@ -719,7 +711,7 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                             rows={2}
                             value={editingNoteText}
                             onChange={(e) => setEditingNoteText(e.target.value)}
-                            placeholder="اكتب ملاحظتك الشخصية هنا..."
+                            placeholder="Write your personal study note here..."
                             className="w-full rounded-lg border border-[#B91C1C]/45 dark:border-[#EF4444]/45 bg-[#F9F6F0] dark:bg-[#121110] px-3 py-2 text-xs text-[#1C1917] dark:text-[#F5F2EB] focus:outline-none resize-none"
                           />
                           <div className="flex items-center justify-end gap-2">
@@ -729,7 +721,7 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 text-xs font-bold text-[#57534E] dark:text-[#A8A29E]"
                             >
                               <X className="w-3.5 h-3.5" />
-                              <span>إلغاء</span>
+                              <span>Cancel</span>
                             </button>
                             <button
                               type="button"
@@ -737,15 +729,15 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                               className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-[#15803D] dark:bg-[#22C55E] text-white dark:text-[#121110] text-xs font-bold"
                             >
                               <Check className="w-3.5 h-3.5" />
-                              <span>حفظ</span>
+                              <span>Save</span>
                             </button>
                           </div>
                         </div>
                       ) : item.note.trim().length > 0 ? (
                         <div className="flex items-start justify-between gap-2 rounded-lg bg-[#F9F6F0] dark:bg-[#141312] border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 p-3">
                           <div className="text-xs text-[#1C1917] dark:text-[#F5F2EB] leading-relaxed min-w-0">
-                            <span className="font-bold text-[#B91C1C] dark:text-[#EF4444] ml-1.5">
-                              ملاحظتي:
+                            <span className="font-bold text-[#B91C1C] dark:text-[#EF4444] mr-1.5">
+                              My Note:
                             </span>
                             {item.note}
                           </div>
@@ -754,7 +746,7 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                             onClick={() => handleStartEditNote(item)}
                             className="text-[11px] font-bold text-[#57534E] dark:text-[#A8A29E] hover:text-[#B91C1C] dark:hover:text-[#EF4444] shrink-0"
                           >
-                            تعديل
+                            Edit
                           </button>
                         </div>
                       ) : (
@@ -764,13 +756,13 @@ export function VaultView({ onNavigate }: VaultViewProps) {
                           className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#57534E] dark:text-[#A8A29E] hover:text-[#B91C1C] dark:hover:text-[#EF4444] transition-colors"
                         >
                           <StickyNote className="w-3.5 h-3.5" />
-                          <span>أضف ملاحظة شخصية لهذا العنصر</span>
+                          <span>Add personal note for this item</span>
                         </button>
                       )}
                     </div>
                   </div>
 
-                  {/* أزرار الاستماع الصوتي */}
+                  {/* Audio Buttons */}
                   <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#1C1917]/8 dark:border-[#F5F2EB]/8">
                     <button
                       type="button"
@@ -804,32 +796,30 @@ export function VaultView({ onNavigate }: VaultViewProps) {
         )}
       </div>
 
-      {/* ================================================================= */}
-      {/* نسخة الطباعة المخصصة (ورقة ليلة الامتحان أبيض وأسود A4 عمودي)       */}
-      {/* ================================================================= */}
-      <div className="hidden print-only vault-print-sheet" dir="rtl">
+      {/* Dedicated Black & White A4 Portrait Exam-Night Print Layout */}
+      <div className="hidden print-only vault-print-sheet">
         <div className="vault-print-header">
-          <h2>ورقة ليلة الامتحان — محفوظاتي وملاحظاتي (HSK 3.0)</h2>
+          <h2>Exam-Night Study Sheet — Saved Items &amp; Notes (HSK 3.0 Level 1)</h2>
           <p>
-            الطالب: {currentStudent?.name ?? ''} · إجمالي العناصر: {resolvedItems.length} (
-            {printVocabItems.length} مفردة · {printSentenceItems.length} جملة)
+            Student: {currentStudent?.name ?? ''} · Total Items: {resolvedItems.length} (
+            {printVocabItems.length} vocab · {printSentenceItems.length} sentences)
           </p>
         </div>
 
         {printVocabItems.length > 0 && (
           <div>
             <h3 style={{ fontSize: '11pt', fontWeight: 700, marginBottom: '3mm' }}>
-              أولاً: المفردات المحفوظة ({printVocabItems.length})
+              Part 1: Saved Vocabulary ({printVocabItems.length})
             </h3>
             <table className="vault-print-table">
               <thead>
                 <tr>
                   <th style={{ width: '7%', textAlign: 'center' }}>#</th>
-                  <th style={{ width: '16%', textAlign: 'center' }}>الرمز (Hanzi)</th>
-                  <th style={{ width: '17%', textAlign: 'center' }}>النطق (Pinyin)</th>
-                  <th style={{ width: '23%' }}>المعنى بالعربية</th>
-                  <th style={{ width: '9%', textAlign: 'center' }}>الفصل</th>
-                  <th style={{ width: '28%' }}>ملاحظتي الشخصية</th>
+                  <th style={{ width: '16%', textAlign: 'center' }}>Hanzi</th>
+                  <th style={{ width: '17%', textAlign: 'center' }}>Pinyin</th>
+                  <th style={{ width: '23%' }}>English Meaning</th>
+                  <th style={{ width: '9%', textAlign: 'center' }}>Chapter</th>
+                  <th style={{ width: '28%' }}>Personal Note</th>
                 </tr>
               </thead>
               <tbody>
@@ -860,16 +850,16 @@ export function VaultView({ onNavigate }: VaultViewProps) {
         {printSentenceItems.length > 0 && (
           <div>
             <h3 style={{ fontSize: '11pt', fontWeight: 700, marginBottom: '3mm' }}>
-              ثانياً: الجمل والمحادثات المحفوظة ({printSentenceItems.length})
+              Part 2: Saved Sentences &amp; Dialogues ({printSentenceItems.length})
             </h3>
             <table className="vault-print-table">
               <thead>
                 <tr>
                   <th style={{ width: '6%', textAlign: 'center' }}>#</th>
-                  <th style={{ width: '34%' }}>الجملة الصينية والبينين</th>
-                  <th style={{ width: '25%' }}>المعنى بالعربية</th>
-                  <th style={{ width: '9%', textAlign: 'center' }}>الفصل</th>
-                  <th style={{ width: '26%' }}>ملاحظتي الشخصية</th>
+                  <th style={{ width: '34%' }}>Chinese Sentence &amp; Pinyin</th>
+                  <th style={{ width: '25%' }}>English Meaning</th>
+                  <th style={{ width: '9%', textAlign: 'center' }}>Chapter</th>
+                  <th style={{ width: '26%' }}>Personal Note</th>
                 </tr>
               </thead>
               <tbody>

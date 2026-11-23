@@ -54,10 +54,10 @@ export function ListeningDrill({
 
   return (
     <div className="space-y-8">
-      {/* لوحة الاستماع عبر النطق الصوتي المدمج في المتصفح */}
+      {/* Browser Web Speech API listening panel */}
       <div className="neo-frame rounded-xl py-10 px-6 text-center space-y-5 bg-white dark:bg-[#1E1C1A]">
         <p className="text-xs font-semibold text-[#57534E] dark:text-[#A8A29E]">
-          اضغط للاستماع إلى النطق الصيني ثم اختر الرمز الصحيح
+          Tap to listen to the Chinese pronunciation, then select the matching character
         </p>
 
         <div className="flex flex-wrap items-center justify-center gap-3.5">
@@ -72,7 +72,7 @@ export function ListeningDrill({
             } disabled:opacity-50`}
           >
             <Volume2 className="w-5 h-5" />
-            <span>استماع عادي</span>
+            <span>Normal Speed</span>
           </button>
 
           <button
@@ -86,24 +86,25 @@ export function ListeningDrill({
             } disabled:opacity-50`}
           >
             <Gauge className="w-4 h-4 text-[#D97706] dark:text-[#F59E0B]" />
-            <span>نطق بطيء (٠٫٧×)</span>
+            <span>Slow (0.7×)</span>
           </button>
         </div>
 
         {(!supported || speechError) && (
           <p className="text-xs text-[#B91C1C] dark:text-[#EF4444]">
-            متصفحك الحالي لا يدعم النطق الصوتي الصيني بشكل مباشر.
+            Your current browser does not directly support Chinese speech synthesis.
           </p>
         )}
 
         {showFeedback && question.meaningDisplay && (
           <p className="text-sm text-[#57534E] dark:text-[#A8A29E]">
-            المعنى: <strong className="text-[#1C1917] dark:text-[#F5F2EB]">{question.meaningDisplay}</strong>
+            Meaning:{' '}
+            <strong className="text-[#1C1917] dark:text-[#F5F2EB]">{question.meaningDisplay}</strong>
           </p>
         )}
       </div>
 
-      {/* خيارات الرموز الصينية */}
+      {/* Chinese character options */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         {(question.options ?? []).map((opt) => {
           const isSelected = selectedOptionId === opt.id;
@@ -136,7 +137,7 @@ export function ListeningDrill({
               onClick={() => onSelectOption(opt.id, opt.label, isCorrectOption)}
               className={`min-h-[82px] px-5 py-4 rounded-xl border flex items-center justify-between gap-3 transition-all duration-150 ${cardClass}`}
             >
-              <div className="flex flex-col items-start">
+              <div className="flex flex-col items-start text-left">
                 <span className="font-hanzi text-3xl font-bold">{opt.label}</span>
                 {showPinyin && opt.subLabel && (
                   <span className="font-pinyin text-sm text-[#57534E] dark:text-[#A8A29E] mt-1">

@@ -91,11 +91,11 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
   const activeScopeLabelAr = useMemo(() => {
     if (selectedLessonId === 'all') {
       return unlockedChapters.length === CHAPTERS_DATA.length
-        ? 'جميع الفصول (الفصل ١ – الفصل ١٥)'
-        : `كل الفصول المفتوحة (${unlockedChapters.length} من ١٥)`;
+        ? 'All Chapters (Chapter 1 – Chapter 15)'
+        : `All Unlocked Chapters (${unlockedChapters.length} of 15)`;
     }
     const found = CHAPTERS_DATA.find((ch) => ch.id === selectedLessonId);
-    return found ? `${found.titleAr} (第${found.id}课) — ${found.subtitleAr}` : `الفصل ${selectedLessonId}`;
+    return found ? `Chapter ${found.id} (第${found.id}课) — ${found.subtitleAr}` : `Chapter ${selectedLessonId}`;
   }, [selectedLessonId, unlockedChapters.length]);
 
   const fileScopeTag = useMemo(() => {
@@ -149,26 +149,26 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
 
   return (
     <div className="space-y-5">
-      {/* شريط التحكم العلوي للقواعد */}
+      {/* Top control bar for Grammar */}
       <div className="no-print rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-5 sm:p-6 space-y-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <BookOpenText className="w-5 h-5 text-[#B91C1C] dark:text-[#EF4444]" />
               <h2 className="text-lg sm:text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                تجميعة القواعد الشاملة (الفصل ١ – الفصل ١٥)
+                Comprehensive Grammar Guide (Chapters 1–15)
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-[#57534E] dark:text-[#A8A29E]">
-              شرح عربي واضح لكل قاعدة نحوية في منهج HSK 3.0 مع القالب النحوي وتنبيهات أخطاء
-              الامتحان وأمثلة منهجية بالبينين والصوت.
+              Clear explanations for every HSK 3.0 Level 1 grammar structure, syntax formulas,
+              common exam traps, and curriculum examples with Ruby Pinyin and audio.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
             <div className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg border border-[#D97706]/35 dark:border-[#F59E0B]/35 bg-[#D97706]/8 dark:bg-[#F59E0B]/12 text-[#92400E] dark:text-[#F59E0B] text-xs font-bold whitespace-nowrap shrink-0">
               <Maximize2 className="w-3.5 h-3.5 shrink-0" />
-              <span>مقاس الطباعة: A4 عمودي (دليل القواعد)</span>
+              <span>Print Format: A4 Portrait (Grammar Guide)</span>
             </div>
 
             <button
@@ -180,12 +180,12 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
               {wordExported ? (
                 <>
                   <Check className="w-4 h-4 shrink-0" />
-                  <span>تم تحميل ملف Word</span>
+                  <span>Word File Downloaded</span>
                 </>
               ) : (
                 <>
                   <Download className="w-4 h-4 shrink-0" />
-                  <span>تحميل ملف Word (.doc)</span>
+                  <span>Download Word (.doc)</span>
                 </>
               )}
             </button>
@@ -197,16 +197,16 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] rounded-lg border border-[#1C1917]/20 dark:border-[#F5F2EB]/20 bg-[#F9F6F0] dark:bg-[#121110] hover:border-[#B91C1C]/55 dark:hover:border-[#EF4444]/55 text-[#1C1917] dark:text-[#F5F2EB] text-xs sm:text-sm font-bold transition-colors disabled:opacity-45 whitespace-nowrap shrink-0"
             >
               <Printer className="w-4 h-4 text-[#D97706] dark:text-[#F59E0B] shrink-0" />
-              <span>طباعة / حفظ PDF (أبيض وأسود)</span>
+              <span>Print / Save PDF (B&amp;W)</span>
             </button>
           </div>
         </div>
 
-        {/* التصفية بالفصول + زر البينين + البحث */}
+        {/* Lesson filter + Ruby Pinyin + Search */}
         <div className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-semibold text-[#57534E] dark:text-[#A8A29E]">
-              تصفية القواعد حسب الدرس:
+              Filter grammar points by lesson:
             </p>
 
             <div className="flex flex-wrap items-center gap-2.5">
@@ -221,24 +221,24 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
                 }`}
               >
                 {showPinyin ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                <span>{showPinyin ? 'إخفاء البينين (Ruby)' : 'إظهار البينين (Ruby)'}</span>
+                <span>{showPinyin ? 'Hide Pinyin (Ruby)' : 'Show Pinyin (Ruby)'}</span>
               </button>
 
               <div className="relative w-56 sm:w-64">
-                <Search className="w-3.5 h-3.5 text-[#57534E] dark:text-[#A8A29E] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Search className="w-3.5 h-3.5 text-[#57534E] dark:text-[#A8A29E] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="ابحث في القواعد (مثلاً: 了، 在، 吗)..."
-                  className="w-full pr-8 pl-8 py-1.5 min-h-[38px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#121110] text-xs text-[#1C1917] dark:text-[#F5F2EB] placeholder:text-[#57534E]/75 dark:placeholder:text-[#A8A29E]/75 focus:outline-none focus:border-[#B91C1C] dark:focus:border-[#EF4444]"
+                  placeholder="Search grammar (e.g., 了, 在, 吗)..."
+                  className="w-full pl-9 pr-8 py-1.5 min-h-[38px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#121110] text-xs text-[#1C1917] dark:text-[#F5F2EB] placeholder:text-[#57534E]/75 dark:placeholder:text-[#A8A29E]/75 focus:outline-none focus:border-[#B91C1C] dark:focus:border-[#EF4444]"
                 />
                 {searchQuery && (
                   <button
                     type="button"
-                    aria-label="مسح البحث"
+                    aria-label="Clear search"
                     onClick={() => setSearchQuery('')}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 text-[#57534E] hover:text-[#B91C1C]"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[#57534E] hover:text-[#B91C1C]"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -257,7 +257,7 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
                   : 'border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F9F6F0] dark:bg-[#121110] text-[#1C1917] dark:text-[#F5F2EB] hover:border-[#B91C1C]/45'
               }`}
             >
-              كل الفصول ({totalUnlockedGrammarCount} قاعدة)
+              All Chapters ({totalUnlockedGrammarCount} rules)
             </button>
 
             {CHAPTERS_DATA.map((ch) => {
@@ -267,7 +267,7 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
                 <button
                   key={ch.id}
                   type="button"
-                  title={`${ch.titleAr}: ${ch.subtitleAr}`}
+                  title={`Chapter ${ch.id}: ${ch.subtitleAr}`}
                   onClick={() => handleSelectLesson(ch)}
                   className={`inline-flex items-center gap-1.5 px-3 py-2 min-h-[38px] rounded-lg border text-xs font-bold transition-colors whitespace-nowrap tabular-nums ${
                     !unlocked
@@ -293,21 +293,21 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
               {activeScopeLabelAr}
             </span>
             <span aria-hidden="true">·</span>
-            <span>المعروض حالياً: {filteredCards.length} قاعدة نحوية</span>
+            <span>Showing: {filteredCards.length} grammar rules</span>
           </div>
-          <span>يدعم التشغيل الصوتي لكل مثال بسرعتين (1.0x عادي · 0.7x بطيء)</span>
+          <span>Supports dual-speed audio playback for every example (1.0x normal · 0.7x slow)</span>
         </div>
       </div>
 
-      {/* بطاقات القواعد التفاعلية (تُخفى عند الطباعة لصالح نسخة الطباعة B&W) */}
+      {/* Interactive grammar cards (hidden when printing in favor of B&W sheet) */}
       <div className="no-print space-y-5">
         {filteredCards.length === 0 ? (
           <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] py-12 text-center space-y-2">
             <p className="text-base font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-              لا توجد قواعد مطابقة لبحثك
+              No matching grammar rules found
             </p>
             <p className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-              جرّب مسح مربع البحث أو اختيار «كل الفصول».
+              Try clearing your search or selecting &ldquo;All Chapters&rdquo;.
             </p>
           </div>
         ) : (
@@ -316,15 +316,15 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
               key={card.id}
               className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] overflow-hidden shadow-xs"
             >
-              {/* رأس بطاقة القاعدة */}
+              {/* Card header */}
               <div className="px-5 py-4 bg-[#F2ECE1]/75 dark:bg-[#25221F] border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2.5">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#B91C1C]/30 dark:border-[#EF4444]/35 bg-[#B91C1C]/8 dark:bg-[#EF4444]/15 text-[#B91C1C] dark:text-[#EF4444] text-xs font-bold whitespace-nowrap">
                     <span className="font-hanzi">{card.lessonLabelZh}</span>
-                    <span>· {card.lessonTitleAr}</span>
+                    <span>· Chapter {card.lessonId}</span>
                   </span>
                   <h3 className="text-base sm:text-lg font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                    <span className="tabular-nums text-[#57534E] dark:text-[#A8A29E] ml-1.5">
+                    <span className="tabular-nums text-[#57534E] dark:text-[#A8A29E] mr-1.5">
                       {idx + 1}.
                     </span>
                     {card.titleAr}
@@ -335,24 +335,24 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
                 </span>
               </div>
 
-              {/* محتوى بطاقة القاعدة */}
+              {/* Card body */}
               <div className="p-5 sm:p-6 space-y-4">
-                {/* صندوق القاعدة / الصيغة */}
+                {/* Formula box */}
                 <div className="rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#141312] px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-2">
                   <span className="text-xs font-bold text-[#B91C1C] dark:text-[#EF4444] shrink-0">
-                    القالب / الصيغة النحوية:
+                    Structure / Pattern:
                   </span>
                   <code className="font-hanzi text-sm sm:text-base font-bold text-[#1C1917] dark:text-[#F5F2EB] bg-transparent">
                     {card.formula}
                   </code>
                 </div>
 
-                {/* الشرح العربي */}
+                {/* Explanation */}
                 <p className="text-sm text-[#1C1917] dark:text-[#F5F2EB] leading-relaxed">
                   {card.explanationAr}
                 </p>
 
-                {/* تنبيه امتحاني / فخ شائع */}
+                {/* Exam trap tip */}
                 <div className="rounded-lg border border-[#D97706]/35 dark:border-[#F59E0B]/30 bg-[#D97706]/8 dark:bg-[#F59E0B]/10 px-4 py-3 flex items-start gap-2.5">
                   <AlertTriangle className="w-4 h-4 text-[#B45309] dark:text-[#F59E0B] shrink-0 mt-0.5" />
                   <p className="text-xs sm:text-sm text-[#78350F] dark:text-[#FDE68A] leading-relaxed font-medium">
@@ -360,10 +360,10 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
                   </p>
                 </div>
 
-                {/* أمثلة منهجية مع Ruby Pinyin والصوت */}
+                {/* Examples with Ruby Pinyin and audio */}
                 <div className="space-y-2 pt-1">
                   <p className="text-xs font-bold text-[#57534E] dark:text-[#A8A29E]">
-                    أمثلة تطبيقية من المنهج:
+                    Curriculum Examples:
                   </p>
                   <div className="divide-y divide-[#1C1917]/10 dark:divide-[#F5F2EB]/10 rounded-lg border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 overflow-hidden">
                     {card.examples.map((ex, exIdx) => {
@@ -387,7 +387,7 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
                                 />
                               </div>
                             </div>
-                            <p className="text-xs sm:text-sm text-[#57534E] dark:text-[#A8A29E] pr-7">
+                            <p className="text-xs sm:text-sm text-[#57534E] dark:text-[#A8A29E] pl-7">
                               {ex.arabic}
                             </p>
                           </div>
@@ -396,7 +396,7 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
                             <button
                               type="button"
                               onClick={() => handlePlayExample(ex.id, ex.hanzi, 1.0)}
-                              title="استماع بالسرعة العادية"
+                              title="Listen at normal speed"
                               className={`inline-flex items-center gap-1 px-2.5 py-1.5 min-h-[34px] rounded-md border text-xs font-bold tabular-nums transition-colors ${
                                 activeNormal
                                   ? 'border-[#B91C1C] dark:border-[#EF4444] bg-[#B91C1C] dark:bg-[#EF4444] text-white'
@@ -410,7 +410,7 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
                             <button
                               type="button"
                               onClick={() => handlePlayExample(ex.id, ex.hanzi, 0.7)}
-                              title="استماع بسرعة بطيئة للمبتدئين"
+                              title="Listen at slow speed"
                               className={`inline-flex items-center gap-1 px-2.5 py-1.5 min-h-[34px] rounded-md border text-xs font-bold tabular-nums transition-colors ${
                                 activeSlow
                                   ? 'border-[#D97706] dark:border-[#F59E0B] bg-[#D97706] dark:bg-[#F59E0B] text-white dark:text-[#121110]'
@@ -431,13 +431,13 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
         )}
       </div>
 
-      {/* نسخة الطباعة / PDF بالأبيض والأسود (A4 عمودي) */}
+      {/* Black-and-white printable A4 Portrait sheet */}
       {filteredCards.length > 0 && (
-        <div className="hidden print-only vocab-cat-print-sheet" dir="rtl">
+        <div className="hidden print-only vocab-cat-print-sheet">
           <div className="vocab-cat-print-header">
-            <h2>تجميعة القواعد الشاملة للمستوى الأول HSK 3.0 — المعلم Laohu</h2>
+            <h2>HSK 3.0 Level 1 Comprehensive Grammar Guide — Instructor Laohu</h2>
             <p>
-              {activeScopeLabelAr} · إجمالي القواعد: {filteredCards.length} قاعدة نحوية
+              {activeScopeLabelAr} · Total Rules: {filteredCards.length}
             </p>
           </div>
 
@@ -445,7 +445,7 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
             <div key={`p-${card.id}`} className="grammar-print-card">
               <div className="grammar-print-head">
                 <span>
-                  [{card.lessonLabelZh} · {card.lessonTitleAr}] {idx + 1}. {card.titleAr}
+                  [{card.lessonLabelZh} · Chapter {card.lessonId}] {idx + 1}. {card.titleAr}
                 </span>
                 <span className="font-hanzi" dir="ltr">
                   {card.titleZh}
@@ -453,19 +453,19 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
               </div>
               <div className="grammar-print-body">
                 <div className="grammar-print-formula">
-                  <strong>القاعدة / الصيغة:</strong>{' '}
+                  <strong>Structure / Pattern:</strong>{' '}
                   <span className="font-hanzi">{card.formula}</span>
                 </div>
                 <p className="grammar-print-exp">{card.explanationAr}</p>
                 <div className="grammar-print-trap">
-                  <strong>تنبيه امتحاني:</strong> {card.examTrapTipAr}
+                  <strong>Exam Tip:</strong> {card.examTrapTipAr}
                 </div>
                 <table className="vocab-cat-print-table">
                   <thead>
                     <tr>
                       <th style={{ width: '6%' }}>#</th>
-                      <th style={{ width: '52%' }}>المثال الصيني والنطق (Hanzi &amp; Pinyin)</th>
-                      <th style={{ width: '42%' }}>الترجمة بالعربية</th>
+                      <th style={{ width: '52%' }}>Chinese Example &amp; Pinyin</th>
+                      <th style={{ width: '42%' }}>Meaning / Translation</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -490,7 +490,7 @@ export function GrammarCollectionTab({ onSelectLockedChapter }: GrammarCollectio
           ))}
 
           <div className="vocab-cat-print-footer">
-            بوابة اللغة الصينية - المستوى الأول (HSK 3.0) · إعداد المعلم Laohu · دليل القواعد الشامل
+            HSK 3.0 Level 1 Practice Portal · Prepared by Instructor Laohu · Comprehensive Grammar Guide
           </div>
         </div>
       )}

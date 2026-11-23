@@ -33,101 +33,101 @@ export const VOCAB_CATEGORIES: VocabCategoryDefinition[] = [
   {
     id: 1,
     anchorId: 'vocab-cat-1',
-    titleAr: 'التحيات وعبارات المجاملة',
+    titleAr: 'Greetings & Polite Expressions',
     titleEn: 'Greetings & Polite Expressions',
   },
   {
     id: 2,
     anchorId: 'vocab-cat-2',
-    titleAr: 'الضمائر وأسماء الإشارة',
+    titleAr: 'Pronouns & Demonstratives',
     titleEn: 'Pronouns & Demonstratives',
   },
   {
     id: 3,
     anchorId: 'vocab-cat-3',
-    titleAr: 'الأشخاص والعائلة والمهن',
+    titleAr: 'People, Family & Occupations',
     titleEn: 'People, Family & Occupations',
   },
   {
     id: 4,
     anchorId: 'vocab-cat-4',
-    titleAr: 'الوقت والتاريخ',
+    titleAr: 'Time & Date',
     titleEn: 'Time & Date',
   },
   {
     id: 5,
     anchorId: 'vocab-cat-5',
-    titleAr: 'الأماكن والدول',
+    titleAr: 'Places, Locations & Countries',
     titleEn: 'Places, Locations & Countries',
   },
   {
     id: 6,
     anchorId: 'vocab-cat-6',
-    titleAr: 'الاتجاهات والمواقع',
+    titleAr: 'Directions & Positions',
     titleEn: 'Directions & Positions',
   },
   {
     id: 7,
     anchorId: 'vocab-cat-7',
-    titleAr: 'الأفعال الشائعة',
+    titleAr: 'Common Verbs & Actions',
     titleEn: 'Common Verbs & Actions',
   },
   {
     id: 8,
     anchorId: 'vocab-cat-8',
-    titleAr: 'الصفات',
+    titleAr: 'Common Adjectives',
     titleEn: 'Common Adjectives',
   },
   {
     id: 9,
     anchorId: 'vocab-cat-9',
-    titleAr: 'الظروف وحروف الجر والروابط',
+    titleAr: 'Adverbs, Prepositions & Conjunctions',
     titleEn: 'Adverbs, Prepositions & Conjunctions',
   },
   {
     id: 10,
     anchorId: 'vocab-cat-10',
-    titleAr: 'أدوات الاستفهام وصيغ السؤال',
+    titleAr: 'Question Words & Interrogatives',
     titleEn: 'Question Words & Interrogatives',
   },
   {
     id: 11,
     anchorId: 'vocab-cat-11',
-    titleAr: 'كلمات الكمية',
+    titleAr: 'Measure Words & Quantifiers',
     titleEn: 'Measure Words & Quantifiers',
   },
   {
     id: 12,
     anchorId: 'vocab-cat-12',
-    titleAr: 'الطعام والشراب',
+    titleAr: 'Food & Drink',
     titleEn: 'Food & Drink',
   },
   {
     id: 13,
     anchorId: 'vocab-cat-13',
-    titleAr: 'الأشياء والأسماء العامة',
+    titleAr: 'Objects & Common Nouns',
     titleEn: 'Objects & Common Nouns',
   },
   {
     id: 14,
     anchorId: 'vocab-cat-14',
-    titleAr: 'الطقس والطبيعة',
+    titleAr: 'Weather & Nature',
     titleEn: 'Weather & Nature',
   },
   {
     id: 15,
     anchorId: 'vocab-cat-15',
-    titleAr: 'الأعداد والأدوات النحوية',
+    titleAr: 'Numbers & Grammar Particles',
     titleEn: 'Numbers & Grammar Particles',
   },
 ];
 
 /**
- * تصنيف دقيق ومُدقّق لجميع المفردات الـ 329 في src/data/chaptersData.ts
- * مع التمييز الدلالي للكلمات المشتركة لفظياً (مثل 在 و对 و那 و号 و家 و上 و下 و多 و几 و呢)
+ * Curated thematic mapping for all 329 vocabulary entries in src/data/chaptersData.ts,
+ * distinguishing polysemous entries by context (e.g., 在, 对, 那, 号, 家, 上, 下, 多, 几, 呢).
  */
 const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
-  // ===== الفصل 1 =====
+  // ===== Chapter 1 =====
   'c1-v1': 1, // 你好
   'c1-v2': 3, // 王老师
   'c1-v3': 2, // 大家
@@ -142,7 +142,7 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   'c1-v12': 3, // 同学
   'c1-v13': 1, // 再见
 
-  // ===== الفصل 2 =====
+  // ===== Chapter 2 =====
   'c2-v1': 1, // 请问
   'c2-v2': 2, // 你
   'c2-v3': 7, // 叫
@@ -159,7 +159,7 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   'c2-v14': 7, // 认识
   'c2-v15': 9, // 也
 
-  // ===== الفصل 3 =====
+  // ===== Chapter 3 =====
   'c3-v1': 3, // 人
   'c3-v2': 15, // 的
   'c3-v3': 5, // 中国
@@ -178,20 +178,20 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   'c3-v16': 9, // 还
   'c3-v17': 8, // 忙
   'c3-v18': 10, // 吗
-  'c3-v19': 8, // 对 (صحيح / نعم)
+  'c3-v19': 8, // 对 (correct / yes)
   'c3-v20': 9, // 太
   'c3-v21': 2, // 我们
   'c3-v22': 7, // 想
 
-  // ===== الفصل 4 =====
+  // ===== Chapter 4 =====
   'c4-v1': 7, // 有
   'c4-v2': 10, // 多少
   'c4-v3': 11, // 个
   'c4-v4': 3, // 哥哥
-  'c4-v5': 10, // 呢 (استفهام)
+  'c4-v5': 10, // 呢 (question particle)
   'c4-v6': 7, // 没有
-  'c4-v7': 5, // 家 (عائلة / منزل)
-  'c4-v8': 10, // 几 (كم للسؤال)
+  'c4-v7': 5, // 家 (family / home)
+  'c4-v8': 10, // 几 (how many)
   'c4-v9': 11, // 口
   'c4-v10': 3, // 爸爸
   'c4-v11': 3, // 妈妈
@@ -203,12 +203,12 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   'c4-v17': 11, // 岁
   'c4-v18': 2, // 他
   'c4-v19': 4, // 今年
-  'c4-v20': 10, // 多 (كم / إلى أي مدى للسؤال)
+  'c4-v20': 10, // 多 (how / to what extent)
   'c4-v21': 8, // 大
 
-  // ===== الفصل 5 =====
+  // ===== Chapter 5 =====
   'c5-v1': 4, // 今天
-  'c5-v2': 4, // 号 (يوم في التاريخ)
+  'c5-v2': 4, // 号 (day of month)
   'c5-v3': 4, // 月
   'c5-v4': 4, // 日
   'c5-v5': 4, // 星期
@@ -230,10 +230,10 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   'c5-v21': 7, // 喜欢
   'c5-v22': 2, // 它
 
-  // ===== الفصل 6 =====
+  // ===== Chapter 6 =====
   '6-1': 13, // 手机
   '6-2': 13, // 电话
-  '6-3': 13, // 号 (رقم)
+  '6-3': 13, // 号 (number)
   '6-4': 4, // 明天
   '6-5': 7, // 去
   '6-6': 2, // 哪儿
@@ -255,7 +255,7 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   '6-22': 13, // 出租车
   '6-23': 5, // 西安饭店
 
-  // ===== الفصل 7 =====
+  // ===== Chapter 7 =====
   '7-1': 4, // 现在
   '7-2': 4, // 点
   '7-3': 4, // 早上
@@ -270,11 +270,11 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   '7-12': 13, // 电影
   '7-13': 13, // 事
   '7-14': 7, // 上课
-  '7-15': 15, // 呢 (أداة توكيد واستمرار)
+  '7-15': 15, // 呢 (affirmative / ongoing particle)
   '7-16': 4, // 半
   '7-17': 7, // 下课
-  '7-18': 7, // 在 (في / موجود في - فعل)
-  '7-19': 5, // 家 (منزل / بيت)
+  '7-18': 7, // 在 (to be at - verb)
+  '7-19': 5, // 家 (home / house)
   '7-20': 6, // 里
   '7-21': 4, // 晚上
   '7-22': 5, // 医院
@@ -285,7 +285,7 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   '7-27': 4, // 分钟
   '7-28': 6, // 后
 
-  // ===== الفصل 8 =====
+  // ===== Chapter 8 =====
   '8-1': 5, // 房间
   '8-2': 6, // 外
   '8-3': 11, // 只
@@ -294,9 +294,9 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   '8-6': 9, // 没
   '8-7': 7, // 看见
   '8-8': 13, // 桌子
-  '8-9': 6, // 下 (تحت / أسفل)
+  '8-9': 6, // 下 (under / below)
   '8-10': 8, // 漂亮
-  '8-11': 9, // 在 (حرف جر للمكان)
+  '8-11': 9, // 在 (preposition: in/at)
   '8-12': 5, // 学校
   '8-13': 5, // 书店
   '8-14': 6, // 前
@@ -311,17 +311,17 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   '8-23': 7, // 工作
   '8-24': 3, // 胡医生
 
-  // ===== الفصل 9 =====
+  // ===== Chapter 9 =====
   '9-1': 6, // 前边
   '9-2': 6, // 边
-  '9-3': 11, // 家 (كلمة كمية للعائلات والمحلات)
+  '9-3': 11, // 家 (measure word for shops/families)
   '9-4': 2, // 那个
   '9-5': 6, // 外边
   '9-6': 13, // 椅子
-  '9-7': 6, // 上 (فوق / على)
+  '9-7': 6, // 上 (on / above)
   '9-8': 11, // 本
   '9-9': 13, // 书
-  '9-10': 2, // 那 (ذلك)
+  '9-10': 2, // 那 (that)
   '9-11': 15, // 第
   '9-12': 7, // 学习
   '9-13': 7, // 做
@@ -336,7 +336,7 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   '9-22': 14, // 狗
   '9-23': 7, // 玩
 
-  // ===== الفصل 10 =====
+  // ===== Chapter 10 =====
   '10-1': 13, // 杯子
   '10-2': 3, // 售货员
   '10-3': 2, // 这边
@@ -361,7 +361,7 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   '10-22': 3, // 男
   '10-23': 2, // 那儿
 
-  // ===== الفصل 11 =====
+  // ===== Chapter 11 =====
   '11-1': 4, // 时候
   '11-2': 5, // 饭店
   '11-3': 7, // 知道
@@ -369,7 +369,7 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   '11-5': 7, // 找
   '11-6': 7, // 开车
   '11-7': 13, // 车
-  '11-8': 9, // 在 (ظرف للاستمرار)
+  '11-8': 9, // 在 (progressive adverb)
   '11-9': 7, // 读
   '11-10': 5, // 大学
   '11-11': 3, // 大学生
@@ -383,22 +383,22 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   '11-19': 2, // 哪里
   '11-20': 4, // 昨天
   '11-21': 7, // 问
-  '11-22': 9, // 对 (إلى / تجاه - حرف جر)
+  '11-22': 9, // 对 (to / toward - preposition)
   '11-23': 7, // 说
   '11-24': 7, // 要
   '11-25': 3, // 小朋友
 
-  // ===== الفصل 12 =====
+  // ===== Chapter 12 =====
   '12-1': 14, // 天气
   '12-2': 2, // 这里
-  '12-3': 14, // 天 (الطقس / السماء / يوم)
+  '12-3': 14, // 天 (weather / sky / day)
   '12-4': 14, // 下雨
-  '12-5': 15, // 了 (تغير الحالة)
+  '12-5': 15, // 了 (change of state)
   '12-6': 14, // 雨
   '12-7': 9, // 有点儿
   '12-8': 7, // 觉得
   '12-9': 8, // 冷
-  '12-10': 14, // 下 (يهطل للمطر أو الثلج)
+  '12-10': 14, // 下 (to fall - rain/snow)
   '12-11': 14, // 雪
   '12-12': 7, // 来
   '12-13': 5, // 公司
@@ -408,14 +408,14 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   '12-17': 13, // 药
   '12-18': 11, // 一点儿
   '12-19': 7, // 回
-  '12-20': 9, // 再 (ثم / بعد ذلك)
+  '12-20': 9, // 再 (then / afterwards)
   '12-21': 7, // 喝
   '12-22': 8, // 热
   '12-23': 12, // 水
 
-  // ===== الفصل 13 =====
+  // ===== Chapter 13 =====
   '13-1': 7, // 可以
-  '13-2': 9, // 再 (مرة أخرى)
+  '13-2': 9, // 再 (again)
   '13-3': 13, // 问题
   '13-4': 7, // 卖
   '13-5': 7, // 打电话
@@ -435,14 +435,14 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   '13-19': 4, // 一半
   '13-20': 12, // 茶
 
-  // ===== الفصل 14 =====
-  '14-1': 7, // 上 (يصعد / يركب)
+  // ===== Chapter 14 =====
+  '14-1': 7, // 上 (to board / get on)
   '14-2': 13, // 火车
   '14-3': 4, // 中午
   '14-4': 7, // 开
   '14-5': 11, // 有些
   '14-6': 11, // 有的
-  '14-7': 15, // 了 (تمام الحدث)
+  '14-7': 15, // 了 (completed action)
   '14-8': 7, // 写
   '14-9': 9, // 都
   '14-10': 7, // 听见
@@ -464,18 +464,18 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   '14-26': 2, // 它们
   '14-27': 8, // 晚
 
-  // ===== الفصل 15 =====
+  // ===== Chapter 15 =====
   '15-1': 7, // 爱
   '15-2': 2, // 哪个
   '15-3': 4, // 去年
   '15-4': 3, // 男朋友
-  '15-5': 11, // 几 (بضع / عدة)
+  '15-5': 11, // 几 (several / a few)
   '15-6': 4, // 年
   '15-7': 8, // 好玩儿
   '15-8': 5, // 西安
   '15-9': 5, // 北京
   '15-10': 13, // 飞机
-  '15-11': 7, // 要 (يستغرق / يحتاج)
+  '15-11': 7, // 要 (to take / require time)
   '15-12': 4, // 小时
   '15-13': 3, // 家人
   '15-14': 4, // 时间
@@ -483,7 +483,7 @@ const VOCAB_ID_TO_CATEGORY: Record<string, VocabCategoryId> = {
   '15-16': 7, // 接
   '15-17': 7, // 住
   '15-18': 8, // 早
-  '15-19': 9, // 那 (إذن / في تلك الحالة)
+  '15-19': 9, // 那 (then / in that case)
   '15-20': 5, // 大兴机场
 };
 
@@ -491,7 +491,7 @@ export function getVocabCategoryId(entry: Pick<NumberedVocabEntry, 'id' | 'hanzi
   const exact = VOCAB_ID_TO_CATEGORY[entry.id];
   if (exact) return exact;
 
-  // احتياطي ذكي لأي مفردة تُضاف مستقبلاً
+  // Fallback classifier for any future vocabulary additions
   if (/^[零一二两三四五六七八九十百千万第的了]+$/.test(entry.hanzi)) {
     return 15;
   }

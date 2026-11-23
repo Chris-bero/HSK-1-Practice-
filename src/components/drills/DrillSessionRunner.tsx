@@ -73,7 +73,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
         : 'practice';
 
   const [sessionSeed, setSessionSeed] = useState(0);
-  // نلتقط نسخة ثابتة من الأخطاء عند بداية الجلسة حتى لا تتغير الأسئلة أثناء المراجعة أو شاشة النتائج
+  // Capture a stable snapshot of mistakes at session start so questions do not shift during review
   const [mistakesSnapshot, setMistakesSnapshot] = useState<MistakeItem[]>(
     () => progress?.mistakes ?? []
   );
@@ -112,7 +112,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
     currentDrillTypeRef.current = currentQuestion?.drillType ?? null;
   }, [currentQuestion]);
 
-  // مؤقت الجلسة المباشر (يتوقف عند الانتهاء أو إخفاء التبويب ويراكم الثواني حسب نوع التدريب)
+  // Live session stopwatch (pauses on completion or hidden tab, accumulates seconds per drill type)
   useEffect(() => {
     if (isFinished || questions.length === 0) return;
 
@@ -130,7 +130,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
     };
   }, [isFinished, questions.length, sessionSeed]);
 
-  // حفظ الوقت المتراكم عند الخروج المبكر أو تفكيك المكوّن دون مضاعفة الحساب
+  // Flush accumulated study time on early exit or unmount without double counting
   const flushElapsedTimeOnExit = () => {
     if (flushedTimeRef.current) return;
     const captured = { ...drillTimeRef.current };
@@ -164,31 +164,31 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
 
   const sessionContextLabel = useMemo(() => {
     if (source.kind === 'chapter') {
-      return `${source.chapter.titleAr} · ${mode === 'practice' ? 'وضع التدريب' : 'وضع الامتحان'}`;
+      return `${source.chapter.titleAr} · ${mode === 'practice' ? 'Practice Mode' : 'Exam Mode'}`;
     }
     if (source.kind === 'custom') {
       const chCount = source.config.chapterIds.length;
       const chLabel =
         chCount === 1
-          ? (chapterTitleMap.get(source.config.chapterIds[0]) ?? 'فصل واحد')
-          : `${chCount} فصول مختارة`;
-      return `جلسة مخصصة · ${chLabel} · ${mode === 'practice' ? 'وضع التدريب' : 'وضع الامتحان'}`;
+          ? (chapterTitleMap.get(source.config.chapterIds[0]) ?? '1 Chapter')
+          : `${chCount} Chapters Selected`;
+      return `Custom Session · ${chLabel} · ${mode === 'practice' ? 'Practice Mode' : 'Exam Mode'}`;
     }
-    return 'مراجعة الأخطاء السابقة · وضع التدريب';
+    return 'Past Mistakes Review · Practice Mode';
   }, [source, mode, chapterTitleMap]);
 
   const sessionTitle = useMemo(() => {
     if (source.kind === 'chapter') {
       return source.drillKey === 'mixed'
-        ? 'اختبار شامل للفصل'
+        ? 'Comprehensive Chapter Quiz'
         : DRILL_METADATA[source.drillKey].titleAr;
     }
     if (source.kind === 'custom') {
       return source.config.drillScope === 'all'
-        ? 'تدريب مخصص (جميع الأنماط)'
+        ? 'Custom Practice (All Drill Types)'
         : DRILL_METADATA[source.config.drillScope].titleAr;
     }
-    return 'مراجعة أخطائي';
+    return 'Review My Mistakes';
   }, [source]);
 
   const isMultiDrillSession =
@@ -287,7 +287,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
         isAnswered: mode === 'exam' ? nextTileIds.length > 0 : isComplete,
         isCorrect: isComplete && isCorrect,
         assembledTileIds: nextTileIds,
-        userDisplay: assembledText || 'لم يتم ترتيب الجملة',
+        userDisplay: assembledText || 'Sentence not arranged',
       },
     }));
   };
@@ -309,7 +309,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
         drillType: q.drillType,
         isAnswered: true,
         isCorrect: false,
-        userDisplay: 'لم تتم الإجابة',
+        userDisplay: 'Not answered',
       };
     });
 
@@ -324,8 +324,8 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
     if (syncRes) {
       setSyncSavedMessage(
         syncRes.syncedRemotely
-          ? 'تم حفظ النتائج ومزامنتها تلقائياً مع سجل المعلم.'
-          : 'تم حفظ النتائج في ملفك المحلي على هذا الجهاز.'
+          ? 'Results saved and automatically synced to the teacher log.'
+          : 'Results saved locally on this device.'
       );
     }
   };
@@ -335,26 +335,26 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
       <section className="mx-auto max-w-3xl px-4 sm:px-6 py-14 text-center space-y-4">
         <h2 className="text-2xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
           {source.kind === 'mistakes'
-            ? 'لا توجد أخطاء مسجلة للمراجعة حالياً'
-            : 'لا توجد أسئلة متاحة لهذا الاختيار'}
+            ? 'No mistakes recorded for review right now'
+            : 'No questions available for this selection'}
         </h2>
         <p className="text-sm text-[#57534E] dark:text-[#A8A29E]">
           {source.kind === 'mistakes'
-            ? 'أحسنت! أتقنت جميع الأسئلة التي أخطأت فيها سابقاً.'
-            : 'لا توجد عناصر كافية لتشغيل هذا التمرين حالياً.'}
+            ? 'Great work! You have mastered all previously missed items.'
+            : 'There are not enough items to launch this drill right now.'}
         </p>
         <button
           type="button"
           onClick={handleExitClick}
           className="px-6 py-3 rounded-lg bg-[#B91C1C] dark:bg-[#EF4444] text-white text-sm font-bold"
         >
-          العودة
+          Go Back
         </button>
       </section>
     );
   }
 
-  // شاشة النتيجة والمراجعة النهائية
+  // Final results & answer review screen
   if (isFinished) {
     const total = questions.length;
     const correctTotal = questions.filter((q) => answers[q.id]?.isCorrect).length;
@@ -369,7 +369,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
         transition={{ duration: 0.2 }}
         className="mx-auto max-w-4xl px-4 sm:px-6 py-10 space-y-8"
       >
-        {/* بطاقة النتيجة الإجمالية */}
+        {/* Overall score summary card */}
         <div className="neo-frame rounded-xl p-8 text-center space-y-6 bg-white dark:bg-[#1E1C1A]">
           <div className="mx-auto cinnabar-seal w-16 h-16 rounded-lg flex items-center justify-center bg-[#B91C1C]/5 dark:bg-[#EF4444]/10">
             <Award className="w-8 h-8 text-[#B91C1C] dark:text-[#EF4444]" />
@@ -380,7 +380,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
               {sessionContextLabel} · {sessionTitle}
             </p>
             <h1 className="text-3xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-              اكتملت الجلسة بنتيجة{' '}
+              Session Complete —{' '}
               <span className="tabular-nums text-[#B91C1C] dark:text-[#EF4444]">
                 {scorePercent}%
               </span>
@@ -388,8 +388,8 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
 
             {source.kind === 'mistakes' && correctTotal > 0 && (
               <p className="text-xs font-semibold text-[#15803D] dark:text-[#22C55E] pt-1">
-                تمت إزالة {correctTotal} {correctTotal === 1 ? 'سؤال متقن' : 'أسئلة متقنة'} من قائمة
-                أخطائك تلقائياً.
+                {correctTotal} mastered {correctTotal === 1 ? 'item was' : 'items were'} automatically
+                removed from your mistakes list.
               </p>
             )}
 
@@ -402,23 +402,23 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 max-w-xl mx-auto pt-2">
             <div className="rounded-lg border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 p-3.5 bg-[#F9F6F0] dark:bg-[#121110]">
-              <p className="text-xs text-[#57534E] dark:text-[#A8A29E] mb-1">الإجمالي</p>
+              <p className="text-xs text-[#57534E] dark:text-[#A8A29E] mb-1">Total</p>
               <p className="text-xl font-bold tabular-nums">{total}</p>
             </div>
             <div className="rounded-lg border border-[#15803D]/25 dark:border-[#22C55E]/25 p-3.5 bg-[#15803D]/8 dark:bg-[#22C55E]/10">
-              <p className="text-xs text-[#15803D] dark:text-[#22C55E] mb-1">صحيح</p>
+              <p className="text-xs text-[#15803D] dark:text-[#22C55E] mb-1">Correct</p>
               <p className="text-xl font-bold tabular-nums text-[#15803D] dark:text-[#22C55E]">
                 {correctTotal}
               </p>
             </div>
             <div className="rounded-lg border border-[#B91C1C]/25 dark:border-[#EF4444]/25 p-3.5 bg-[#B91C1C]/8 dark:bg-[#EF4444]/10">
-              <p className="text-xs text-[#B91C1C] dark:text-[#EF4444] mb-1">خطأ</p>
+              <p className="text-xs text-[#B91C1C] dark:text-[#EF4444] mb-1">Incorrect</p>
               <p className="text-xl font-bold tabular-nums text-[#B91C1C] dark:text-[#EF4444]">
                 {wrongTotal}
               </p>
             </div>
             <div className="rounded-lg border border-[#D97706]/25 dark:border-[#F59E0B]/25 p-3.5 bg-[#D97706]/8 dark:bg-[#F59E0B]/10">
-              <p className="text-xs text-[#D97706] dark:text-[#F59E0B] mb-1">المدة</p>
+              <p className="text-xs text-[#D97706] dark:text-[#F59E0B] mb-1">Duration</p>
               <p className="text-xl font-bold tabular-nums text-[#92400E] dark:text-[#F59E0B]">
                 {formatStopwatch(elapsedSeconds)}
               </p>
@@ -435,8 +435,8 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
                 <RotateCcw className="w-4 h-4" />
                 <span>
                   {source.kind === 'mistakes'
-                    ? `مراجعة الأخطاء المتبقية (${remainingMistakesCount})`
-                    : 'إعادة التمرين'}
+                    ? `Review Remaining Mistakes (${remainingMistakesCount})`
+                    : 'Retry Drill'}
                 </span>
               </button>
             )}
@@ -446,22 +446,22 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
               onClick={handleExitClick}
               className="inline-flex items-center gap-2 px-6 py-3 min-h-[46px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#121110] hover:border-[#B91C1C]/40 text-sm font-bold transition-colors"
             >
-              <ArrowRight className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4" />
               <span>
                 {source.kind === 'chapter'
-                  ? 'العودة إلى مركز الفصل'
+                  ? 'Back to Chapter Hub'
                   : source.kind === 'custom'
-                    ? 'العودة إلى منشئ الاختبار المخصص'
-                    : 'العودة إلى الرئيسية'}
+                    ? 'Back to Custom Quiz Builder'
+                    : 'Back to Home'}
               </span>
             </button>
           </div>
         </div>
 
-        {/* مراجعة تفصيلية لكل سؤال */}
+        {/* Detailed per-question review */}
         <div className="rounded-xl border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-white dark:bg-[#1E1C1A] p-6 sm:p-8 space-y-5">
           <h2 className="text-lg font-bold text-[#1C1917] dark:text-[#F5F2EB] border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10 pb-4">
-            مراجعة الإجابات
+            Answer Review
           </h2>
 
           <div className="divide-y divide-[#1C1917]/8 dark:divide-[#F5F2EB]/8">
@@ -472,7 +472,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
               const blankParts = isFillBlank ? (q.sentenceWithBlank ?? '').split('____') : [];
               const targetBlank = q.targetBlank ?? q.correctDisplay;
               const wrongUserChoice =
-                !isRight && rec?.userDisplay && rec.userDisplay !== 'لم تتم الإجابة'
+                !isRight && rec?.userDisplay && rec.userDisplay !== 'Not answered'
                   ? rec.userDisplay
                   : null;
 
@@ -480,13 +480,13 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
                 <div key={q.id} className="py-4 flex items-start justify-between gap-4">
                   <div className="space-y-1.5 min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2 text-xs text-[#57534E] dark:text-[#A8A29E]">
-                      <span className="tabular-nums font-bold">سؤال {idx + 1}</span>
+                      <span className="tabular-nums font-bold">Question {idx + 1}</span>
                       <span aria-hidden="true">·</span>
                       <span>{DRILL_METADATA[q.drillType].titleAr}</span>
                       {source.kind !== 'chapter' && (
                         <>
                           <span aria-hidden="true">·</span>
-                          <span>{chapterTitleMap.get(q.chapterId) ?? `الفصل ${q.chapterId}`}</span>
+                          <span>{chapterTitleMap.get(q.chapterId) ?? `Chapter ${q.chapterId}`}</span>
                         </>
                       )}
                     </div>
@@ -495,7 +495,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
                       <div className="space-y-1">
                         <div
                           dir="ltr"
-                          className="font-hanzi text-lg sm:text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB] flex flex-wrap items-center justify-end gap-1"
+                          className="font-hanzi text-lg sm:text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB] flex flex-wrap items-center justify-start gap-1"
                         >
                           <span>{blankParts[0]}</span>
                           <span className="inline-flex items-center gap-1 mx-0.5">
@@ -511,7 +511,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
                           <span>{blankParts.slice(1).join('____')}</span>
                         </div>
                         <p className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-                          المعنى: {q.promptPrimary}
+                          Meaning: {q.promptPrimary}
                         </p>
                       </div>
                     ) : (
@@ -522,7 +522,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
 
                     <div className="text-xs space-y-1 pt-1">
                       <p className="text-[#57534E] dark:text-[#A8A29E]">
-                        إجابتك:{' '}
+                        Your answer:{' '}
                         <strong
                           className={
                             isRight
@@ -530,15 +530,15 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
                               : 'text-[#B91C1C] dark:text-[#EF4444]'
                           }
                         >
-                          {rec?.userDisplay ?? 'لم تتم الإجابة'}
+                          {rec?.userDisplay ?? 'Not answered'}
                         </strong>
                       </p>
 
                       {!isRight && (
                         <p className="text-[#15803D] dark:text-[#22C55E]">
-                          الإجابة الصحيحة: <strong>{q.correctDisplay}</strong>
+                          Correct answer: <strong>{q.correctDisplay}</strong>
                           {showPinyin && q.correctPinyinDisplay && (
-                            <span className="font-pinyin mr-2 text-[#57534E] dark:text-[#A8A29E]">
+                            <span className="font-pinyin ml-2 text-[#57534E] dark:text-[#A8A29E]">
                               ({q.correctPinyinDisplay})
                             </span>
                           )}
@@ -551,12 +551,12 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
                     {isRight ? (
                       <span className="inline-flex items-center gap-1 text-xs font-bold text-[#15803D] dark:text-[#22C55E]">
                         <CheckCircle2 className="w-5 h-5" />
-                        <span>صحيح</span>
+                        <span>Correct</span>
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-xs font-bold text-[#B91C1C] dark:text-[#EF4444]">
                         <XCircle className="w-5 h-5" />
-                        <span>خطأ</span>
+                        <span>Incorrect</span>
                       </span>
                     )}
 
@@ -584,7 +584,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
       transition={{ duration: 0.18 }}
       className="mx-auto max-w-4xl px-4 sm:px-6 py-8 sm:py-10 space-y-6"
     >
-      {/* شريط معلومات الجلسة مع ساعة الإيقاف المباشرة */}
+      {/* Session header with live stopwatch */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10 pb-4">
         <div className="flex items-center gap-3">
           <button
@@ -592,8 +592,8 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
             onClick={handleExitClick}
             className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-md border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-white dark:bg-[#1E1C1A] text-xs font-bold hover:border-[#B91C1C]/40 transition-colors"
           >
-            <ArrowRight className="w-4 h-4" />
-            <span>خروج</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span>Exit</span>
           </button>
 
           <div>
@@ -601,7 +601,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
             <h1 className="text-base sm:text-lg font-bold text-[#1C1917] dark:text-[#F5F2EB]">
               {sessionTitle}
               {isMultiDrillSession && currentQuestion && (
-                <span className="text-xs font-normal text-[#57534E] dark:text-[#A8A29E] mr-2">
+                <span className="text-xs font-normal text-[#57534E] dark:text-[#A8A29E] ml-2">
                   ({DRILL_METADATA[currentQuestion.drillType].titleAr})
                 </span>
               )}
@@ -611,7 +611,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
 
         <div className="flex items-center gap-3">
           <div
-            aria-label="الوقت المنقضي في الجلسة"
+            aria-label="Elapsed session time"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] text-xs sm:text-sm font-bold tabular-nums text-[#D97706] dark:text-[#F59E0B]"
           >
             <Clock className="w-4 h-4 shrink-0" />
@@ -619,12 +619,12 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
           </div>
 
           <div className="text-xs sm:text-sm font-bold tabular-nums text-[#1C1917] dark:text-[#F5F2EB]">
-            السؤال {currentIndex + 1} من {questions.length}
+            Question {currentIndex + 1} of {questions.length}
           </div>
         </div>
       </div>
 
-      {/* شريط التقدم */}
+      {/* Progress bar */}
       <div className="h-1.5 w-full rounded-full bg-[#1C1917]/10 dark:bg-[#F5F2EB]/10 overflow-hidden">
         <div
           className="h-full bg-[#B91C1C] dark:bg-[#EF4444] transition-all duration-200"
@@ -632,7 +632,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
         />
       </div>
 
-      {/* شريط التنقل الحر بين الأسئلة في وضع الامتحان */}
+      {/* Free question navigation bar in Exam Mode */}
       {mode === 'exam' && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-white dark:bg-[#1E1C1A] px-4 py-3">
           <div className="flex flex-wrap items-center gap-1.5">
@@ -662,12 +662,12 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
           </div>
 
           <span className="text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums">
-            تمت الإجابة على {answeredCount} من {questions.length}
+            Answered {answeredCount} of {questions.length}
           </span>
         </div>
       )}
 
-      {/* عرض محرك السؤال النشط */}
+      {/* Active drill engine */}
       <div className="pt-2">
         {currentQuestion.drillType === 'hanzi-to-arabic' && (
           <HanziToArabicDrill
@@ -765,7 +765,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
         )}
       </div>
 
-      {/* بطاقة التغذية الراجعة الفورية في وضع التدريب للأسئلة الاختيارية */}
+      {/* Instant feedback card in Practice Mode for multiple-choice drills */}
       {mode === 'practice' &&
         isCurrentLocked &&
         currentQuestion.drillType !== 'sentence-builder' &&
@@ -786,14 +786,14 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
               <div className="space-y-1 text-sm">
                 <p className="font-bold">
                   {currentRecord?.isCorrect
-                    ? 'إجابة صحيحة! أحسنت.'
-                    : 'إجابة غير صحيحة — راجع الإجابة الصحيحة أدناه:'}
+                    ? 'Correct! Well done.'
+                    : 'Incorrect — review the correct answer below:'}
                 </p>
                 {!currentRecord?.isCorrect && (
                   <p className="text-[#1C1917] dark:text-[#F5F2EB]">
-                    الإجابة الصحيحة: <strong>{currentQuestion.correctDisplay}</strong>
+                    Correct answer: <strong>{currentQuestion.correctDisplay}</strong>
                     {showPinyin && currentQuestion.correctPinyinDisplay && (
-                      <span className="font-pinyin mr-2 text-[#57534E] dark:text-[#A8A29E]">
+                      <span className="font-pinyin ml-2 text-[#57534E] dark:text-[#A8A29E]">
                         ({currentQuestion.correctPinyinDisplay})
                       </span>
                     )}
@@ -810,7 +810,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
           </div>
         )}
 
-      {/* أزرار التحكم السفلية */}
+      {/* Footer navigation controls */}
       <div className="pt-4 border-t border-[#1C1917]/10 dark:border-[#F5F2EB]/10 flex flex-wrap items-center justify-between gap-3">
         {mode === 'exam' ? (
           <>
@@ -824,8 +824,8 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
                 }}
                 className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-white dark:bg-[#1E1C1A] text-sm font-bold disabled:opacity-40"
               >
-                <ArrowRight className="w-4 h-4" />
-                <span>السابق</span>
+                <ArrowLeft className="w-4 h-4" />
+                <span>Previous</span>
               </button>
 
               {!isLastQuestion && (
@@ -837,8 +837,8 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
                   }}
                   className="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-white dark:bg-[#1E1C1A] hover:border-[#B91C1C]/45 text-sm font-bold"
                 >
-                  <span>التالي</span>
-                  <ArrowLeft className="w-4 h-4" />
+                  <span>Next</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -849,7 +849,7 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
               className="inline-flex items-center gap-2 px-6 py-2.5 min-h-[46px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-sm font-bold transition-colors"
             >
               <ClipboardCheck className="w-4 h-4" />
-              <span>تسليم الامتحان</span>
+              <span>Submit Exam</span>
             </button>
           </>
         ) : (
@@ -867,8 +867,8 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
               }}
               className="inline-flex items-center gap-2 px-7 py-3 min-h-[46px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-sm font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <span>{isLastQuestion ? 'عرض النتيجة النهائية' : 'السؤال التالي'}</span>
-              <ArrowLeft className="w-4 h-4" />
+              <span>{isLastQuestion ? 'View Final Score' : 'Next Question'}</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         )}

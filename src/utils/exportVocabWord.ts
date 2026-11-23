@@ -50,10 +50,10 @@ function chunkEntries<T>(items: T[], size: number): T[][] {
 }
 
 /**
- * إنشاء وتحميل ملف Microsoft Word (.doc) بمقاس A3 أفقي (420mm × 297mm)
- * لاحتواء جميع مفردات المستوى (329 مفردة) في ورقة واحدة شاملة:
- * - الوضع أ (رموز فقط): شبكة 10 أعمدة مزدوجة [رقم مظلل | رمز صيني 12pt] (~33 صفاً)
- * - الوضع ب (مراجعة شاملة): شبكة 6 أعمدة كثيفة [# | رمز | بينين | عربي] (~55 صفاً)
+ * Generates and downloads a Microsoft Word (.doc) file in A3 Landscape (420mm × 297mm)
+ * designed to fit all HSK 3.0 Level 1 vocabulary on a single clean B&W master sheet:
+ * - Mode A (hanzi-only): 10 dual columns [shaded # | 12pt Hanzi] (~33 rows)
+ * - Mode B (full-review): 6 compact columns [# | Hanzi | Pinyin | Meaning] (~55 rows)
  */
 export function downloadVocabularyWordDoc({
   entries,
@@ -64,9 +64,9 @@ export function downloadVocabularyWordDoc({
   const isHanziOnly = mode === 'hanzi-only';
   const effectiveCols = isHanziOnly ? 10 : 6;
 
-  const modeTitleAr = isHanziOnly
-    ? 'شيت اختبار الحفظ — الرموز الصينية فقط (10 أعمدة · A3 أفقي)'
-    : 'شيت المراجعة الشامل — الرموز والبينين والمعنى العربي (6 أعمدة · A3 أفقي)';
+  const modeTitleEn = isHanziOnly
+    ? 'Recall Test Sheet — Hanzi Only (10 Columns · A3 Landscape)'
+    : 'Complete Review Sheet — Hanzi, Pinyin & Meaning (6 Columns · A3 Landscape)';
 
   const rows = chunkEntries(entries, effectiveCols);
 
@@ -117,7 +117,7 @@ export function downloadVocabularyWordDoc({
             `<td class="full-serial">${item.serial}</td>` +
             `<td class="full-hanzi" dir="ltr">${escapeHtml(item.hanzi)}</td>` +
             `<td class="full-pinyin" dir="ltr">${escapeHtml(item.pinyin)}</td>` +
-            `<td class="full-arabic" dir="rtl">${escapeHtml(item.arabic)}</td>`
+            `<td class="full-arabic">${escapeHtml(item.arabic)}</td>`
           );
         }).join('');
         return `<tr>${cells}</tr>`;
@@ -129,10 +129,10 @@ export function downloadVocabularyWordDoc({
 <html xmlns:o="urn:schemas-microsoft-com:office:office"
       xmlns:w="urn:schemas-microsoft-com:office:word"
       xmlns="http://www.w3.org/TR/REC-html40"
-      lang="ar" dir="rtl">
+      lang="en" dir="ltr">
 <head>
   <meta charset="utf-8" />
-  <title>تجميعة مفردات المستوى الأول HSK 3.0 — المعلم Laohu (A3 أفقي)</title>
+  <title>HSK 3.0 Level 1 Vocabulary Master Sheet — Instructor Laohu (A3 Landscape)</title>
   <!--[if gte mso 9]>
   <xml>
     <w:WordDocument>
@@ -154,7 +154,7 @@ export function downloadVocabularyWordDoc({
       page: Section1;
     }
     body {
-      font-family: 'Arial', 'Tahoma', 'Microsoft YaHei', sans-serif;
+      font-family: 'Calibri', 'Arial', 'Microsoft YaHei', sans-serif;
       color: #000000;
       background-color: #ffffff;
       margin: 0;
@@ -275,13 +275,13 @@ export function downloadVocabularyWordDoc({
       border-left: none;
       border-right: 0.75pt solid #444444;
       background-color: #ffffff;
-      text-align: right;
+      text-align: left;
       vertical-align: middle;
       font-size: 8pt;
       font-weight: normal;
       color: #000000;
-      padding: 1pt 2.5pt 1pt 1.5pt;
-      font-family: 'Arial', 'Tahoma', sans-serif;
+      padding: 1pt 2.5pt 1pt 2pt;
+      font-family: 'Calibri', 'Arial', sans-serif;
       white-space: nowrap;
       mso-line-height-rule: exactly;
       line-height: 10.5pt;
@@ -303,9 +303,9 @@ export function downloadVocabularyWordDoc({
 </head>
 <body>
   <div class="Section1">
-    <div class="doc-header" dir="rtl">
-      <p class="doc-title">تجميعة مفردات المستوى الأول HSK 3.0 — المعلم Laohu</p>
-      <p class="doc-subtitle">${escapeHtml(modeTitleAr)} &nbsp;|&nbsp; النطاق: ${escapeHtml(scopeLabelAr)} &nbsp;|&nbsp; إجمالي المفردات: ${entries.length} مفردة &nbsp;|&nbsp; مقاس الطباعة: A3 أفقي (420mm × 297mm)</p>
+    <div class="doc-header">
+      <p class="doc-title">HSK 3.0 Level 1 Vocabulary Master Sheet — Instructor Laohu</p>
+      <p class="doc-subtitle">${escapeHtml(modeTitleEn)} &nbsp;|&nbsp; Scope: ${escapeHtml(scopeLabelAr)} &nbsp;|&nbsp; Total Words: ${entries.length} &nbsp;|&nbsp; Print Size: A3 Landscape (420mm × 297mm)</p>
     </div>
 
     <table class="master-grid" cellspacing="0" cellpadding="0">
@@ -315,8 +315,8 @@ export function downloadVocabularyWordDoc({
       </tbody>
     </table>
 
-    <div class="doc-footer" dir="rtl">
-      بوابة اللغة الصينية - المستوى الأول (HSK 3.0) · إعداد المعلم Laohu · ورقة طباعة A3 أفقي شاملة
+    <div class="doc-footer">
+      HSK 3.0 Level 1 Practice Portal · Prepared by Instructor Laohu · A3 Landscape Master Print Sheet
     </div>
   </div>
 </body>
@@ -337,8 +337,8 @@ export function downloadVocabularyWordDoc({
 }
 
 /**
- * إنشاء وتحميل ملف Microsoft Word (.doc) للتجميعة المصنّفة (15 قسماً موضوعياً)
- * بمقاس A4 عمودي مع فهرس الأقسام وجداول منظمة بالأبيض والأسود.
+ * Generates and downloads a Microsoft Word (.doc) file for the Categorized Vocabulary Compilation
+ * (15 thematic sections) in A4 Portrait B&W format with a Table of Contents.
  */
 export function downloadCategorizedVocabularyWordDoc({
   groups,
@@ -353,9 +353,8 @@ export function downloadCategorizedVocabularyWordDoc({
       (group) => `
       <tr>
         <td class="toc-num">${group.id}</td>
-        <td class="toc-ar">${escapeHtml(group.titleAr)}</td>
-        <td class="toc-en" dir="ltr">${escapeHtml(group.titleEn)}</td>
-        <td class="toc-count">${group.entries.length} مفردة</td>
+        <td class="toc-en">${escapeHtml(group.titleEn)}</td>
+        <td class="toc-count">${group.entries.length} words</td>
       </tr>`
     )
     .join('\n');
@@ -369,7 +368,7 @@ export function downloadCategorizedVocabularyWordDoc({
           <td class="cat-num">${idx + 1}</td>
           <td class="cat-hanzi" dir="ltr">${escapeHtml(entry.hanzi)}</td>
           <td class="cat-pinyin" dir="ltr">${escapeHtml(entry.pinyin)}</td>
-          <td class="cat-arabic" dir="rtl">${escapeHtml(entry.arabic)}</td>
+          <td class="cat-arabic">${escapeHtml(entry.arabic)}</td>
           <td class="cat-ch" dir="ltr">第${entry.chapterId}课</td>
         </tr>`
         )
@@ -377,18 +376,18 @@ export function downloadCategorizedVocabularyWordDoc({
 
       return `
       <div class="cat-section">
-        <div class="cat-heading" dir="rtl">
-          <span class="cat-heading-ar">${group.id}. ${escapeHtml(group.titleAr)}</span>
-          <span class="cat-heading-en" dir="ltr"> — ${escapeHtml(group.titleEn)} (${group.entries.length})</span>
+        <div class="cat-heading">
+          <span class="cat-heading-main">${group.id}. ${escapeHtml(group.titleEn)}</span>
+          <span class="cat-heading-sub"> (${group.entries.length} words)</span>
         </div>
         <table class="cat-table" cellspacing="0" cellpadding="0">
           <thead>
             <tr>
               <th style="width:7%;">#</th>
-              <th style="width:20%;">الرمز الصيني (Hanzi)</th>
-              <th style="width:24%;">النطق (Pinyin)</th>
-              <th style="width:39%;">المعنى بالعربية</th>
-              <th style="width:10%;">الفصل</th>
+              <th style="width:20%;">Hanzi</th>
+              <th style="width:24%;">Pinyin</th>
+              <th style="width:39%;">Meaning</th>
+              <th style="width:10%;">Chapter</th>
             </tr>
           </thead>
           <tbody>
@@ -403,10 +402,10 @@ export function downloadCategorizedVocabularyWordDoc({
 <html xmlns:o="urn:schemas-microsoft-com:office:office"
       xmlns:w="urn:schemas-microsoft-com:office:word"
       xmlns="http://www.w3.org/TR/REC-html40"
-      lang="ar" dir="rtl">
+      lang="en" dir="ltr">
 <head>
   <meta charset="utf-8" />
-  <title>تجميعة المفردات المصنّفة (15 قسماً موضوعياً) — المعلم Laohu</title>
+  <title>HSK 3.0 Level 1 Categorized Vocabulary (15 Thematic Sections) — Instructor Laohu</title>
   <!--[if gte mso 9]>
   <xml>
     <w:WordDocument>
@@ -428,7 +427,7 @@ export function downloadCategorizedVocabularyWordDoc({
       page: SectionCat;
     }
     body {
-      font-family: 'Arial', 'Tahoma', 'Microsoft YaHei', sans-serif;
+      font-family: 'Calibri', 'Arial', 'Microsoft YaHei', sans-serif;
       color: #000000;
       background-color: #ffffff;
       margin: 0;
@@ -468,7 +467,7 @@ export function downloadCategorizedVocabularyWordDoc({
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
-      direction: rtl;
+      direction: ltr;
     }
     table.toc-table td {
       border: 0.75pt solid #444444;
@@ -482,19 +481,14 @@ export function downloadCategorizedVocabularyWordDoc({
       font-weight: bold;
       background-color: #f3f4f6;
     }
-    td.toc-ar {
-      width: 40%;
-      font-weight: bold;
-      text-align: right;
-    }
     td.toc-en {
-      width: 38%;
+      width: 76%;
       text-align: left;
-      color: #222222;
-      font-family: 'Calibri', 'Arial', sans-serif;
+      font-weight: bold;
+      color: #000000;
     }
     td.toc-count {
-      width: 14%;
+      width: 16%;
       text-align: center;
       font-weight: bold;
     }
@@ -512,17 +506,16 @@ export function downloadCategorizedVocabularyWordDoc({
       color: #000000;
       page-break-after: avoid;
     }
-    .cat-heading-en {
+    .cat-heading-sub {
       font-size: 9.5pt;
       font-weight: normal;
       color: #222222;
-      font-family: 'Calibri', 'Arial', sans-serif;
     }
     table.cat-table {
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
-      direction: rtl;
+      direction: ltr;
     }
     table.cat-table thead {
       display: table-header-group;
@@ -564,9 +557,9 @@ export function downloadCategorizedVocabularyWordDoc({
       color: #222222;
     }
     td.cat-arabic {
-      text-align: right;
+      text-align: left;
       font-size: 9.5pt;
-      font-family: 'Arial', 'Tahoma', sans-serif;
+      font-family: 'Calibri', 'Arial', sans-serif;
     }
     td.cat-ch {
       text-align: center;
@@ -586,13 +579,13 @@ export function downloadCategorizedVocabularyWordDoc({
 </head>
 <body>
   <div class="SectionCat">
-    <div class="doc-header" dir="rtl">
-      <p class="doc-title">تجميعة المفردات المصنّفة (15 قسماً موضوعياً) — المستوى الأول HSK 3.0 — المعلم Laohu</p>
-      <p class="doc-subtitle">النطاق: ${escapeHtml(scopeLabelAr)} &nbsp;|&nbsp; إجمالي المفردات: ${totalCount} مفردة &nbsp;|&nbsp; عدد الأقسام الفعالة: ${nonEmptyGroups.length} قسماً</p>
+    <div class="doc-header">
+      <p class="doc-title">HSK 3.0 Level 1 Categorized Vocabulary (15 Thematic Sections) — Instructor Laohu</p>
+      <p class="doc-subtitle">Scope: ${escapeHtml(scopeLabelAr)} &nbsp;|&nbsp; Total Words: ${totalCount} &nbsp;|&nbsp; Active Sections: ${nonEmptyGroups.length}</p>
     </div>
 
     <div class="toc-box">
-      <p class="toc-title">فهرس الأقسام الموضوعية (Table of Contents)</p>
+      <p class="toc-title">Table of Contents — Thematic Sections</p>
       <table class="toc-table" cellspacing="0" cellpadding="0">
         <tbody>
           ${tocRowsHtml}
@@ -602,8 +595,8 @@ export function downloadCategorizedVocabularyWordDoc({
 
     ${sectionsHtml}
 
-    <div class="doc-footer" dir="rtl">
-      بوابة اللغة الصينية - المستوى الأول (HSK 3.0) · إعداد المعلم Laohu · تجميعة المفردات المصنّفة
+    <div class="doc-footer">
+      HSK 3.0 Level 1 Practice Portal · Prepared by Instructor Laohu · Categorized Vocabulary Compilation
     </div>
   </div>
 </body>
@@ -621,4 +614,3 @@ export function downloadCategorizedVocabularyWordDoc({
   document.body.removeChild(link);
   window.setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
-

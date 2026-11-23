@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, BookMarked, FolderClock, Lock, Unlock, X } from 'lucide-react';
+import { ArrowRight, BookMarked, FolderClock, Lock, Unlock, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { CHAPTERS_DATA } from '../data/chaptersData';
@@ -40,13 +40,13 @@ export function ChaptersGridView({ onSelectChapter }: ChaptersGridViewProps) {
       transition={{ duration: 0.2 }}
       className="mx-auto max-w-6xl px-4 sm:px-6 py-10 space-y-8"
     >
-      {/* عنوان القسم */}
+      {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10 pb-6">
         <div>
           <div className="flex flex-wrap items-center gap-2 text-xs text-[#57534E] dark:text-[#A8A29E] mb-2">
-            <span>المنهج الكامل</span>
+            <span>Full Curriculum</span>
             <span aria-hidden="true">·</span>
-            <span>١٥ فصلاً</span>
+            <span>15 Chapters</span>
             <span aria-hidden="true">·</span>
             <span
               className={`inline-flex items-center gap-1 font-bold ${
@@ -58,30 +58,30 @@ export function ChaptersGridView({ onSelectChapter }: ChaptersGridViewProps) {
               {isFullChapters ? (
                 <>
                   <Unlock className="w-3.5 h-3.5" />
-                  <span>جميع الفصول مفتوحة</span>
+                  <span>All Chapters Unlocked</span>
                 </>
               ) : (
                 <>
                   <Lock className="w-3.5 h-3.5" />
-                  <span>مفتوح {unlockedCount} من ١٥ فصلاً</span>
+                  <span>{unlockedCount} of 15 Chapters Unlocked</span>
                 </>
               )}
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-            فصول المستوى الأول
+            HSK 3.0 Level 1 Chapters
           </h1>
         </div>
 
         <div className="text-sm text-[#57534E] dark:text-[#A8A29E] tabular-nums">
-          الإنجاز الإجمالي:{' '}
+          Overall Completion:{' '}
           <strong className="text-[#15803D] dark:text-[#22C55E] font-bold">
             {analytics.overallProgressPercent}%
           </strong>
         </div>
       </div>
 
-      {/* شبكة الفصول الخمسة عشر */}
+      {/* 15 Chapters Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {CHAPTERS_DATA.map((chapter) => {
           const itemCount = chapter.vocab.length + chapter.sentences.length;
@@ -94,7 +94,7 @@ export function ChaptersGridView({ onSelectChapter }: ChaptersGridViewProps) {
               key={chapter.id}
               type="button"
               onClick={() => handleCardClick(chapter)}
-              className={`neo-frame text-right rounded-xl p-6 flex flex-col justify-between transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] ${
+              className={`neo-frame text-left rounded-xl p-6 flex flex-col justify-between transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] ${
                 !isUnlocked
                   ? 'opacity-90 bg-[#F4EFE6]/85 dark:bg-[#191715] border-[#1C1917]/12 dark:border-[#F5F2EB]/12 hover:border-[#D97706]/55 dark:hover:border-[#F59E0B]/55'
                   : isEmpty
@@ -121,7 +121,7 @@ export function ChaptersGridView({ onSelectChapter }: ChaptersGridViewProps) {
                         {chapter.titleAr}
                       </h2>
                       <p className="text-xs text-[#57534E] dark:text-[#A8A29E] mt-0.5 truncate">
-                        {isEmpty ? 'محتوى هذا الفصل قيد الإضافة' : chapter.subtitleAr}
+                        {isEmpty ? 'Content coming soon' : chapter.subtitleAr}
                       </p>
                     </div>
                   </div>
@@ -129,47 +129,47 @@ export function ChaptersGridView({ onSelectChapter }: ChaptersGridViewProps) {
                   {!isUnlocked ? (
                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-[#D97706]/35 dark:border-[#F59E0B]/35 bg-[#D97706]/10 dark:bg-[#F59E0B]/15 text-[#B45309] dark:text-[#F59E0B] text-[11px] font-bold shrink-0">
                       <Lock className="w-3 h-3" />
-                      <span>مغلق</span>
+                      <span>Locked</span>
                     </span>
                   ) : (
                     !isEmpty && (
-                      <ArrowLeft className="w-4 h-4 text-[#B91C1C] dark:text-[#EF4444] shrink-0 mt-1" />
+                      <ArrowRight className="w-4 h-4 text-[#B91C1C] dark:text-[#EF4444] shrink-0 mt-1" />
                     )
                   )}
                 </div>
 
-                {/* بيانات العناصر بدون كبسولات */}
+                {/* Chapter Stats */}
                 <div className="flex items-center gap-2 text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums mb-5">
                   {!isUnlocked ? (
                     <span className="inline-flex items-center gap-1.5 text-[#B45309] dark:text-[#F59E0B] font-semibold">
                       <Lock className="w-3.5 h-3.5" />
-                      <span>اضغط لمعرفة طريقة تفعيل هذا الفصل</span>
+                      <span>Click to see how to unlock this chapter</span>
                     </span>
                   ) : isEmpty ? (
                     <span className="inline-flex items-center gap-1.5">
                       <FolderClock className="w-3.5 h-3.5" />
-                      <span>٠ عنصر متاح حالياً</span>
+                      <span>0 items available yet</span>
                     </span>
                   ) : (
                     <>
                       <span className="inline-flex items-center gap-1">
                         <BookMarked className="w-3.5 h-3.5 text-[#D97706] dark:text-[#F59E0B]" />
-                        <span>{chapter.vocab.length} مفردات</span>
+                        <span>{chapter.vocab.length} vocab</span>
                       </span>
                       <span aria-hidden="true">·</span>
-                      <span>{chapter.sentences.length} جمل</span>
+                      <span>{chapter.sentences.length} sentences</span>
                       <span aria-hidden="true">·</span>
-                      <span>{itemCount} عنصر</span>
+                      <span>{itemCount} items</span>
                     </>
                   )}
                 </div>
               </div>
 
-              {/* شريط نسبة الإنجاز */}
+              {/* Completion Progress Bar */}
               <div className="w-full space-y-1.5">
                 <div className="flex items-center justify-between text-xs tabular-nums">
                   <span className="text-[#57534E] dark:text-[#A8A29E]">
-                    {isUnlocked ? 'نسبة الإكمال' : 'حالة الوصول'}
+                    {isUnlocked ? 'Completion' : 'Access Status'}
                   </span>
                   <span
                     className={`font-bold ${
@@ -180,7 +180,7 @@ export function ChaptersGridView({ onSelectChapter }: ChaptersGridViewProps) {
                           : 'text-[#1C1917] dark:text-[#F5F2EB]'
                     }`}
                   >
-                    {isUnlocked ? `${completion}%` : '🔒 يتطلب التفعيل'}
+                    {isUnlocked ? `${completion}%` : 'Locked'}
                   </span>
                 </div>
                 <div className="h-1.5 w-full rounded-full bg-[#1C1917]/8 dark:bg-[#F5F2EB]/10 overflow-hidden">
@@ -201,7 +201,7 @@ export function ChaptersGridView({ onSelectChapter }: ChaptersGridViewProps) {
         })}
       </div>
 
-      {/* نافذة طلب التفعيل للفصول المقفلة */}
+      {/* Locked Chapter Access Modal */}
       <LockedAccessModal
         isOpen={Boolean(lockedChapterModal)}
         itemTitle={
@@ -213,7 +213,7 @@ export function ChaptersGridView({ onSelectChapter }: ChaptersGridViewProps) {
         onClose={() => setLockedChapterModal(null)}
       />
 
-      {/* رسالة الحالة الفارغة النظيفة للفصول التي تحتوي على ٠ عنصر */}
+      {/* Empty Chapter Modal */}
       {emptyChapterModal && (
         <div
           role="dialog"
@@ -233,7 +233,7 @@ export function ChaptersGridView({ onSelectChapter }: ChaptersGridViewProps) {
               <button
                 type="button"
                 onClick={() => setEmptyChapterModal(null)}
-                aria-label="إغلاق"
+                aria-label="Close"
                 className="w-9 h-9 rounded-md inline-flex items-center justify-center text-[#57534E] dark:text-[#A8A29E] hover:text-[#1C1917] dark:hover:text-[#F5F2EB]"
               >
                 <X className="w-5 h-5" />
@@ -248,11 +248,11 @@ export function ChaptersGridView({ onSelectChapter }: ChaptersGridViewProps) {
                 {emptyChapterModal.titleAr}
               </h2>
               <p className="text-base font-semibold text-[#B91C1C] dark:text-[#EF4444]">
-                محتوى هذا الفصل قيد الإضافة
+                Chapter content coming soon
               </p>
               <p className="text-sm text-[#57534E] dark:text-[#A8A29E] leading-relaxed">
-                سيتم إتاحة المفردات والجمل التدريبية لهذا الفصل فور إضافتها من قبل المعلم. يمكنك
-                مواصلة التدريب في الفصول المتاحة حالياً.
+                Vocabulary and sentence drills for this chapter will become available once added by
+                your instructor. Continue practicing in the available chapters meanwhile.
               </p>
             </div>
 
@@ -261,7 +261,7 @@ export function ChaptersGridView({ onSelectChapter }: ChaptersGridViewProps) {
               onClick={() => setEmptyChapterModal(null)}
               className="w-full py-2.5 px-5 min-h-[44px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-sm font-bold transition-colors"
             >
-              العودة إلى قائمة الفصول
+              Back to Chapters
             </button>
           </div>
         </div>

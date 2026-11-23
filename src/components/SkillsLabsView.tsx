@@ -77,39 +77,39 @@ export function SkillsLabsView({
   }[] = [
     {
       id: 'writing',
-      label: 'مختبر الكتابة (Hanzi Lab)',
-      subtitle: 'ترتيب الخطوط والتتبع التفاعلي على شبكة 米字格',
+      label: 'Hanzi Lab',
+      subtitle: 'Stroke order & interactive 米字格 tracing',
       icon: PenTool,
     },
     {
       id: 'radicals',
-      label: 'مستكشف الجذور (Radicals)',
-      subtitle: 'أهم ٢٠ جذراً صينياً وكلماتها من المنهج',
+      label: 'Radicals Explorer',
+      subtitle: 'Top 20 Chinese radicals & curriculum words',
       icon: Sparkles,
     },
     {
       id: 'speaking',
-      label: 'مدرّب النطق الصوتي (Speaking)',
-      subtitle: 'تدريب النطق بالمايكروفون وتصحيح فوري للرموز',
+      label: 'Speaking Voice Trainer',
+      subtitle: 'Microphone pronunciation & instant feedback',
       icon: Mic,
     },
     {
       id: 'speed',
-      label: 'تحدي السرعة ⚡',
-      subtitle: 'مطابقة الكلمات الصينية خلال 60 ثانية مع مضاعف السلسلة',
+      label: 'Speed Match ⚡',
+      subtitle: '60-second vocab sprint with combo multiplier',
       icon: Zap,
     },
     {
       id: 'confusables',
-      label: 'المتشابهات وفخاخ الامتحان',
-      subtitle: 'مقارنة الرموز المتشابهة وفخاخ القواعد + اختبار سريع',
+      label: 'Similarity Lab',
+      subtitle: 'Confusable characters, grammar traps & quiz',
       icon: Scale,
     },
   ];
 
   return (
     <section className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-10 space-y-6">
-      {/* الترويسة الرئيسية للمختبرات التفاعلية */}
+      {/* Main header for interactive skills labs */}
       <div className="no-print neo-frame rounded-xl p-6 sm:p-7 space-y-5">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-1.5">
@@ -120,22 +120,23 @@ export function SkillsLabsView({
               >
                 练
               </span>
-              <span>المختبرات التفاعلية لمهارات اللغة الصينية · HSK 3.0</span>
+              <span>Interactive Chinese Skills Labs · HSK 3.0</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1C1917] dark:text-[#F5F2EB]">
-              المختبرات التفاعلية (الكتابة · الجذور · النطق · السرعة · المتشابهات)
+              Interactive Labs (Hanzi · Radicals · Speaking · Speed · Similarity)
             </h1>
             <p className="text-sm text-[#57534E] dark:text-[#A8A29E] max-w-2xl">
-              أتقن كتابة الرموز الصينية بخطوات صحيحة، افهم الجذور الأساسية، اختبر نطقك بالمايكروفون،
-              نافس نفسك في تحدي السرعة، وتفادَ أشهر المتشابهات وفخاخ الامتحان.
+              Master proper Hanzi stroke order, explore foundational radicals, test your
+              pronunciation via microphone, beat your personal best in Speed Match, and avoid common
+              exam traps.
             </p>
           </div>
         </div>
 
-        {/* شريط التبويبات الخمسة */}
+        {/* 5-lab tab bar */}
         <div
           role="tablist"
-          aria-label="المختبرات التفاعلية"
+          aria-label="Interactive Skills Labs"
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2 border-t border-[#1C1917]/10 dark:border-[#F5F2EB]/10"
         >
           {tabs.map((tab) => {
@@ -148,7 +149,7 @@ export function SkillsLabsView({
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => handleSelectTab(tab.id)}
-                className={`text-right rounded-lg p-4 border transition-all duration-150 flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] ${
+                className={`text-left rounded-lg p-4 border transition-all duration-150 flex items-start gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] ${
                   isActive
                     ? 'border-[#B91C1C] dark:border-[#EF4444] bg-[#B91C1C]/8 dark:bg-[#EF4444]/14 shadow-xs'
                     : 'border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] hover:border-[#B91C1C]/40 dark:hover:border-[#EF4444]/40'
@@ -183,7 +184,7 @@ export function SkillsLabsView({
         </div>
       </div>
 
-      {/* محتوى المختبر المختار */}
+      {/* Active lab content */}
       <div>
         {activeTab === 'writing' && (
           <HanziWritingLab

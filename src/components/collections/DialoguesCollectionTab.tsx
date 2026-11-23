@@ -90,11 +90,11 @@ export function DialoguesCollectionTab({
   const activeScopeLabelAr = useMemo(() => {
     if (selectedChapterId === 'all') {
       return unlockedChapters.length === CHAPTERS_DATA.length
-        ? 'جميع الفصول (الفصل ١ – الفصل ١٥)'
-        : `كل الفصول المفتوحة (${unlockedChapters.length} من ١٥)`;
+        ? 'All Chapters (Chapter 1 – Chapter 15)'
+        : `All Unlocked Chapters (${unlockedChapters.length} of 15)`;
     }
     const found = CHAPTERS_DATA.find((ch) => ch.id === selectedChapterId);
-    return found ? `${found.titleAr} (第${found.id}课) — ${found.subtitleAr}` : `الفصل ${selectedChapterId}`;
+    return found ? `Chapter ${found.id} (第${found.id}课) — ${found.subtitleAr}` : `Chapter ${selectedChapterId}`;
   }, [selectedChapterId, unlockedChapters.length]);
 
   const fileScopeTag = useMemo(() => {
@@ -154,7 +154,7 @@ export function DialoguesCollectionTab({
 
   return (
     <div className="space-y-5">
-      {/* شريط التحكم العلوي لتجميعة المحادثات والجمل */}
+      {/* Top control bar for Dialogues & Sentences */}
       <div
         id="dialogues-top-controls"
         className="no-print scroll-mt-24 rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-5 sm:p-6 space-y-5"
@@ -164,19 +164,19 @@ export function DialoguesCollectionTab({
             <div className="flex items-center gap-2">
               <MessageSquareText className="w-5 h-5 text-[#15803D] dark:text-[#22C55E]" />
               <h2 className="text-lg sm:text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                تجميعة المحادثات والجمل التطبيقية (278 جملة)
+                Dialogues &amp; Applied Sentences Bank (278 Sentences)
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-[#57534E] dark:text-[#A8A29E]">
-              جميع الجمل والحوارات المنهجية مصنّفة حسب الفصول مع البينين التفاعلي فوق كل رمز
-              والتشغيل الصوتي بسرعتين والتصدير المباشر لملف Word وPDF.
+              All curriculum sentences and dialogues organized by chapter with interactive Ruby
+              Pinyin, dual-speed audio playback, and clean Word or PDF export.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
             <div className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg border border-[#D97706]/35 dark:border-[#F59E0B]/35 bg-[#D97706]/8 dark:bg-[#F59E0B]/12 text-[#92400E] dark:text-[#F59E0B] text-xs font-bold whitespace-nowrap shrink-0">
               <Maximize2 className="w-3.5 h-3.5 shrink-0" />
-              <span>مقاس الطباعة: A4 عمودي (المحادثات والجمل)</span>
+              <span>Print Format: A4 Portrait (Dialogues)</span>
             </div>
 
             <button
@@ -188,12 +188,12 @@ export function DialoguesCollectionTab({
               {wordExported ? (
                 <>
                   <Check className="w-4 h-4 shrink-0" />
-                  <span>تم تحميل ملف Word</span>
+                  <span>Word File Downloaded</span>
                 </>
               ) : (
                 <>
                   <Download className="w-4 h-4 shrink-0" />
-                  <span>تحميل ملف Word (.doc)</span>
+                  <span>Download Word (.doc)</span>
                 </>
               )}
             </button>
@@ -205,16 +205,16 @@ export function DialoguesCollectionTab({
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] rounded-lg border border-[#1C1917]/20 dark:border-[#F5F2EB]/20 bg-[#F9F6F0] dark:bg-[#121110] hover:border-[#B91C1C]/55 dark:hover:border-[#EF4444]/55 text-[#1C1917] dark:text-[#F5F2EB] text-xs sm:text-sm font-bold transition-colors disabled:opacity-45 whitespace-nowrap shrink-0"
             >
               <Printer className="w-4 h-4 text-[#D97706] dark:text-[#F59E0B] shrink-0" />
-              <span>طباعة / حفظ PDF (أبيض وأسود)</span>
+              <span>Print / Save PDF (B&amp;W)</span>
             </button>
           </div>
         </div>
 
-        {/* التصفية بالفصول + زر البينين + البحث */}
+        {/* Chapter filter + Ruby Pinyin toggle + Search */}
         <div className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-semibold text-[#57534E] dark:text-[#A8A29E]">
-              تصفية الجمل حسب الفصل الدراسي:
+              Filter sentences by chapter:
             </p>
 
             <div className="flex flex-wrap items-center gap-2.5">
@@ -229,24 +229,24 @@ export function DialoguesCollectionTab({
                 }`}
               >
                 {showPinyin ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                <span>{showPinyin ? 'إخفاء البينين (Ruby)' : 'إظهار البينين (Ruby)'}</span>
+                <span>{showPinyin ? 'Hide Pinyin (Ruby)' : 'Show Pinyin (Ruby)'}</span>
               </button>
 
               <div className="relative w-56 sm:w-64">
-                <Search className="w-3.5 h-3.5 text-[#57534E] dark:text-[#A8A29E] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Search className="w-3.5 h-3.5 text-[#57534E] dark:text-[#A8A29E] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="ابحث في الجمل بالصيني أو العربي..."
-                  className="w-full pr-8 pl-8 py-1.5 min-h-[38px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#121110] text-xs text-[#1C1917] dark:text-[#F5F2EB] placeholder:text-[#57534E]/75 dark:placeholder:text-[#A8A29E]/75 focus:outline-none focus:border-[#B91C1C] dark:focus:border-[#EF4444]"
+                  placeholder="Search Hanzi, Pinyin, or meaning..."
+                  className="w-full pl-9 pr-8 py-1.5 min-h-[38px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#121110] text-xs text-[#1C1917] dark:text-[#F5F2EB] placeholder:text-[#57534E]/75 dark:placeholder:text-[#A8A29E]/75 focus:outline-none focus:border-[#B91C1C] dark:focus:border-[#EF4444]"
                 />
                 {searchQuery && (
                   <button
                     type="button"
-                    aria-label="مسح البحث"
+                    aria-label="Clear search"
                     onClick={() => setSearchQuery('')}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 text-[#57534E] hover:text-[#B91C1C]"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[#57534E] hover:text-[#B91C1C]"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -265,7 +265,7 @@ export function DialoguesCollectionTab({
                   : 'border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F9F6F0] dark:bg-[#121110] text-[#1C1917] dark:text-[#F5F2EB] hover:border-[#B91C1C]/45'
               }`}
             >
-              كل الفصول المفتوحة ({totalUnlockedSentences} جملة)
+              All Unlocked Chapters ({totalUnlockedSentences} sentences)
             </button>
 
             {CHAPTERS_DATA.map((ch) => {
@@ -275,7 +275,7 @@ export function DialoguesCollectionTab({
                 <button
                   key={ch.id}
                   type="button"
-                  title={`${ch.titleAr}: ${ch.subtitleAr} (${ch.sentences.length} جملة)`}
+                  title={`Chapter ${ch.id}: ${ch.subtitleAr} (${ch.sentences.length} sentences)`}
                   onClick={() => handleSelectChapter(ch)}
                   className={`inline-flex items-center gap-1.5 px-3 py-2 min-h-[38px] rounded-lg border text-xs font-bold transition-colors whitespace-nowrap tabular-nums ${
                     !unlocked
@@ -301,21 +301,21 @@ export function DialoguesCollectionTab({
               {activeScopeLabelAr}
             </span>
             <span aria-hidden="true">·</span>
-            <span>المعروض حالياً: {filteredSentenceCount} جملة</span>
+            <span>Showing: {filteredSentenceCount} sentences</span>
           </div>
-          <span>اضغط على أي جملة أو زر الصوت للاستماع (1.0x عادي · 0.7x بطيء)</span>
+          <span>Click any sentence or audio button to listen (1.0x normal · 0.7x slow)</span>
         </div>
       </div>
 
-      {/* عرض الجمل المجمّعة حسب الفصل على الشاشة */}
+      {/* On-screen grouped sentences */}
       <div className="no-print space-y-6">
         {filteredChapters.length === 0 ? (
           <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] py-12 text-center space-y-2">
             <p className="text-base font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-              لا توجد جمل مطابقة لبحثك
+              No matching sentences found
             </p>
             <p className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-              جرّب مسح مربع البحث أو اختيار «كل الفصول المفتوحة».
+              Try clearing your search or selecting &ldquo;All Unlocked Chapters&rdquo;.
             </p>
           </div>
         ) : (
@@ -330,7 +330,7 @@ export function DialoguesCollectionTab({
                     第{ch.id}课
                   </span>
                   <h3 className="text-sm sm:text-base font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                    {ch.titleAr}:{' '}
+                    Chapter {ch.id}:{' '}
                     <span className="font-semibold text-[#57534E] dark:text-[#A8A29E]">
                       {ch.subtitleAr}
                     </span>
@@ -339,14 +339,14 @@ export function DialoguesCollectionTab({
 
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="text-xs font-bold text-[#57534E] dark:text-[#A8A29E] tabular-nums">
-                    {ch.sentences.length} جملة
+                    {ch.sentences.length} sentences
                   </span>
                   <button
                     type="button"
                     onClick={scrollToTopControls}
                     className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-white dark:bg-[#1E1C1A] hover:border-[#B91C1C]/50 text-[11px] font-bold text-[#57534E] dark:text-[#A8A29E] hover:text-[#B91C1C] dark:hover:text-[#EF4444] transition-colors whitespace-nowrap"
                   >
-                    <span>أعلى الصفحة</span>
+                    <span>Back to Top</span>
                     <ArrowUp className="w-3 h-3 shrink-0" />
                   </button>
                 </div>
@@ -391,7 +391,7 @@ export function DialoguesCollectionTab({
                         <button
                           type="button"
                           onClick={() => handlePlaySentence(s.id, s.hanzi, 1.0)}
-                          title="استماع بالسرعة العادية"
+                          title="Listen at normal speed"
                           className={`inline-flex items-center gap-1 px-2.5 py-1.5 min-h-[34px] rounded-md border text-xs font-bold tabular-nums transition-colors ${
                             activeNormal
                               ? 'border-[#B91C1C] dark:border-[#EF4444] bg-[#B91C1C] dark:bg-[#EF4444] text-white'
@@ -405,7 +405,7 @@ export function DialoguesCollectionTab({
                         <button
                           type="button"
                           onClick={() => handlePlaySentence(s.id, s.hanzi, 0.7)}
-                          title="استماع بسرعة بطيئة للمبتدئين"
+                          title="Listen at slow speed"
                           className={`inline-flex items-center gap-1 px-2.5 py-1.5 min-h-[34px] rounded-md border text-xs font-bold tabular-nums transition-colors ${
                             activeSlow
                               ? 'border-[#D97706] dark:border-[#F59E0B] bg-[#D97706] dark:bg-[#F59E0B] text-white dark:text-[#121110]'
@@ -433,13 +433,13 @@ export function DialoguesCollectionTab({
         )}
       </div>
 
-      {/* نسخة الطباعة / PDF بالأبيض والأسود (A4 عمودي) */}
+      {/* Black-and-white printable A4 Portrait sheet */}
       {filteredSentenceCount > 0 && (
-        <div className="hidden print-only vocab-cat-print-sheet" dir="rtl">
+        <div className="hidden print-only vocab-cat-print-sheet">
           <div className="vocab-cat-print-header">
-            <h2>تجميعة المحادثات والجمل للمستوى الأول HSK 3.0 — المعلم Laohu</h2>
+            <h2>HSK 3.0 Level 1 Dialogues &amp; Sentences Compilation — Instructor Laohu</h2>
             <p>
-              {activeScopeLabelAr} · إجمالي الجمل: {filteredSentenceCount} جملة
+              {activeScopeLabelAr} · Total Sentences: {filteredSentenceCount}
             </p>
           </div>
 
@@ -449,14 +449,14 @@ export function DialoguesCollectionTab({
                 <span className="font-hanzi" dir="ltr">
                   第{ch.id}课
                 </span>{' '}
-                — {ch.titleAr}: {ch.subtitleAr} ({ch.sentences.length} جملة)
+                — Chapter {ch.id}: {ch.subtitleAr} ({ch.sentences.length} sentences)
               </div>
               <table className="vocab-cat-print-table">
                 <thead>
                   <tr>
                     <th style={{ width: '6%' }}>#</th>
-                    <th style={{ width: '52%' }}>الجملة الصينية والنطق (Hanzi &amp; Pinyin)</th>
-                    <th style={{ width: '42%' }}>الترجمة بالعربية</th>
+                    <th style={{ width: '52%' }}>Chinese Sentence &amp; Pinyin</th>
+                    <th style={{ width: '42%' }}>Meaning / Translation</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -480,7 +480,7 @@ export function DialoguesCollectionTab({
           ))}
 
           <div className="vocab-cat-print-footer">
-            بوابة اللغة الصينية - المستوى الأول (HSK 3.0) · إعداد المعلم Laohu · تجميعة المحادثات والجمل
+            HSK 3.0 Level 1 Practice Portal · Prepared by Instructor Laohu · Dialogues &amp; Sentences Bank
           </div>
         </div>
       )}

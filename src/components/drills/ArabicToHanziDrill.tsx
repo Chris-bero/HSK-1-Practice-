@@ -22,17 +22,17 @@ export function ArabicToHanziDrill({
 
   return (
     <div className="space-y-8">
-      {/* عرض المعنى العربي المستهدف */}
+      {/* Target meaning prompt */}
       <div className="neo-frame rounded-xl py-10 px-6 text-center space-y-3 bg-white dark:bg-[#1E1C1A]">
         <p className="text-xs font-semibold text-[#57534E] dark:text-[#A8A29E]">
-          اختر الرمز الصيني المطابق للمعنى التالي
+          Select the Chinese character matching the following meaning
         </p>
         <div className="text-3xl sm:text-4xl font-bold text-[#1C1917] dark:text-[#F5F2EB] leading-snug">
           {question.promptPrimary}
         </div>
       </div>
 
-      {/* الخيارات الصينية */}
+      {/* Chinese character options */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         {(question.options ?? []).map((opt) => {
           const isSelected = selectedOptionId === opt.id;
@@ -65,7 +65,7 @@ export function ArabicToHanziDrill({
               onClick={() => onSelectOption(opt.id, opt.label, isCorrectOption)}
               className={`min-h-[82px] px-5 py-4 rounded-xl border flex items-center justify-between gap-3 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] ${cardClass}`}
             >
-              <div className="flex flex-col items-start text-right">
+              <div className="flex flex-col items-start text-left">
                 <span className="font-hanzi text-3xl font-bold leading-tight">{opt.label}</span>
                 {showPinyin && opt.subLabel && (
                   <span className="font-pinyin text-sm text-[#57534E] dark:text-[#A8A29E] mt-1">

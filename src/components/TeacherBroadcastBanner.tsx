@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AlertTriangle, ExternalLink, Megaphone, Sparkles, X } from 'lucide-react';
+import { STORAGE_KEYS } from '../config/appConfig';
 import {
   fetchTeacherBroadcast,
   loadLocalTeacherBroadcast,
@@ -8,7 +9,7 @@ import {
 } from '../services/sheetsSync';
 import { BroadcastStyle, TeacherBroadcast } from '../types';
 
-const DISMISSED_IDS_KEY = 'chinese_portal_dismissed_broadcasts_v1';
+const DISMISSED_IDS_KEY = STORAGE_KEYS.DISMISSED_BROADCASTS;
 
 function loadDismissedIds(): string[] {
   try {
@@ -28,7 +29,7 @@ function saveDismissedId(id: string): string[] {
   try {
     localStorage.setItem(DISMISSED_IDS_KEY, JSON.stringify(updated));
   } catch {
-    // تجاهل أخطاء التخزين المحلي
+    // Ignore localStorage errors
   }
   return updated;
 }
@@ -44,7 +45,7 @@ const STYLE_CONFIG: Record<
   }
 > = {
   info: {
-    label: 'إعلان المعلم',
+    label: 'Announcement',
     icon: Megaphone,
     barClass:
       'border-[#1D4ED8]/25 dark:border-[#60A5FA]/30 bg-[#EFF6FF] dark:bg-[#172554]/55 text-[#1E3A8A] dark:text-[#DBEAFE]',
@@ -53,7 +54,7 @@ const STYLE_CONFIG: Record<
       'bg-[#1D4ED8] hover:bg-[#1E40AF] dark:bg-[#3B82F6] dark:hover:bg-[#2563EB] text-white',
   },
   important: {
-    label: 'تنبيه هام',
+    label: 'Important',
     icon: AlertTriangle,
     barClass:
       'border-[#D97706]/35 dark:border-[#F59E0B]/35 bg-[#FFFBEB] dark:bg-[#451A03]/55 text-[#78350F] dark:text-[#FEF3C7]',
@@ -62,7 +63,7 @@ const STYLE_CONFIG: Record<
       'bg-[#B45309] hover:bg-[#92400E] dark:bg-[#F59E0B] dark:hover:bg-[#D97706] text-white dark:text-[#121110]',
   },
   promo: {
-    label: 'عرض / موعد',
+    label: 'Notice',
     icon: Sparkles,
     barClass:
       'border-[#15803D]/30 dark:border-[#22C55E]/35 bg-[#F0FDF4] dark:bg-[#052E16]/55 text-[#14532D] dark:text-[#DCFCE7]',
@@ -140,7 +141,7 @@ export function TeacherBroadcastBanner() {
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <Icon className={`w-4 h-4 shrink-0 ${config.labelClass}`} aria-hidden="true" />
           <p className="text-xs sm:text-sm font-medium leading-relaxed min-w-0">
-            <strong className={`font-bold ml-1.5 ${config.labelClass}`}>{config.label}:</strong>
+            <strong className={`font-bold mr-1.5 ${config.labelClass}`}>{config.label}:</strong>
             <span>{broadcast.message}</span>
           </p>
         </div>
@@ -153,7 +154,7 @@ export function TeacherBroadcastBanner() {
               rel="noopener noreferrer"
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[32px] rounded-md text-xs font-bold transition-colors whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 ${config.ctaClass}`}
             >
-              <span>{broadcast.ctaLabel || 'التفاصيل'}</span>
+              <span>{broadcast.ctaLabel || 'Details'}</span>
               <ExternalLink className="w-3.5 h-3.5 shrink-0" />
             </a>
           )}
@@ -161,8 +162,8 @@ export function TeacherBroadcastBanner() {
           <button
             type="button"
             onClick={handleDismiss}
-            aria-label="إغلاق الإعلان"
-            title="إغلاق الإعلان"
+            aria-label="Dismiss announcement"
+            title="Dismiss announcement"
             className="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-black/8 dark:hover:bg-white/10 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
           >
             <X className="w-4 h-4" />

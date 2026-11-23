@@ -1,13 +1,17 @@
 /**
- * Google Apps Script (Code.gs) — بوابة اللغة الصينية HSK 3.0
+ * Google Apps Script (Code.gs) — HSK 3.0 Level 1 Practice Portal
  *
- * خطوات التحديث السريع في جدول المعلم:
- * 1. افتح جدول Google Sheets الخاص بالمعلم > الإضافات (Extensions) > Apps Script.
- * 2. الصق هذا الملف كاملاً داخل Code.gs واحفظ (Save).
- * 3. اضغط: نشر (Deploy) > إدارة عمليات النشر (Manage deployments) > تعديل (Edit) > إصدار جديد (New version) > نشر (Deploy).
+ * Deployment steps for your English Google Sheet:
+ * 1. Open your Google Sheet > Extensions > Apps Script.
+ * 2. Paste this entire file into Code.gs and click Save.
+ * 3. Click Deploy > New deployment (or Manage deployments > Edit > New version) > Web app.
+ *    - Execute as: Me
+ *    - Who has access: Anyone
+ * 4. Copy the Web App URL into `src/config/appConfig.ts` (or `VITE_SHEETS_WEB_APP_URL`)
+ *    and `public/teacher-dashboard.html`.
  *
- * ملاحظة: يستخدم هذا السكربت PropertiesService.getScriptProperties() لحفظ إعلان المعلم
- * (getBroadcast / setBroadcast) دون الحاجة لأي تنسيق يدوي أو تعديل لصفوف الطلاب القائمة.
+ * Note: Uses PropertiesService.getScriptProperties() to store the global Teacher Broadcast
+ * (`getBroadcast` / `setBroadcast`) without touching student rows.
  */
 
 var BROADCAST_PROPERTY_KEY = 'TEACHER_BROADCAST_JSON';
@@ -17,7 +21,7 @@ function doPost(e) {
     var rawBody = e && e.postData && e.postData.contents ? e.postData.contents : '{}';
     var data = JSON.parse(rawBody);
 
-    // 1) حفظ وتحديث شريط إعلانات الطلاب (لا يلمس صفوف الطلاب إطلاقاً)
+    // 1) Save/update global Teacher Broadcast banner (does not modify student rows)
     if (data.action === 'setBroadcast') {
       var allowedStyles = ['info', 'important', 'promo'];
       var styleVal = String(data.style || 'info');
@@ -69,7 +73,7 @@ function doPost(e) {
     }
 
     var existingRows = sheet.getDataRange().getValues();
-    var defaultAccessStr = '{"chapters":[1],"intlMocks":[],"arabicMocks":[],"patterns":[1]}';
+    var defaultAccessStr = '{"chapters":[1],"intlMocks":[],"arabicMocks":[],"patterns":[]}';
 
     function findStudentRowNumber(idVal, codeVal) {
       var targetId = String(idVal || '').trim();
@@ -84,7 +88,7 @@ function doPost(e) {
       return -1;
     }
 
-    // 2) تسجيل طالب جديد من لوحة المعلم
+    // 2) Register a new student from the Teacher Dashboard
     if (data.action === 'registerStudent') {
       var newCode = String(data.studentCode || '').trim();
       if (findStudentRowNumber(data.studentId, newCode) > 0) {
@@ -121,7 +125,7 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // 3) تحديث صلاحيات الوصول (العمود 14 فقط)
+    // 3) Update granular access permissions (Column 14 only)
     if (data.action === 'updateAccess') {
       var accessStr =
         typeof data.unlockedAccess === 'string' && data.unlockedAccess.trim()
@@ -157,7 +161,7 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // 4) ربط جهاز الطالب (العمود 15 فقط)
+    // 4) Bind student device ID (Column 15 only)
     if (data.action === 'bindDevice') {
       var deviceToBind = String(data.boundDeviceId || data.deviceId || '').trim();
       var bindRowIndex = findStudentRowNumber(data.studentId, data.studentCode);
@@ -175,7 +179,7 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // 5) فك ارتباط جهاز الطالب (تصفير العمود 15 فقط)
+    // 5) Unbind student device ID (clears Column 15 only)
     if (data.action === 'unbindDevice') {
       var unbindRowIndex = findStudentRowNumber(data.studentId, data.studentCode);
       if (unbindRowIndex > 0) {
@@ -185,7 +189,7 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // 6) تحديث إحصائيات تقدم الطالب (الأعمدة 1..13 فقط)
+    // 6) Update student progress metrics (Columns 1..13 only)
     var breakdownStr =
       typeof data.chaptersBreakdown === 'string'
         ? data.chaptersBreakdown
@@ -238,7 +242,7 @@ function doPost(e) {
 
 function doGet(e) {
   try {
-    // جلب شريط إعلان المعلم النشط للطلاب عبر ?action=getBroadcast
+    // Fetch active Teacher Broadcast banner via ?action=getBroadcast
     if (e && e.parameter && e.parameter.action === 'getBroadcast') {
       var rawBroadcast = PropertiesService.getScriptProperties().getProperty(BROADCAST_PROPERTY_KEY);
       var parsedBroadcast = null;
@@ -299,9 +303,9 @@ function doGet(e) {
       }
 
       var rawAccess = item.unlockedAccess !== undefined ? item.unlockedAccess : row[13];
-      var parsedAccess = { chapters: [1], intlMocks: [], arabicMocks: [], patterns: [1] };
+      var parsedAccess = { chapters: [1], intlMocks: [], arabicMocks: [], patterns: [] };
       if (typeof rawAccess === 'string' && rawAccess.trim()) {
-        try { parsedAccess = JSON.parse(rawAccess); } catch (e3) { parsedAccess = { chapters: [1], intlMocks: [], arabicMocks: [], patterns: [1] }; }
+        try { parsedAccess = JSON.parse(rawAccess); } catch (e3) { parsedAccess = { chapters: [1], intlMocks: [], arabicMocks: [], patterns: [] }; }
       } else if (rawAccess && typeof rawAccess === 'object') {
         parsedAccess = rawAccess;
       }

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-  ArrowRight,
+  ArrowLeft,
   BookOpen,
   CheckCircle2,
   ChevronDown,
@@ -43,37 +43,37 @@ const FOUNDATION_DRILLS: DrillCardConfig[] = [
   {
     type: 'hanzi-to-arabic',
     numberLabel: '01',
-    difficultyLabel: 'تأسيسي • سهل',
+    difficultyLabel: 'Foundation · Easy',
     difficultyTone: 'jade',
   },
   {
     type: 'arabic-to-hanzi',
     numberLabel: '02',
-    difficultyLabel: 'تأسيسي • سهل',
+    difficultyLabel: 'Foundation · Easy',
     difficultyTone: 'jade',
   },
   {
     type: 'hanzi-to-pinyin',
     numberLabel: '03',
-    difficultyLabel: 'تأسيسي • متوسط',
+    difficultyLabel: 'Foundation · Medium',
     difficultyTone: 'gold',
   },
   {
     type: 'listening',
     numberLabel: '04',
-    difficultyLabel: 'تأسيسي • متوسط',
+    difficultyLabel: 'Foundation · Medium',
     difficultyTone: 'gold',
   },
   {
     type: 'match-2-col',
     numberLabel: '05',
-    difficultyLabel: 'تأسيسي • متوسط',
+    difficultyLabel: 'Foundation · Medium',
     difficultyTone: 'gold',
   },
   {
     type: 'match-3-col',
     numberLabel: '06',
-    difficultyLabel: 'تأسيسي • متوسط',
+    difficultyLabel: 'Foundation · Medium',
     difficultyTone: 'gold',
   },
 ];
@@ -82,25 +82,25 @@ const APPLIED_DRILLS: DrillCardConfig[] = [
   {
     type: 'sentence-hanzi-to-arabic',
     numberLabel: '07',
-    difficultyLabel: 'تطبيقي • متوسط',
+    difficultyLabel: 'Applied · Medium',
     difficultyTone: 'gold',
   },
   {
     type: 'sentence-arabic-to-hanzi',
     numberLabel: '08',
-    difficultyLabel: 'تطبيقي • متوسط',
+    difficultyLabel: 'Applied · Medium',
     difficultyTone: 'gold',
   },
   {
     type: 'fill-in-blank',
     numberLabel: '09',
-    difficultyLabel: 'تطبيقي • متوسط',
+    difficultyLabel: 'Applied · Medium',
     difficultyTone: 'gold',
   },
   {
     type: 'sentence-builder',
     numberLabel: '10',
-    difficultyLabel: 'تطبيقي • متقدم',
+    difficultyLabel: 'Applied · Advanced',
     difficultyTone: 'cinnabar',
   },
 ];
@@ -126,13 +126,13 @@ function DrillFormatMiniPreview({ type }: { type: DrillType }) {
           <span className="font-hanzi text-lg font-bold text-[#1C1917] dark:text-[#F5F2EB]">
             你好
           </span>
-          <span className="text-[11px] text-[#57534E] dark:text-[#A8A29E]">←</span>
+          <span className="text-[11px] text-[#57534E] dark:text-[#A8A29E]">→</span>
           <div className="flex items-center gap-1.5 text-[11px]">
             <span className="px-2 py-0.5 rounded bg-[#15803D]/12 dark:bg-[#22C55E]/15 text-[#15803D] dark:text-[#22C55E] font-bold">
-              مرحباً
+              Hello
             </span>
             <span className="px-2 py-0.5 rounded bg-[#1C1917]/6 dark:bg-[#F5F2EB]/8 text-[#57534E] dark:text-[#A8A29E]">
-              معلم
+              Teacher
             </span>
           </div>
         </div>
@@ -144,8 +144,8 @@ function DrillFormatMiniPreview({ type }: { type: DrillType }) {
           aria-hidden="true"
           className="rounded-lg bg-[#F9F6F0] dark:bg-[#141312] border border-[#1C1917]/8 dark:border-[#F5F2EB]/8 px-3 py-2.5 flex items-center justify-between gap-2"
         >
-          <span className="text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB]">معلم</span>
-          <span className="text-[11px] text-[#57534E] dark:text-[#A8A29E]">←</span>
+          <span className="text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB]">Teacher</span>
+          <span className="text-[11px] text-[#57534E] dark:text-[#A8A29E]">→</span>
           <div className="flex items-center gap-1.5 font-hanzi text-sm">
             <span className="px-2 py-0.5 rounded bg-[#B91C1C]/12 dark:bg-[#EF4444]/18 text-[#B91C1C] dark:text-[#EF4444] font-bold">
               老师
@@ -195,7 +195,7 @@ function DrillFormatMiniPreview({ type }: { type: DrillType }) {
             </div>
           </div>
           <span className="text-[11px] font-semibold text-[#57534E] dark:text-[#A8A29E]">
-            استماع ← اختيار المعنى
+            Listen → Select Meaning
           </span>
         </div>
       );
@@ -212,8 +212,8 @@ function DrillFormatMiniPreview({ type }: { type: DrillType }) {
           </div>
           <div className="flex-1 border-t border-dashed border-[#D97706]/60 mx-1" />
           <div className="flex flex-col gap-1 text-[#57534E] dark:text-[#A8A29E]">
-            <span>صديق</span>
-            <span>طالب</span>
+            <span>Friend</span>
+            <span>Student</span>
           </div>
         </div>
       );
@@ -228,7 +228,7 @@ function DrillFormatMiniPreview({ type }: { type: DrillType }) {
           <span className="text-[#D97706]">↔</span>
           <span className="font-pinyin text-[#57534E] dark:text-[#A8A29E]">míngzi</span>
           <span className="text-[#D97706]">↔</span>
-          <span className="font-semibold text-[#15803D] dark:text-[#22C55E]">اسم</span>
+          <span className="font-semibold text-[#15803D] dark:text-[#22C55E]">Name</span>
         </div>
       );
 
@@ -242,7 +242,7 @@ function DrillFormatMiniPreview({ type }: { type: DrillType }) {
             我是中国人。
           </p>
           <p className="text-[11px] font-semibold text-[#15803D] dark:text-[#22C55E]">
-            ← أنا صيني الجنسية.
+            → I am Chinese.
           </p>
         </div>
       );
@@ -254,7 +254,7 @@ function DrillFormatMiniPreview({ type }: { type: DrillType }) {
           className="rounded-lg bg-[#F9F6F0] dark:bg-[#141312] border border-[#1C1917]/8 dark:border-[#F5F2EB]/8 px-3 py-2 space-y-1"
         >
           <p className="text-[11px] font-semibold text-[#1C1917] dark:text-[#F5F2EB]">
-            هل تتحدث الصينية؟
+            Can you speak Chinese?
           </p>
           <p className="font-hanzi text-xs font-bold text-[#B91C1C] dark:text-[#EF4444] text-left">
             你会说中文吗？
@@ -269,7 +269,11 @@ function DrillFormatMiniPreview({ type }: { type: DrillType }) {
           className="rounded-lg bg-[#F9F6F0] dark:bg-[#141312] border border-[#1C1917]/8 dark:border-[#F5F2EB]/8 px-3 py-2.5 flex items-center justify-between gap-2"
         >
           <span className="font-hanzi text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-            他 <span className="inline-block border-b-2 border-[#B91C1C] dark:border-[#EF4444] px-1.5 text-[#B91C1C] dark:text-[#EF4444]">___</span> 两个孩子
+            他{' '}
+            <span className="inline-block border-b-2 border-[#B91C1C] dark:border-[#EF4444] px-1.5 text-[#B91C1C] dark:text-[#EF4444]">
+              ___
+            </span>{' '}
+            两个孩子
           </span>
           <span className="font-hanzi text-[11px] px-1.5 py-0.5 rounded bg-[#B91C1C]/12 dark:bg-[#EF4444]/18 text-[#B91C1C] dark:text-[#EF4444] font-bold">
             有
@@ -356,14 +360,14 @@ export function ChapterHubView({
             type="button"
             disabled={!available}
             onClick={() => onStartDrill(cfg.type)}
-            className={`text-right rounded-xl border p-5 flex flex-col justify-between gap-4 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] ${
+            className={`text-left rounded-xl border p-5 flex flex-col justify-between gap-4 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] ${
               available
                 ? 'border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] hover:border-[#B91C1C]/45 dark:hover:border-[#EF4444]/45 hover:-translate-y-0.5'
                 : 'border-[#1C1917]/8 dark:border-[#F5F2EB]/8 bg-[#F2ECE1]/60 dark:bg-[#181614] opacity-60 cursor-not-allowed'
             }`}
           >
             <div className="space-y-3">
-              {/* سطر المستوى والرقم وحالة الإنجاز */}
+              {/* Tier, Index & Completion */}
               <div className="flex items-center justify-between gap-2 text-xs">
                 <div className="flex items-center gap-2 tabular-nums">
                   <span className="font-bold text-[#57534E] dark:text-[#A8A29E]">
@@ -380,7 +384,7 @@ export function ChapterHubView({
                 {isCompleted && (
                   <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#15803D] dark:text-[#22C55E]">
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>مُنجز</span>
+                    <span>Done</span>
                   </span>
                 )}
               </div>
@@ -394,19 +398,19 @@ export function ChapterHubView({
                 </p>
               </div>
 
-              {/* معاينة مصغّرة لشكل السؤال */}
+              {/* Format Mini Preview */}
               <DrillFormatMiniPreview type={cfg.type} />
             </div>
 
             <div className="flex items-center justify-between pt-3 border-t border-[#1C1917]/8 dark:border-[#F5F2EB]/8 text-xs">
               <span className="text-[#57534E] dark:text-[#A8A29E] tabular-nums">
                 {available
-                  ? `${itemCount} ${meta.requires === 'vocab' ? 'مفردة' : 'جملة'} متاحة`
-                  : 'لا توجد عناصر متاحة'}
+                  ? `${itemCount} ${meta.requires === 'vocab' ? 'words' : 'sentences'} available`
+                  : 'No items available'}
               </span>
               {available && (
                 <span className="font-bold text-[#B91C1C] dark:text-[#EF4444]">
-                  {selectedMode === 'practice' ? 'تدرّب الآن' : 'ابدأ الامتحان'}
+                  {selectedMode === 'practice' ? 'Practice Now' : 'Start Exam'}
                 </span>
               )}
             </div>
@@ -423,15 +427,15 @@ export function ChapterHubView({
       transition={{ duration: 0.2 }}
       className="mx-auto max-w-6xl px-4 sm:px-6 py-10 space-y-8"
     >
-      {/* الترويسة وزر الرجوع */}
+      {/* Header & Back Button */}
       <div className="space-y-4">
         <button
           type="button"
           onClick={onBack}
           className="inline-flex items-center gap-2 text-sm font-semibold text-[#57534E] dark:text-[#A8A29E] hover:text-[#B91C1C] dark:hover:text-[#EF4444] transition-colors"
         >
-          <ArrowRight className="w-4 h-4" />
-          <span>العودة إلى الفصول الخمسة عشر</span>
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to All 15 Chapters</span>
         </button>
 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10 pb-6">
@@ -441,11 +445,11 @@ export function ChapterHubView({
             </span>
             <div>
               <div className="flex items-center gap-2 text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums mb-1">
-                <span>{chapter.vocab.length} مفردات</span>
+                <span>{chapter.vocab.length} vocab</span>
                 <span aria-hidden="true">·</span>
-                <span>{chapter.sentences.length} جمل</span>
+                <span>{chapter.sentences.length} sentences</span>
                 <span aria-hidden="true">·</span>
-                <span>الإكمال {completionPercent}%</span>
+                <span>{completionPercent}% complete</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
                 {chapter.titleAr}: {chapter.subtitleAr}
@@ -453,10 +457,10 @@ export function ChapterHubView({
             </div>
           </div>
 
-          {/* مفتاح التبديل بين وضع التدريب ووضع الامتحان */}
+          {/* Practice vs Exam Mode Toggle */}
           <div
             role="radiogroup"
-            aria-label="اختيار نمط الجلسة"
+            aria-label="Session Mode"
             className="inline-flex p-1 rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F2ECE1] dark:bg-[#1E1C1A] self-start lg:self-auto"
           >
             <button
@@ -471,7 +475,7 @@ export function ChapterHubView({
               }`}
             >
               <GraduationCap className="w-4 h-4 shrink-0" />
-              <span>وضع التدريب</span>
+              <span>Practice Mode</span>
             </button>
             <button
               type="button"
@@ -485,24 +489,24 @@ export function ChapterHubView({
               }`}
             >
               <ClipboardCheck className="w-4 h-4 shrink-0" />
-              <span>وضع الامتحان</span>
+              <span>Exam Mode</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* توضيح مختصر لآلية الوضع المختار */}
+      {/* Mode Description */}
       <div className="rounded-lg border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-white dark:bg-[#1E1C1A] px-5 py-3.5 text-sm text-[#57534E] dark:text-[#A8A29E]">
         {selectedMode === 'practice' ? (
           <span>
-            <strong className="text-[#15803D] dark:text-[#22C55E]">وضع التدريب:</strong> يعرض
-            التصحيح الفوري والإجابة الصحيحة بعد كل سؤال لمساعدتك على التثبيت السريع.
+            <strong className="text-[#15803D] dark:text-[#22C55E]">Practice Mode:</strong> Shows
+            immediate feedback and correct answers after every question to reinforce retention.
           </span>
         ) : (
           <span>
-            <strong className="text-[#B91C1C] dark:text-[#EF4444]">وضع الامتحان:</strong> يتيح لك
-            التنقل الحر بين الأسئلة وتعديل إجاباتك قبل التسليم النهائي، ثم عرض النتيجة والمراجعة
-            الكاملة.
+            <strong className="text-[#B91C1C] dark:text-[#EF4444]">Exam Mode:</strong> Navigate
+            freely across questions and edit answers before final submission, followed by a full
+            score breakdown.
           </span>
         )}
       </div>
@@ -510,27 +514,27 @@ export function ChapterHubView({
       {!hasAnyContent ? (
         <div className="neo-frame rounded-xl p-12 text-center space-y-3">
           <p className="text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-            محتوى هذا الفصل قيد الإضافة
+            Chapter content coming soon
           </p>
           <p className="text-sm text-[#57534E] dark:text-[#A8A29E]">
-            لا توجد مفردات أو جمل مضافة في هذا الفصل بعد.
+            No vocabulary or sentences have been added to this chapter yet.
           </p>
         </div>
       ) : (
         <>
-          {/* بطاقة الاختبار الشامل */}
+          {/* Mixed Comprehensive Test Banner */}
           <div className="neo-frame rounded-xl p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-xs font-semibold text-[#D97706] dark:text-[#F59E0B]">
                 <Layers className="w-4 h-4" />
-                <span>تدريب متكامل يجمع جميع المحركات المتاحة</span>
+                <span>Integrated session combining all available drill engines</span>
               </div>
               <h2 className="text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                اختبار شامل للفصل
+                Comprehensive Chapter Review
               </h2>
               <p className="text-sm text-[#57534E] dark:text-[#A8A29E]">
-                مجموعة متنوعة تشمل القراءة والنغمات والتوصيل والاستماع وترجمة وتكوين الجمل في جلسة
-                واحدة.
+                A balanced mix covering reading, tones, matching, listening, sentence translation,
+                and sentence building in one session.
               </p>
             </div>
 
@@ -541,24 +545,25 @@ export function ChapterHubView({
             >
               <Sparkles className="w-4 h-4" />
               <span>
-                {selectedMode === 'practice' ? 'ابدأ التدريب الشامل' : 'ابدأ الامتحان الشامل'}
+                {selectedMode === 'practice' ? 'Start Mixed Practice' : 'Start Chapter Exam'}
               </span>
             </button>
           </div>
 
-          {/* المختبرات التفاعلية للفصل (الكتابة + النطق الصوتي + تحدي السرعة) */}
+          {/* Interactive Chapter Labs */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-5 flex flex-col justify-between gap-4">
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#B91C1C] dark:text-[#EF4444]">
                   <PenTool className="w-3.5 h-3.5" />
-                  <span>تدريب الكتابة وترتيب الخطوط</span>
+                  <span>Stroke Order &amp; Handwriting</span>
                 </div>
                 <h3 className="text-base font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                  مختبر الكتابة (Hanzi Lab)
+                  Hanzi Writing Lab
                 </h3>
                 <p className="text-xs text-[#57534E] dark:text-[#A8A29E] leading-relaxed">
-                  شاهد حركة الخطوط وتدرّب على رسم رموز هذا الفصل يدوياً على شبكة 米字格.
+                  Watch animated stroke order and trace this chapter’s characters on a traditional
+                  米字格 grid.
                 </p>
               </div>
               <button
@@ -567,7 +572,7 @@ export function ChapterHubView({
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[42px] rounded-lg border border-[#B91C1C] dark:border-[#EF4444] text-[#B91C1C] dark:text-[#EF4444] hover:bg-[#B91C1C] hover:text-white dark:hover:bg-[#EF4444] dark:hover:text-white font-bold text-xs transition-colors whitespace-nowrap"
               >
                 <PenTool className="w-4 h-4 shrink-0" />
-                <span>افتح مختبر الكتابة</span>
+                <span>Open Hanzi Lab</span>
               </button>
             </div>
 
@@ -575,13 +580,14 @@ export function ChapterHubView({
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#15803D] dark:text-[#22C55E]">
                   <Mic className="w-3.5 h-3.5" />
-                  <span>تدريب النطق المباشر بالمايكروفون</span>
+                  <span>Live Microphone Assessment</span>
                 </div>
                 <h3 className="text-base font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                  مدرّب النطق الصوتي (Speaking)
+                  Speaking Voice Trainer
                 </h3>
                 <p className="text-xs text-[#57534E] dark:text-[#A8A29E] leading-relaxed">
-                  انطق كلمات وجمل هذا الفصل بصوتك واحصل على تقييم فوري ودقة مطابقة الرموز.
+                  Speak this chapter’s vocabulary and sentences aloud for instant character-level
+                  accuracy feedback.
                 </p>
               </div>
               <button
@@ -590,7 +596,7 @@ export function ChapterHubView({
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[42px] rounded-lg border border-[#15803D] dark:border-[#22C55E] text-[#15803D] dark:text-[#22C55E] hover:bg-[#15803D] hover:text-white dark:hover:bg-[#22C55E] dark:hover:text-[#121110] font-bold text-xs transition-colors whitespace-nowrap"
               >
                 <Mic className="w-4 h-4 shrink-0" />
-                <span>افتح مدرّب النطق</span>
+                <span>Open Voice Trainer</span>
               </button>
             </div>
 
@@ -598,13 +604,14 @@ export function ChapterHubView({
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D97706] dark:text-[#F59E0B]">
                   <Zap className="w-3.5 h-3.5" />
-                  <span>تحدي التوصيل السريع (60 ثانية)</span>
+                  <span>60-Second Rapid Pairing</span>
                 </div>
                 <h3 className="text-base font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                  تحدي السرعة ⚡
+                  Speed Match Challenge
                 </h3>
                 <p className="text-xs text-[#57534E] dark:text-[#A8A29E] leading-relaxed">
-                  طابق مفردات هذا الفصل بأسرع ما يمكنك خلال دقيقة واحدة وحطّم رقمك القياسي.
+                  Match this chapter’s vocabulary against the clock in one minute and beat your
+                  personal record.
                 </p>
               </div>
               <button
@@ -613,17 +620,17 @@ export function ChapterHubView({
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[42px] rounded-lg border border-[#D97706] dark:border-[#F59E0B] text-[#B45309] dark:text-[#F59E0B] hover:bg-[#D97706] hover:text-white dark:hover:bg-[#F59E0B] dark:hover:text-[#121110] font-bold text-xs transition-colors whitespace-nowrap"
               >
                 <Zap className="w-4 h-4 shrink-0" />
-                <span>ابدأ تحدي السرعة</span>
+                <span>Start Speed Match</span>
               </button>
             </div>
           </div>
 
-          {/* دليل مفردات وجمل الفصل مع أزرار النجمة ⭐ والملاحظات الشخصية 📝 */}
+          {/* Chapter Vocabulary & Sentences Study Drawer with Bookmarks & Notes */}
           <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] overflow-hidden">
             <button
               type="button"
               onClick={() => setStudyDrawerOpen((prev) => !prev)}
-              className="w-full px-5 py-4 flex items-center justify-between gap-4 text-right hover:bg-[#F9F6F0]/70 dark:hover:bg-[#25221F]/60 transition-colors"
+              className="w-full px-5 py-4 flex items-center justify-between gap-4 text-left hover:bg-[#F9F6F0]/70 dark:hover:bg-[#25221F]/60 transition-colors"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span className="w-10 h-10 rounded-lg border border-[#D97706]/30 dark:border-[#F59E0B]/35 bg-[#D97706]/10 dark:bg-[#F59E0B]/12 flex items-center justify-center shrink-0">
@@ -632,29 +639,29 @@ export function ChapterHubView({
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2 text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums">
                     <span className="font-bold text-[#D97706] dark:text-[#F59E0B]">
-                      مراجعة وحفظ ليلة الامتحان
+                      Study Reference &amp; Bookmarks
                     </span>
                     <span aria-hidden="true">·</span>
-                    <span>{chapter.vocab.length} مفردة</span>
+                    <span>{chapter.vocab.length} vocab</span>
                     <span aria-hidden="true">·</span>
-                    <span>{chapter.sentences.length} جملة</span>
+                    <span>{chapter.sentences.length} sentences</span>
                     {chapterSavedCount > 0 && (
                       <>
                         <span aria-hidden="true">·</span>
                         <span className="font-bold text-[#15803D] dark:text-[#22C55E]">
-                          محفوظ في محفوظاتي: {chapterSavedCount}
+                          Saved in Vault: {chapterSavedCount}
                         </span>
                       </>
                     )}
                   </div>
                   <h2 className="text-base font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                    استعراض مفردات وجمل الفصل وإضافة ملاحظاتك الشخصية
+                    Browse Chapter Vocabulary, Sentences &amp; Personal Notes
                   </h2>
                 </div>
               </div>
 
               <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#B91C1C] dark:text-[#EF4444] shrink-0">
-                <span>{studyDrawerOpen ? 'إخفاء القائمة' : 'عرض الكلمات والجمل'}</span>
+                <span>{studyDrawerOpen ? 'Hide List' : 'View List'}</span>
                 {studyDrawerOpen ? (
                   <ChevronUp className="w-4 h-4" />
                 ) : (
@@ -676,7 +683,7 @@ export function ChapterHubView({
                           : 'text-[#57534E] dark:text-[#A8A29E]'
                       }`}
                     >
-                      المفردات ({chapter.vocab.length})
+                      Vocabulary ({chapter.vocab.length})
                     </button>
                     <button
                       type="button"
@@ -687,11 +694,11 @@ export function ChapterHubView({
                           : 'text-[#57534E] dark:text-[#A8A29E]'
                       }`}
                     >
-                      الجمل والمحادثات ({chapter.sentences.length})
+                      Sentences &amp; Dialogues ({chapter.sentences.length})
                     </button>
                   </div>
                   <span className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-                    اضغط ⭐ لحفظ العنصر في محفوظاتي أو 📝 لكتابة ملاحظة شخصية
+                    Click the star to bookmark or the note icon to attach a personal study tip
                   </span>
                 </div>
 
@@ -726,7 +733,7 @@ export function ChapterHubView({
                               <button
                                 type="button"
                                 onClick={() => handlePlayStudyAudio(v.id, v.hanzi, 1.0)}
-                                aria-label={`استمع إلى ${v.hanzi}`}
+                                aria-label={`Listen to ${v.hanzi}`}
                                 className={`inline-flex items-center justify-center w-8 h-8 rounded-md border transition-colors ${
                                   isPlaying
                                     ? 'border-[#B91C1C] dark:border-[#EF4444] bg-[#B91C1C] dark:bg-[#EF4444] text-white'
@@ -748,7 +755,7 @@ export function ChapterHubView({
 
                           {note && (
                             <p className="text-[11px] text-[#B91C1C] dark:text-[#EF4444] bg-white/80 dark:bg-[#1E1C1A] rounded px-2.5 py-1.5 border border-[#B91C1C]/15 dark:border-[#EF4444]/20">
-                              <strong className="ml-1">ملاحظتك:</strong>
+                              <strong className="mr-1">Note:</strong>
                               {note}
                             </p>
                           )}
@@ -785,7 +792,7 @@ export function ChapterHubView({
                                 </p>
                                 {note && (
                                   <p className="text-[11px] text-[#B91C1C] dark:text-[#EF4444] bg-white dark:bg-[#1E1C1A] rounded px-2.5 py-1.5 border border-[#B91C1C]/15 dark:border-[#EF4444]/20">
-                                    <strong className="ml-1">ملاحظتك:</strong>
+                                    <strong className="mr-1">Note:</strong>
                                     {note}
                                   </p>
                                 )}
@@ -836,7 +843,7 @@ export function ChapterHubView({
             )}
           </div>
 
-          {/* القسم الأول: المستوى التأسيسي — مفردات ونطق */}
+          {/* Tier 1: Foundation Drills */}
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
               <div className="flex items-center gap-3">
@@ -845,32 +852,32 @@ export function ChapterHubView({
                 </span>
                 <div>
                   <div className="text-xs font-bold text-[#15803D] dark:text-[#22C55E]">
-                    القسم الأول · ٦ تدريبات مفردات ونطق
+                    Part 1 · 6 Vocabulary &amp; Pronunciation Drills
                   </div>
                   <h2 className="text-lg sm:text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                    المستوى التأسيسي — مفردات ونطق
+                    Foundation Level — Vocabulary &amp; Tones
                   </h2>
                 </div>
               </div>
               <p className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-                تمارين الرموز الصينية والبينين والنغمات والاستماع والتوصيل
+                Hanzi recognition, Pinyin tones, listening, and column matching
               </p>
             </div>
 
             {renderDrillGrid(FOUNDATION_DRILLS)}
           </div>
 
-          {/* فاصل بصري واضح بين المستوى التأسيسي والمستوى التطبيقي */}
+          {/* Visual Separator */}
           <div className="relative py-2" role="separator">
             <div className="border-t border-[#1C1917]/12 dark:border-[#F5F2EB]/12" />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="px-4 bg-[#F9F6F0] dark:bg-[#121110] text-xs font-bold text-[#57534E] dark:text-[#A8A29E]">
-                الانتقال من المفردات إلى التراكيب والجمل
+                Advancing from Vocabulary to Sentences &amp; Structure
               </span>
             </div>
           </div>
 
-          {/* القسم الثاني: المستوى التطبيقي — تراكيب وجمل */}
+          {/* Tier 2: Applied Drills */}
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
               <div className="flex items-center gap-3">
@@ -879,15 +886,15 @@ export function ChapterHubView({
                 </span>
                 <div>
                   <div className="text-xs font-bold text-[#B91C1C] dark:text-[#EF4444]">
-                    القسم الثاني · ٤ تدريبات تراكيب وجمل
+                    Part 2 · 4 Sentence &amp; Context Drills
                   </div>
                   <h2 className="text-lg sm:text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                    المستوى التطبيقي — تراكيب وجمل
+                    Applied Level — Sentences &amp; Construction
                   </h2>
                 </div>
               </div>
               <p className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-                تمارين الترجمة السياقية وإكمال الفراغ وبناء الجمل الصينية
+                Contextual translation, fill-in-the-blank, and Chinese sentence assembly
               </p>
             </div>
 

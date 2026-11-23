@@ -18,7 +18,7 @@ function scoreMandarinVoice(voice: SpeechSynthesisVoice): number {
 
   let score = isMainland ? 100 : 40;
 
-  // أولوية قصوى للأصوات الطبيعية والعصبية عالية الجودة
+  // Highest priority for high-quality neural and natural Mandarin voices
   if (lowerName.includes('microsoft xiaoxiao')) {
     score += 500;
   } else if (lowerName.includes('microsoft yunxi')) {
@@ -35,7 +35,7 @@ function scoreMandarinVoice(voice: SpeechSynthesisVoice): number {
     score += 240;
   }
 
-  // تفضيل الأصوات المتصلة الطبيعية (مثل Edge/Chrome Online Natural) عند تساوي الفئة
+  // Prefer online natural voices (e.g., Edge/Chrome Online Natural) within the same tier
   if (lowerName.includes('online')) {
     score += 30;
   }
@@ -97,7 +97,7 @@ export function resolveBestChineseVoice(): SpeechSynthesisVoice | null {
 }
 
 /**
- * تهيئة مستمع onvoiceschanged لضمان جاهزية الأصوات الطبيعية من أول نقرة.
+ * Initializes the onvoiceschanged listener so natural Mandarin voices are ready on first click.
  */
 export function initChineseVoices(onReady?: (voice: SpeechSynthesisVoice | null) => void): () => void {
   if (!isSpeechSupported()) return () => {};
@@ -188,8 +188,8 @@ export interface DialogueAudioLine {
 }
 
 /**
- * تشغيل حوار صيني بين متحدثَين (المتحدثة أ بصوت أنثوي/نبرة أعلى، والمتحدث ب بصوت ذكوري/نبرة أعمق)
- * مع فاصل زمني طبيعي بين الجملتين.
+ * Plays a two-speaker Chinese dialogue (Speaker A with a higher/female voice, Speaker B with a deeper/male voice)
+ * with a natural pause between lines.
  */
 export function speakChineseDialogue(
   lines: DialogueAudioLine[],
@@ -226,7 +226,7 @@ export function speakChineseDialogue(
         utterance.voice = chosenVoice;
       }
 
-      // تمييز واضح وطبيعي بين المتحدثة (أ) والمتحدث (ب) حتى في حال توفر صوت واحد فقط بالمتصفح
+      // Clear pitch differentiation between Speaker A and Speaker B even if only one Mandarin voice is available
       if (line.speaker === 'A') {
         utterance.pitch = sameVoice ? 1.16 : 1.06;
         utterance.rate = 0.95;

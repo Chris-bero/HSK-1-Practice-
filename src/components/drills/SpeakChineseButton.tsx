@@ -39,8 +39,8 @@ export function SpeakChineseButton({
           e.stopPropagation();
           handleSpeak(1.0, 'normal');
         }}
-        title="استماع للنطق الصيني بالسرعة العادية"
-        aria-label="استماع للنطق الصيني"
+        title="Listen to Chinese pronunciation at normal speed"
+        aria-label="Listen to Chinese pronunciation"
         className={`inline-flex items-center justify-center gap-1.5 rounded-lg border transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] ${
           compact ? 'px-2.5 py-1.5 min-h-[34px] text-xs' : 'px-3.5 py-2 min-h-[40px] text-xs'
         } font-semibold ${
@@ -50,7 +50,7 @@ export function SpeakChineseButton({
         }`}
       >
         <Volume2 className="w-4 h-4 text-[#B91C1C] dark:text-[#EF4444] shrink-0" />
-        {!compact && <span>استماع</span>}
+        {!compact && <span>Listen</span>}
       </button>
 
       {showSlow && (
@@ -60,8 +60,8 @@ export function SpeakChineseButton({
             e.stopPropagation();
             handleSpeak(0.7, 'slow');
           }}
-          title="استماع للنطق الصيني بسرعة بطيئة (٠٫٧×)"
-          aria-label="استماع بطيء للنطق الصيني"
+          title="Listen to Chinese pronunciation at slow speed (0.7×)"
+          aria-label="Listen slowly to Chinese pronunciation"
           className={`inline-flex items-center justify-center gap-1.5 rounded-lg border transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97706] dark:focus-visible:ring-[#F59E0B] ${
             compact ? 'px-2.5 py-1.5 min-h-[34px] text-xs' : 'px-3 py-2 min-h-[40px] text-xs'
           } font-semibold ${
@@ -71,7 +71,7 @@ export function SpeakChineseButton({
           }`}
         >
           <Gauge className="w-3.5 h-3.5 text-[#D97706] dark:text-[#F59E0B] shrink-0" />
-          <span>بطيء</span>
+          <span>Slow</span>
         </button>
       )}
     </div>

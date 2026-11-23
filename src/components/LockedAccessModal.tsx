@@ -5,7 +5,7 @@ import { useApp } from '../context/AppContext';
 interface LockedAccessModalProps {
   isOpen: boolean;
   itemTitle: string;
-  itemType: 'chapter' | 'mock-exam' | 'pattern-drill';
+  itemType?: 'chapter';
   onClose: () => void;
 }
 
@@ -39,7 +39,7 @@ export function LockedAccessModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 2200);
     } catch {
-      // تجاهل أخطاء الحافظة
+      // Ignore clipboard errors
     }
   };
 
@@ -50,9 +50,9 @@ export function LockedAccessModal({
     try {
       const updated = await refreshStudentAccess();
       if (updated) {
-        setRefreshMsg('تم تحديث حالة الصلاحيات من جدول المعلم.');
+        setRefreshMsg('Access permissions refreshed from your instructor’s roster.');
       } else {
-        setRefreshMsg('تعذر الاتصال بجدول المعلم حالياً. جرّب إعادة تحميل الصفحة بعد قليل.');
+        setRefreshMsg('Unable to reach the roster right now. Please try reloading shortly.');
       }
     } finally {
       setIsRefreshing(false);
@@ -76,13 +76,9 @@ export function LockedAccessModal({
             <span className="w-10 h-10 rounded-lg border border-[#D97706]/35 bg-[#D97706]/10 dark:bg-[#F59E0B]/15 flex items-center justify-center shrink-0">
               <Lock className="w-5 h-5 text-[#B45309] dark:text-[#F59E0B]" />
             </span>
-            <div className="text-right">
+            <div className="text-left">
               <p className="text-[11px] font-bold text-[#B45309] dark:text-[#F59E0B]">
-                {itemType === 'chapter'
-                  ? 'محتوى يتطلب تفعيل الصلاحية'
-                  : itemType === 'pattern-drill'
-                    ? 'تدريبات الأنماط الدولية HSK 3.0'
-                    : 'الامتحانات الشاملة الموحّدة'}
+                Chapter Access Activation Required
               </p>
               <h2
                 id="locked-access-title"
@@ -96,7 +92,7 @@ export function LockedAccessModal({
           <button
             type="button"
             onClick={onClose}
-            aria-label="إغلاق"
+            aria-label="Close"
             className="w-9 h-9 rounded-md inline-flex items-center justify-center text-[#57534E] dark:text-[#A8A29E] hover:text-[#1C1917] dark:hover:text-[#F5F2EB] transition-colors"
           >
             <X className="w-5 h-5" />
@@ -104,15 +100,14 @@ export function LockedAccessModal({
         </div>
 
         <p className="text-sm text-[#57534E] dark:text-[#A8A29E] leading-relaxed">
-          هذا المحتوى غير مفعّل في حسابك التجريبي حالياً. يرجى إرسال كود الطالب الخاص بك إلى
-          المعلم (<strong className="text-[#1C1917] dark:text-[#F5F2EB]">Laohu</strong>) لتفعيل
-          الصلاحية الكاملة وفتح جميع الفصول والامتحانات الشاملة.
+          This chapter is not enabled on your current trial plan. Share your student access code
+          with your instructor to unlock all 15 curriculum chapters, chapter exams, and study labs.
         </p>
 
-        {/* بطاقة بيانات الطالب لإرسالها للمعلم */}
+        {/* Student credentials card */}
         <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F9F6F0] dark:bg-[#121110] p-4 space-y-3">
           <div className="flex items-center justify-between gap-2 text-xs">
-            <span className="text-[#57534E] dark:text-[#A8A29E]">اسم الطالب</span>
+            <span className="text-[#57534E] dark:text-[#A8A29E]">Student Name</span>
             <strong className="text-sm text-[#1C1917] dark:text-[#F5F2EB]">
               {currentStudent.name}
             </strong>
@@ -122,9 +117,7 @@ export function LockedAccessModal({
 
           <div className="flex items-center justify-between gap-2">
             <div>
-              <span className="block text-xs text-[#57534E] dark:text-[#A8A29E]">
-                كود الطالب (Student Code)
-              </span>
+              <span className="block text-xs text-[#57534E] dark:text-[#A8A29E]">Student Code</span>
               <strong
                 dir="ltr"
                 className="inline-block text-lg font-bold tracking-wider text-[#B91C1C] dark:text-[#EF4444] tabular-nums mt-0.5"
@@ -141,12 +134,12 @@ export function LockedAccessModal({
               {copied ? (
                 <>
                   <Check className="w-3.5 h-3.5 text-[#15803D] dark:text-[#22C55E]" />
-                  <span className="text-[#15803D] dark:text-[#22C55E]">تم النسخ</span>
+                  <span className="text-[#15803D] dark:text-[#22C55E]">Copied</span>
                 </>
               ) : (
                 <>
                   <Copy className="w-3.5 h-3.5" />
-                  <span>نسخ الكود</span>
+                  <span>Copy Code</span>
                 </>
               )}
             </button>
@@ -167,7 +160,7 @@ export function LockedAccessModal({
             className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 py-2.5 px-4 min-h-[44px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#121110] text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB] hover:border-[#B91C1C]/45 disabled:opacity-60 transition-colors"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>{isRefreshing ? 'جارٍ التحقق...' : 'تحديث الصلاحيات'}</span>
+            <span>{isRefreshing ? 'Checking...' : 'Refresh Access'}</span>
           </button>
 
           <button
@@ -175,7 +168,7 @@ export function LockedAccessModal({
             onClick={onClose}
             className="w-full sm:flex-1 py-2.5 px-4 min-h-[44px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-sm font-bold transition-colors"
           >
-            حسناً
+            Close
           </button>
         </div>
       </div>

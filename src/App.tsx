@@ -6,9 +6,7 @@ import { CollectionsView } from './components/CollectionsView';
 import { CustomQuizBuilderView } from './components/CustomQuizBuilderView';
 import { DrillSessionRunner, DrillSessionSource } from './components/drills/DrillSessionRunner';
 import { HomeView } from './components/HomeView';
-import { HskPortalView } from './components/HskPortalView';
 import { LoginGate } from './components/LoginGate';
-import { MockExamView } from './components/MockExamView';
 import { Navbar } from './components/Navbar';
 import { SkillLabTab, SkillsLabsView } from './components/SkillsLabsView';
 import { TeacherBroadcastBanner } from './components/TeacherBroadcastBanner';
@@ -131,10 +129,6 @@ function MainShell() {
 
         {view === 'vault' && <VaultView onNavigate={handleNavigate} />}
 
-        {view === 'hsk-portal' && <HskPortalView />}
-
-        {view === 'mock-exam' && <MockExamView onBack={() => handleNavigate('hsk-portal')} />}
-
         {view === 'drill' && sessionSource && (
           <DrillSessionRunner
             source={sessionSource}
@@ -143,17 +137,14 @@ function MainShell() {
         )}
 
         {view === 'analytics' && (
-          <AnalyticsView
-            onStartMistakeReview={handleStartMistakeReview}
-            onOpenMockExam={() => handleNavigate('hsk-portal')}
-          />
+          <AnalyticsView onStartMistakeReview={handleStartMistakeReview} />
         )}
       </main>
 
       <footer className="border-t border-[#1C1917]/10 dark:border-[#F5F2EB]/10 py-6 mt-12">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#57534E] dark:text-[#A8A29E]">
-          <span>بوابة اللغة الصينية - المستوى الأول</span>
-          <span>منصة تدريب تفاعلية · ١٥ فصلاً · ١٠ أنماط تدريبية</span>
+          <span>HSK 3.0 Level 1 Practice Portal</span>
+          <span>Interactive Training Platform · 15 Chapters · 10 Drill Modes</span>
         </div>
       </footer>
     </div>

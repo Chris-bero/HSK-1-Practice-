@@ -55,10 +55,10 @@ export function SentenceBuilderDrill({
 
   return (
     <div className="space-y-6">
-      {/* الدليل العربي */}
+      {/* Prompt cue */}
       <div className="neo-frame rounded-xl py-8 px-6 text-center space-y-2.5 bg-white dark:bg-[#1E1C1A]">
         <p className="text-xs font-semibold text-[#57534E] dark:text-[#A8A29E]">
-          اضغط على المقاطع الصينية بالترتيب الصحيح لتكوين الجملة التالية
+          Tap the Chinese segments in the correct order to form the following sentence
         </p>
         <p className="text-xl sm:text-2xl font-bold text-[#1C1917] dark:text-[#F5F2EB] leading-relaxed">
           {question.promptPrimary}
@@ -70,11 +70,11 @@ export function SentenceBuilderDrill({
         )}
       </div>
 
-      {/* منطقة تركيب الجملة */}
+      {/* Sentence assembly area */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-[#57534E] dark:text-[#A8A29E]">
-            إجابتك المركّبة (اضغط على أي مقطع لإزالته):
+            Your assembled sentence (tap any tile to remove):
           </span>
           {!showFeedback && assembledTileIds.length > 0 && (
             <button
@@ -83,7 +83,7 @@ export function SentenceBuilderDrill({
               className="inline-flex items-center gap-1 text-xs font-semibold text-[#B91C1C] dark:text-[#EF4444] hover:underline"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>إعادة الترتيب</span>
+              <span>Reset Order</span>
             </button>
           )}
         </div>
@@ -99,8 +99,8 @@ export function SentenceBuilderDrill({
           }`}
         >
           {selectedTiles.length === 0 ? (
-            <span dir="rtl" className="text-sm text-[#57534E]/70 dark:text-[#A8A29E]/70 mx-auto">
-              اختر المقاطع من الأسفل لتكوين الجملة الصينية هنا...
+            <span className="text-sm text-[#57534E]/70 dark:text-[#A8A29E]/70 mx-auto">
+              Select segments below to build the Chinese sentence here...
             </span>
           ) : (
             selectedTiles.map((tile) => (
@@ -118,10 +118,10 @@ export function SentenceBuilderDrill({
         </div>
       </div>
 
-      {/* بنك المقاطع المتاحة */}
+      {/* Available segments bank */}
       <div className="space-y-2">
         <span className="block text-xs font-bold text-[#57534E] dark:text-[#A8A29E]">
-          المقاطع المتاحة:
+          Available segments:
         </span>
         <div dir="ltr" className="flex flex-wrap items-center gap-2.5">
           {allTiles.map((tile) => {
@@ -145,7 +145,7 @@ export function SentenceBuilderDrill({
         </div>
       </div>
 
-      {/* زر التحقق الفوري في وضع التدريب */}
+      {/* Instant check button in Practice Mode */}
       {mode === 'practice' && !showFeedback && (
         <div className="pt-2">
           <button
@@ -154,12 +154,12 @@ export function SentenceBuilderDrill({
             onClick={onPracticeCheck}
             className="w-full sm:w-auto px-7 py-3 min-h-[46px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white font-bold text-sm transition-colors disabled:opacity-45 disabled:cursor-not-allowed"
           >
-            تحقق من الترتيب
+            Check Order
           </button>
         </div>
       )}
 
-      {/* نتيجة التحقق في وضع التدريب */}
+      {/* Feedback box in Practice Mode */}
       {showFeedback && (
         <div
           className={`rounded-xl border p-4 flex items-start gap-3 ${
@@ -175,7 +175,9 @@ export function SentenceBuilderDrill({
           )}
           <div className="space-y-2 text-sm flex-1">
             <p className="font-bold">
-              {isCorrectNow ? 'أحسنت! ترتيب الجملة صحيح تماماً.' : 'الترتيب غير مطابق، إليك الصياغة الصحيحة:'}
+              {isCorrectNow
+                ? 'Well done! The sentence order is completely correct.'
+                : 'Incorrect order — here is the correct sentence:'}
             </p>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="font-hanzi text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">

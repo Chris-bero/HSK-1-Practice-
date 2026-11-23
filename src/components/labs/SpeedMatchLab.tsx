@@ -11,6 +11,7 @@ import {
   VolumeX,
   Zap,
 } from 'lucide-react';
+import { STORAGE_KEYS } from '../../config/appConfig';
 import { useApp } from '../../context/AppContext';
 import { CHAPTERS_DATA } from '../../data/chaptersData';
 import { ChapterData, VocabItem } from '../../types';
@@ -43,7 +44,6 @@ interface ActiveSlotPair {
 
 const ROUND_DURATION_SECONDS = 60;
 const BOARD_SIZE = 5;
-const BEST_KEY_PREFIX = 'chinese_portal_speed_best_v1_';
 
 function shuffleArray<T>(items: T[]): T[] {
   const copy = [...items];
@@ -57,7 +57,7 @@ function shuffleArray<T>(items: T[]): T[] {
 function loadPersonalBest(studentId: string | undefined): SpeedPersonalBest | null {
   if (!studentId) return null;
   try {
-    const raw = localStorage.getItem(`${BEST_KEY_PREFIX}${studentId}`);
+    const raw = localStorage.getItem(`${STORAGE_KEYS.SPEED_MATCH_BEST_PREFIX}${studentId}`);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<SpeedPersonalBest>;
     if (typeof parsed.bestScore === 'number') {
@@ -77,9 +77,9 @@ function loadPersonalBest(studentId: string | undefined): SpeedPersonalBest | nu
 function savePersonalBest(studentId: string | undefined, best: SpeedPersonalBest): void {
   if (!studentId) return;
   try {
-    localStorage.setItem(`${BEST_KEY_PREFIX}${studentId}`, JSON.stringify(best));
+    localStorage.setItem(`${STORAGE_KEYS.SPEED_MATCH_BEST_PREFIX}${studentId}`, JSON.stringify(best));
   } catch {
-    // تجاهل أخطاء مساحة التخزين
+    // Ignore storage quota errors
   }
 }
 
@@ -118,7 +118,7 @@ export function SpeedMatchLab({
   );
   const [isNewRecord, setIsNewRecord] = useState(false);
 
-  // لوحة اللعب: 5 أزواج نشطة + ترتيب مستقل للعمود العربي
+  // Game board: 5 active pairs + independently shuffled meaning column
   const [zhSlots, setZhSlots] = useState<ActiveSlotPair[]>([]);
   const [arOrder, setArOrder] = useState<number[]>([]);
   const deckQueueRef = useRef<VocabItem[]>([]);
@@ -128,7 +128,7 @@ export function SpeedMatchLab({
   const [flashSuccessSlot, setFlashSuccessSlot] = useState<number | null>(null);
   const [shakeErrorSlots, setShakeErrorSlots] = useState<{ zh: number; ar: number } | null>(null);
 
-  // مزامنة الفصل المختار عند الدخول من داخل فصل محدد
+  // Sync selected chapter when launched from inside a specific chapter
   useEffect(() => {
     if (initialChapterId && unlockedChapters.some((ch) => ch.id === initialChapterId)) {
       setSelectedChapterId(initialChapterId);
@@ -141,7 +141,7 @@ export function SpeedMatchLab({
     setPersonalBest(loadPersonalBest(currentStudent?.id));
   }, [currentStudent?.id]);
 
-  // مجموعة المفردات النشطة حسب النطاق المختار (إزالة التكرار حسب الرمز الصيني)
+  // Active vocabulary pool deduplicated by Hanzi
   const vocabPool = useMemo<VocabItem[]>(() => {
     const sourceChapters =
       scope === 'chapter'
@@ -173,7 +173,7 @@ export function SpeedMatchLab({
         return picked;
       }
 
-      // إعادة تعبئة الصف بأي مفردات غير معروضة حالياً
+      // Refill queue with non-displayed items
       const fresh = shuffleArray(vocabPool.filter((v) => !excludeIds.has(v.id)));
       if (fresh.length > 0) {
         const [picked, ...rest] = fresh;
@@ -214,7 +214,7 @@ export function SpeedMatchLab({
     setPhase('playing');
   }, [vocabPool]);
 
-  // مؤقت العد التنازلي 60 ثانية
+  // 60-second countdown timer
   useEffect(() => {
     if (phase !== 'playing') return;
     const interval = window.setInterval(() => {
@@ -229,7 +229,7 @@ export function SpeedMatchLab({
     return () => window.clearInterval(interval);
   }, [phase]);
 
-  // إنهاء الجولة وحفظ أفضل رقم قياسي للطالب
+  // End round & persist personal best
   useEffect(() => {
     if (phase === 'playing' && timeLeft === 0) {
       setPhase('finished');
@@ -266,7 +266,7 @@ export function SpeedMatchLab({
   const evaluatePair = useCallback(
     (zhSlotId: number, arSlotId: number) => {
       if (zhSlotId === arSlotId) {
-        // تطابق صحيح
+        // Correct match
         const nextStreak = streak + 1;
         const multiplier = Math.min(5, 1 + Math.floor(nextStreak / 2));
         const pointsGained = 10 * multiplier;
@@ -281,7 +281,7 @@ export function SpeedMatchLab({
         setSelectedZhSlot(null);
         setSelectedArSlot(null);
 
-        // استبدال الزوج المطابق فوراً بمفردة جديدة مع إعادة ترتيب لطيف للبطاقة الجديدة
+        // Immediately replace matched pair with a fresh vocabulary card
         window.setTimeout(() => {
           setZhSlots((prevSlots) => {
             const exclude = new Set(prevSlots.map((p) => p.vocab.id));
@@ -292,7 +292,6 @@ export function SpeedMatchLab({
             );
           });
           setArOrder((prevOrder) => {
-            // تبديل موضع البطاقة العربية الجديدة عشوائياً مع بطاقة أخرى لتجديد التحدي
             const next = [...prevOrder];
             const idx = next.indexOf(zhSlotId);
             if (idx >= 0 && next.length > 1) {
@@ -304,7 +303,7 @@ export function SpeedMatchLab({
           setFlashSuccessSlot((cur) => (cur === zhSlotId ? null : cur));
         }, 230);
       } else {
-        // زوج غير متطابق: اهتزاز أحمر وتصفير السلسلة دون إيقاف اللوحة
+        // Mismatched pair: red shake and streak reset
         playMatchErrorTone(muted);
         setMistakeCount((m) => m + 1);
         setStreak(0);
@@ -365,12 +364,12 @@ export function SpeedMatchLab({
 
   return (
     <div className="space-y-5">
-      {/* شريط اختيار النطاق والصوت */}
+      {/* Scope & audio controls bar */}
       <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-bold text-[#57534E] dark:text-[#A8A29E]">
-              نطاق الكلمات:
+              Word pool:
             </span>
             <div className="inline-flex flex-wrap max-w-full p-1 rounded-lg bg-[#F2ECE1] dark:bg-[#141312] border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 gap-1">
               <button
@@ -385,7 +384,7 @@ export function SpeedMatchLab({
                     : 'text-[#57534E] dark:text-[#A8A29E]'
                 }`}
               >
-                الفصل الحالي (第{selectedChapterId}课)
+                Current Chapter (第{selectedChapterId}课)
               </button>
               <button
                 type="button"
@@ -399,7 +398,7 @@ export function SpeedMatchLab({
                     : 'text-[#57534E] dark:text-[#A8A29E]'
                 }`}
               >
-                جميع الفصول المفتوحة ({unlockedChapters.length})
+                All Unlocked Chapters ({unlockedChapters.length})
               </button>
             </div>
           </div>
@@ -408,7 +407,7 @@ export function SpeedMatchLab({
             {personalBest && (
               <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D97706] dark:text-[#F59E0B] tabular-nums">
                 <Trophy className="w-4 h-4 shrink-0" />
-                <span>أفضل رقم قياسي: {personalBest.bestScore} نقطة</span>
+                <span>Personal Best: {personalBest.bestScore} pts</span>
               </div>
             )}
 
@@ -421,12 +420,12 @@ export function SpeedMatchLab({
               {muted ? (
                 <>
                   <VolumeX className="w-3.5 h-3.5 text-[#57534E] dark:text-[#A8A29E]" />
-                  <span>الصوت مكتوم</span>
+                  <span>Sound Muted</span>
                 </>
               ) : (
                 <>
                   <Volume2 className="w-3.5 h-3.5 text-[#15803D] dark:text-[#22C55E]" />
-                  <span>المؤثرات مفعّلة</span>
+                  <span>Sound Effects On</span>
                 </>
               )}
             </button>
@@ -460,7 +459,7 @@ export function SpeedMatchLab({
         )}
       </div>
 
-      {/* شاشة البدء (Ready) */}
+      {/* Ready screen */}
       {phase === 'ready' && (
         <div className="neo-frame rounded-xl p-8 sm:p-10 text-center space-y-6">
           <div className="w-16 h-16 mx-auto rounded-xl border border-[#D97706]/35 dark:border-[#F59E0B]/35 bg-[#D97706]/10 dark:bg-[#F59E0B]/15 text-[#D97706] dark:text-[#F59E0B] flex items-center justify-center">
@@ -469,16 +468,16 @@ export function SpeedMatchLab({
 
           <div className="space-y-2 max-w-lg mx-auto">
             <h2 className="text-2xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-              تحدي السرعة — 60 ثانية ⚡
+              Speed Match — 60-Second Sprint ⚡
             </h2>
             <p className="text-sm text-[#57534E] dark:text-[#A8A29E] leading-relaxed">
-              طابق أكبر عدد ممكن من الكلمات الصينية بمعانيها العربية خلال دقيقة واحدة. كل تطابق
-              متتالٍ يضاعف نقاطك (<span className="font-bold">x1 → x2 → x3 → x5</span>) وتُستبدل
-              البطاقات تلقائياً بكلمات جديدة!
+              Match as many Chinese words to their meanings as possible in one minute. Consecutive
+              matches increase your combo multiplier (<span className="font-bold">x1 → x2 → x3 → x5</span>)
+              and matched cards refresh automatically!
             </p>
             <p className="text-xs font-semibold text-[#57534E] dark:text-[#A8A29E] tabular-nums pt-1">
-              رصيد الكلمات الجاهز للتحدي: {vocabPool.length} مفردة ·{' '}
-              {showPinyin ? 'البينين ظاهر' : 'بدون بينين (تحدٍ متقدم)'}
+              Available word pool: {vocabPool.length} words ·{' '}
+              {showPinyin ? 'Pinyin visible' : 'Pinyin hidden (hard mode)'}
             </p>
           </div>
 
@@ -489,21 +488,21 @@ export function SpeedMatchLab({
             className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 min-h-[48px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-base font-bold transition-colors disabled:opacity-45"
           >
             <Play className="w-5 h-5" />
-            <span>ابدأ تحدي الـ 60 ثانية</span>
+            <span>Start 60-Second Challenge</span>
           </button>
         </div>
       )}
 
-      {/* ساحة اللعب النشطة (Playing) */}
+      {/* Active gameplay board */}
       {phase === 'playing' && (
         <div className="space-y-5">
-          {/* لوحة العداد والنتيجة ومضاعف السلسلة */}
+          {/* HUD: Timer, Score, Matches, Combo */}
           <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-4 sm:p-5 space-y-3.5">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
               <div className="rounded-lg bg-[#F9F6F0] dark:bg-[#141312] p-3">
                 <div className="text-[11px] font-semibold text-[#57534E] dark:text-[#A8A29E] flex items-center justify-center gap-1">
                   <Timer className="w-3.5 h-3.5" />
-                  <span>الوقت المتبقي</span>
+                  <span>Time Left</span>
                 </div>
                 <div
                   className={`text-2xl font-bold tabular-nums mt-0.5 ${
@@ -518,7 +517,7 @@ export function SpeedMatchLab({
 
               <div className="rounded-lg bg-[#F9F6F0] dark:bg-[#141312] p-3">
                 <div className="text-[11px] font-semibold text-[#57534E] dark:text-[#A8A29E]">
-                  النقاط
+                  Score
                 </div>
                 <div className="text-2xl font-bold tabular-nums text-[#B91C1C] dark:text-[#EF4444] mt-0.5">
                   {score}
@@ -527,7 +526,7 @@ export function SpeedMatchLab({
 
               <div className="rounded-lg bg-[#F9F6F0] dark:bg-[#141312] p-3">
                 <div className="text-[11px] font-semibold text-[#57534E] dark:text-[#A8A29E]">
-                  الأزواج المتطابقة
+                  Matched Pairs
                 </div>
                 <div className="text-2xl font-bold tabular-nums text-[#15803D] dark:text-[#22C55E] mt-0.5">
                   {matchedCount}
@@ -537,7 +536,7 @@ export function SpeedMatchLab({
               <div className="rounded-lg bg-[#F9F6F0] dark:bg-[#141312] p-3">
                 <div className="text-[11px] font-semibold text-[#57534E] dark:text-[#A8A29E] flex items-center justify-center gap-1">
                   <Flame className="w-3.5 h-3.5 text-[#D97706] dark:text-[#F59E0B]" />
-                  <span>مضاعف السلسلة</span>
+                  <span>Combo</span>
                 </div>
                 <div className="text-2xl font-bold tabular-nums text-[#D97706] dark:text-[#F59E0B] mt-0.5">
                   x{currentCombo}
@@ -545,7 +544,7 @@ export function SpeedMatchLab({
               </div>
             </div>
 
-            {/* شريط العد التنازلي */}
+            {/* Countdown progress bar */}
             <div className="w-full h-2.5 rounded-full bg-[#F2ECE1] dark:bg-[#292623] overflow-hidden">
               <div
                 className={`h-full transition-all duration-700 ease-linear ${timerBarColor}`}
@@ -554,12 +553,12 @@ export function SpeedMatchLab({
             </div>
           </div>
 
-          {/* لوحة التوصيل من عمودين: 5 كلمات صينية مقابل 5 معانٍ عربية */}
+          {/* 2-column matching grid: 5 Chinese words vs 5 meanings */}
           <div className="grid grid-cols-2 gap-2.5 sm:gap-5">
-            {/* عمود الكلمات الصينية */}
+            {/* Chinese words column */}
             <div className="space-y-2 sm:space-y-2.5">
               <div className="text-[11px] sm:text-xs font-bold text-[#57534E] dark:text-[#A8A29E] px-1">
-                الكلمات الصينية (اختر كلمة)
+                Chinese Words (Select one)
               </div>
               {zhSlots.map((slot) => {
                 const isSelected = selectedZhSlot === slot.slotId;
@@ -599,10 +598,10 @@ export function SpeedMatchLab({
               })}
             </div>
 
-            {/* عمود المعاني العربية المخلوطة */}
+            {/* Shuffled meanings column */}
             <div className="space-y-2 sm:space-y-2.5">
               <div className="text-[11px] sm:text-xs font-bold text-[#57534E] dark:text-[#A8A29E] px-1">
-                المعنى بالعربية (طابق المعنى الصحيح)
+                Meaning (Match the pair)
               </div>
               {arOrder.map((slotId) => {
                 const slot = slotMap.get(slotId);
@@ -629,7 +628,7 @@ export function SpeedMatchLab({
                     key={`ar-${slotId}`}
                     type="button"
                     onClick={() => handleSelectAr(slotId)}
-                    className={`w-full min-h-[60px] sm:min-h-[68px] px-2.5 sm:px-5 py-2 sm:py-3 rounded-xl border-2 text-right flex items-center justify-between gap-1.5 sm:gap-2 text-xs sm:text-base font-bold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97706] ${stateClasses}`}
+                    className={`w-full min-h-[60px] sm:min-h-[68px] px-2.5 sm:px-5 py-2 sm:py-3 rounded-xl border-2 text-left flex items-center justify-between gap-1.5 sm:gap-2 text-xs sm:text-base font-bold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97706] ${stateClasses}`}
                   >
                     <span className="leading-snug">{slot.vocab.arabic}</span>
                     {isSuccess && <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />}
@@ -641,47 +640,48 @@ export function SpeedMatchLab({
         </div>
       )}
 
-      {/* ملخص نهاية الجولة والرقم القياسي الشخصي (Finished) */}
+      {/* Finished summary screen */}
       {phase === 'finished' && (
         <div className="neo-frame rounded-xl p-7 sm:p-9 text-center space-y-6">
           <div className="space-y-2">
             {isNewRecord ? (
               <div className="inline-flex items-center gap-2 text-xs font-bold text-[#D97706] dark:text-[#F59E0B]">
                 <Trophy className="w-4 h-4" />
-                <span>تهانينا! حققت رقماً قياسياً جديداً</span>
+                <span>Congratulations! New Personal Best</span>
               </div>
             ) : (
               <div className="text-xs font-bold text-[#57534E] dark:text-[#A8A29E]">
-                انتهى الوقت — ملخص الجولة
+                Time's Up — Round Summary
               </div>
             )}
             <h2 className="text-2xl sm:text-3xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-              نتيجتك النهائية: <span className="text-[#B91C1C] dark:text-[#EF4444] tabular-nums">{score}</span> نقطة
+              Final Score:{' '}
+              <span className="text-[#B91C1C] dark:text-[#EF4444] tabular-nums">{score}</span> pts
             </h2>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
             <div className="rounded-xl border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-[#F9F6F0] dark:bg-[#141312] p-4">
-              <div className="text-xs text-[#57534E] dark:text-[#A8A29E]">الأزواج المتطابقة</div>
+              <div className="text-xs text-[#57534E] dark:text-[#A8A29E]">Matched Pairs</div>
               <div className="text-2xl font-bold tabular-nums text-[#15803D] dark:text-[#22C55E] mt-1">
                 {matchedCount}
               </div>
             </div>
             <div className="rounded-xl border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-[#F9F6F0] dark:bg-[#141312] p-4">
-              <div className="text-xs text-[#57534E] dark:text-[#A8A29E]">نسبة الدقة</div>
+              <div className="text-xs text-[#57534E] dark:text-[#A8A29E]">Accuracy</div>
               <div className="text-2xl font-bold tabular-nums text-[#1C1917] dark:text-[#F5F2EB] mt-1">
                 {accuracyPercent}%
               </div>
             </div>
             <div className="rounded-xl border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-[#F9F6F0] dark:bg-[#141312] p-4">
-              <div className="text-xs text-[#57534E] dark:text-[#A8A29E]">أعلى مضاعف</div>
+              <div className="text-xs text-[#57534E] dark:text-[#A8A29E]">Max Combo</div>
               <div className="text-2xl font-bold tabular-nums text-[#D97706] dark:text-[#F59E0B] mt-1">
                 x{maxCombo}
               </div>
             </div>
             <div className="rounded-xl border border-[#D97706]/30 dark:border-[#F59E0B]/35 bg-[#D97706]/8 dark:bg-[#F59E0B]/12 p-4">
               <div className="text-xs font-semibold text-[#92400E] dark:text-[#F59E0B]">
-                أفضل رقم قياسي لك
+                Personal Best
               </div>
               <div className="text-2xl font-bold tabular-nums text-[#92400E] dark:text-[#F59E0B] mt-1">
                 {personalBest?.bestScore ?? score}
@@ -696,14 +696,14 @@ export function SpeedMatchLab({
               className="inline-flex items-center justify-center gap-2 px-7 py-3 min-h-[46px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-sm font-bold transition-colors"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>العب مجدداً</span>
+              <span>Play Again</span>
             </button>
             <button
               type="button"
               onClick={() => setPhase('ready')}
               className="px-5 py-3 min-h-[46px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 text-sm font-bold text-[#1C1917] dark:text-[#F5F2EB]"
             >
-              تغيير النطاق
+              Change Scope
             </button>
           </div>
         </div>

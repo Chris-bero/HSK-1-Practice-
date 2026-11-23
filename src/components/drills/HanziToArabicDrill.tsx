@@ -23,10 +23,10 @@ export function HanziToArabicDrill({
 
   return (
     <div className="space-y-8">
-      {/* عرض الرمز الصيني المستهدف */}
+      {/* Target Chinese character prompt */}
       <div className="neo-frame rounded-xl py-10 px-6 text-center space-y-3 bg-white dark:bg-[#1E1C1A]">
         <p className="text-xs font-semibold text-[#57534E] dark:text-[#A8A29E]">
-          اختر المعنى العربي الصحيح للرمز التالي
+          Select the correct meaning for the following Chinese character
         </p>
         <div className="font-hanzi text-5xl sm:text-6xl font-bold text-[#1C1917] dark:text-[#F5F2EB] leading-snug">
           {question.promptPrimary}
@@ -41,7 +41,7 @@ export function HanziToArabicDrill({
         </div>
       </div>
 
-      {/* الخيارات العربية */}
+      {/* Meaning options */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         {(question.options ?? []).map((opt) => {
           const isSelected = selectedOptionId === opt.id;
@@ -72,7 +72,7 @@ export function HanziToArabicDrill({
               type="button"
               disabled={showFeedback}
               onClick={() => onSelectOption(opt.id, opt.label, isCorrectOption)}
-              className={`min-h-[64px] px-5 py-4 rounded-xl border text-right font-semibold text-base flex items-center justify-between gap-3 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] ${cardClass}`}
+              className={`min-h-[64px] px-5 py-4 rounded-xl border text-left font-semibold text-base flex items-center justify-between gap-3 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] ${cardClass}`}
             >
               <span>{opt.label}</span>
               {showFeedback && isCorrectOption && <CheckCircle2 className="w-5 h-5 shrink-0" />}

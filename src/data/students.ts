@@ -1,8 +1,8 @@
 import { Student } from '../types';
 
 /**
- * قائمة الطلاب المسموح لهم بالدخول محلياً.
- * تبقى فارغة افتراضياً حتى يتم التحقق من الطلاب المسجلين فعلياً عبر جدول بيانات المعلم.
+ * Optional local student allow-list.
+ * Remains empty by default so students are authenticated dynamically via the instructor's Google Sheet.
  */
 export const ALLOWED_STUDENTS: Student[] = [];
 

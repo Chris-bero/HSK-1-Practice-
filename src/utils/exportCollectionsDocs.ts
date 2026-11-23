@@ -24,7 +24,7 @@ export interface ExportDialoguesWordOptions {
 }
 
 /**
- * تصدير تجميعة القواعد الشاملة إلى ملف Microsoft Word (.doc) بمقاس A4 عمودي بالأبيض والأسود
+ * Exports the Comprehensive Grammar Guide to a clean B&W A4 Portrait Microsoft Word (.doc) file.
  */
 export function downloadGrammarWordDoc({
   cards,
@@ -42,32 +42,32 @@ export function downloadGrammarWordDoc({
               <div class="ex-hanzi">${escapeHtml(ex.hanzi)}</div>
               <div class="ex-pinyin">${escapeHtml(ex.pinyin)}</div>
             </td>
-            <td class="ex-ar" dir="rtl">${escapeHtml(ex.arabic)}</td>
+            <td class="ex-ar">${escapeHtml(ex.arabic)}</td>
           </tr>`
         )
         .join('\n');
 
       return `
       <div class="grammar-card">
-        <div class="card-head" dir="rtl">
-          <span class="lesson-tag">${escapeHtml(card.lessonLabelZh)} · ${escapeHtml(card.lessonTitleAr)}</span>
+        <div class="card-head">
+          <span class="lesson-tag">${escapeHtml(card.lessonLabelZh)} · Chapter ${card.lessonId}</span>
           <span class="card-title">${index + 1}. ${escapeHtml(card.titleAr)}</span>
           <span class="card-title-zh" dir="ltr"> (${escapeHtml(card.titleZh)})</span>
         </div>
-        <div class="card-body" dir="rtl">
+        <div class="card-body">
           <div class="formula-box">
-            <strong>القاعدة / الصيغة:</strong> <span dir="ltr" class="formula-text">${escapeHtml(card.formula)}</span>
+            <strong>Structure / Pattern:</strong> <span dir="ltr" class="formula-text">${escapeHtml(card.formula)}</span>
           </div>
           <p class="explanation">${escapeHtml(card.explanationAr)}</p>
           <div class="trap-box">
-            <strong>تنبيه امتحاني:</strong> ${escapeHtml(card.examTrapTipAr)}
+            <strong>Exam Tip:</strong> ${escapeHtml(card.examTrapTipAr)}
           </div>
           <table class="examples-table" cellspacing="0" cellpadding="0">
             <thead>
               <tr>
                 <th style="width:6%;">#</th>
-                <th style="width:52%;">المثال الصيني والنطق (Hanzi &amp; Pinyin)</th>
-                <th style="width:42%;">الترجمة بالعربية</th>
+                <th style="width:52%;">Chinese Example &amp; Pinyin</th>
+                <th style="width:42%;">Meaning / Translation</th>
               </tr>
             </thead>
             <tbody>
@@ -83,10 +83,10 @@ export function downloadGrammarWordDoc({
 <html xmlns:o="urn:schemas-microsoft-com:office:office"
       xmlns:w="urn:schemas-microsoft-com:office:word"
       xmlns="http://www.w3.org/TR/REC-html40"
-      lang="ar" dir="rtl">
+      lang="en" dir="ltr">
 <head>
   <meta charset="utf-8" />
-  <title>تجميعة القواعد الشاملة للمستوى الأول HSK 3.0 — المعلم Laohu</title>
+  <title>HSK 3.0 Level 1 Comprehensive Grammar Guide — Instructor Laohu</title>
   <!--[if gte mso 9]>
   <xml>
     <w:WordDocument>
@@ -108,7 +108,7 @@ export function downloadGrammarWordDoc({
       page: SectionGrammar;
     }
     body {
-      font-family: 'Arial', 'Tahoma', 'Microsoft YaHei', sans-serif;
+      font-family: 'Calibri', 'Arial', 'Microsoft YaHei', sans-serif;
       color: #000000;
       background-color: #ffffff;
       margin: 0;
@@ -148,7 +148,7 @@ export function downloadGrammarWordDoc({
       border: 0.6pt solid #333333;
       padding: 1pt 5pt;
       font-size: 8.5pt;
-      margin-left: 6pt;
+      margin-right: 6pt;
     }
     .card-title-zh {
       font-size: 9.5pt;
@@ -176,7 +176,7 @@ export function downloadGrammarWordDoc({
       margin: 0 0 6pt 0;
     }
     .trap-box {
-      border-right: 2.5pt solid #000000;
+      border-left: 2.5pt solid #000000;
       background-color: #fafafa;
       padding: 4pt 7pt;
       margin-bottom: 7pt;
@@ -187,7 +187,7 @@ export function downloadGrammarWordDoc({
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
-      direction: rtl;
+      direction: ltr;
     }
     table.examples-table th {
       border: 0.6pt solid #444444;
@@ -222,7 +222,7 @@ export function downloadGrammarWordDoc({
       margin-top: 1.5pt;
     }
     td.ex-ar {
-      text-align: right;
+      text-align: left;
       font-size: 9.2pt;
     }
     .doc-footer {
@@ -237,15 +237,15 @@ export function downloadGrammarWordDoc({
 </head>
 <body>
   <div class="SectionGrammar">
-    <div class="doc-header" dir="rtl">
-      <p class="doc-title">تجميعة القواعد الشاملة للمستوى الأول HSK 3.0 — المعلم Laohu</p>
-      <p class="doc-subtitle">النطاق: ${escapeHtml(scopeLabelAr)} &nbsp;|&nbsp; إجمالي القواعد: ${cards.length} قاعدة نحوية</p>
+    <div class="doc-header">
+      <p class="doc-title">HSK 3.0 Level 1 Comprehensive Grammar Guide — Instructor Laohu</p>
+      <p class="doc-subtitle">Scope: ${escapeHtml(scopeLabelAr)} &nbsp;|&nbsp; Total Grammar Rules: ${cards.length}</p>
     </div>
 
     ${cardsHtml}
 
-    <div class="doc-footer" dir="rtl">
-      بوابة اللغة الصينية - المستوى الأول (HSK 3.0) · إعداد المعلم Laohu · دليل القواعد الشامل
+    <div class="doc-footer">
+      HSK 3.0 Level 1 Practice Portal · Prepared by Instructor Laohu · Comprehensive Grammar Guide
     </div>
   </div>
 </body>
@@ -265,7 +265,7 @@ export function downloadGrammarWordDoc({
 }
 
 /**
- * تصدير تجميعة المحادثات والجمل (278 جملة) إلى ملف Microsoft Word (.doc) بمقاس A4 عمودي بالأبيض والأسود
+ * Exports the Dialogues & Sentences Bank (278 sentences) to a clean B&W A4 Portrait Word (.doc) file.
  */
 export function downloadDialoguesWordDoc({
   chapters,
@@ -285,23 +285,23 @@ export function downloadDialoguesWordDoc({
               <div class="dlg-hanzi">${escapeHtml(s.hanzi)}</div>
               <div class="dlg-pinyin">${escapeHtml(s.pinyin)}</div>
             </td>
-            <td class="dlg-ar" dir="rtl">${escapeHtml(s.arabic)}</td>
+            <td class="dlg-ar">${escapeHtml(s.arabic)}</td>
           </tr>`
         )
         .join('\n');
 
       return `
       <div class="chapter-section">
-        <div class="chapter-heading" dir="rtl">
+        <div class="chapter-heading">
           <span dir="ltr" class="ch-zh">第${ch.id}课</span>
-          — ${escapeHtml(ch.titleAr)}: ${escapeHtml(ch.subtitleAr)} (${ch.sentences.length} جملة)
+          — Chapter ${ch.id}: ${escapeHtml(ch.subtitleAr)} (${ch.sentences.length} sentences)
         </div>
         <table class="dlg-table" cellspacing="0" cellpadding="0">
           <thead>
             <tr>
               <th style="width:6%;">#</th>
-              <th style="width:52%;">الجملة الصينية والنطق (Hanzi &amp; Pinyin)</th>
-              <th style="width:42%;">الترجمة بالعربية</th>
+              <th style="width:52%;">Chinese Sentence &amp; Pinyin</th>
+              <th style="width:42%;">Meaning / Translation</th>
             </tr>
           </thead>
           <tbody>
@@ -316,10 +316,10 @@ export function downloadDialoguesWordDoc({
 <html xmlns:o="urn:schemas-microsoft-com:office:office"
       xmlns:w="urn:schemas-microsoft-com:office:word"
       xmlns="http://www.w3.org/TR/REC-html40"
-      lang="ar" dir="rtl">
+      lang="en" dir="ltr">
 <head>
   <meta charset="utf-8" />
-  <title>تجميعة المحادثات والجمل للمستوى الأول HSK 3.0 — المعلم Laohu</title>
+  <title>HSK 3.0 Level 1 Dialogues &amp; Sentences Bank — Instructor Laohu</title>
   <!--[if gte mso 9]>
   <xml>
     <w:WordDocument>
@@ -341,7 +341,7 @@ export function downloadDialoguesWordDoc({
       page: SectionDialogues;
     }
     body {
-      font-family: 'Arial', 'Tahoma', 'Microsoft YaHei', sans-serif;
+      font-family: 'Calibri', 'Arial', 'Microsoft YaHei', sans-serif;
       color: #000000;
       background-color: #ffffff;
       margin: 0;
@@ -383,7 +383,7 @@ export function downloadDialoguesWordDoc({
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
-      direction: rtl;
+      direction: ltr;
     }
     table.dlg-table thead {
       display: table-header-group;
@@ -425,7 +425,7 @@ export function downloadDialoguesWordDoc({
       margin-top: 1.5pt;
     }
     td.dlg-ar {
-      text-align: right;
+      text-align: left;
       font-size: 9.3pt;
     }
     .doc-footer {
@@ -440,15 +440,15 @@ export function downloadDialoguesWordDoc({
 </head>
 <body>
   <div class="SectionDialogues">
-    <div class="doc-header" dir="rtl">
-      <p class="doc-title">تجميعة المحادثات والجمل للمستوى الأول HSK 3.0 — المعلم Laohu</p>
-      <p class="doc-subtitle">النطاق: ${escapeHtml(scopeLabelAr)} &nbsp;|&nbsp; إجمالي الجمل: ${totalSentences} جملة</p>
+    <div class="doc-header">
+      <p class="doc-title">HSK 3.0 Level 1 Dialogues &amp; Sentences Bank — Instructor Laohu</p>
+      <p class="doc-subtitle">Scope: ${escapeHtml(scopeLabelAr)} &nbsp;|&nbsp; Total Sentences: ${totalSentences}</p>
     </div>
 
     ${sectionsHtml}
 
-    <div class="doc-footer" dir="rtl">
-      بوابة اللغة الصينية - المستوى الأول (HSK 3.0) · إعداد المعلم Laohu · تجميعة المحادثات والجمل
+    <div class="doc-footer">
+      HSK 3.0 Level 1 Practice Portal · Prepared by Instructor Laohu · Dialogues &amp; Sentences Bank
     </div>
   </div>
 </body>

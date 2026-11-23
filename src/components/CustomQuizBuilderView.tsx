@@ -23,10 +23,10 @@ interface CustomQuizBuilderViewProps {
 }
 
 const QUESTION_LIMIT_OPTIONS: { value: 10 | 20 | 40 | 'all'; label: string }[] = [
-  { value: 10, label: '١٠ أسئلة' },
-  { value: 20, label: '٢٠ سؤالاً' },
-  { value: 40, label: '٤٠ سؤالاً' },
-  { value: 'all', label: 'الكل' },
+  { value: 10, label: '10 Questions' },
+  { value: 20, label: '20 Questions' },
+  { value: 40, label: '40 Questions' },
+  { value: 'all', label: 'All' },
 ];
 
 export function CustomQuizBuilderView({
@@ -53,7 +53,6 @@ export function CustomQuizBuilderView({
   const [questionLimit, setQuestionLimit] = useState<10 | 20 | 40 | 'all'>(20);
   const [mode, setMode] = useState<QuizMode>('practice');
 
-  // إزالة أي فصل مقفل من التحديد تلقائياً أو تفعيل المفتوحة إن تغيرت الصلاحيات
   useEffect(() => {
     setSelectedChapterIds((prev) => {
       const stillValid = prev.filter((id) => populatedUnlockedChapterIds.includes(id));
@@ -112,15 +111,15 @@ export function CustomQuizBuilderView({
       transition={{ duration: 0.2 }}
       className="mx-auto max-w-6xl px-4 sm:px-6 py-10 space-y-8"
     >
-      {/* الترويسة وزر العودة */}
+      {/* Header & Back Button */}
       <div className="space-y-4">
         <button
           type="button"
           onClick={onBack}
           className="inline-flex items-center gap-2 text-sm font-semibold text-[#57534E] dark:text-[#A8A29E] hover:text-[#B91C1C] dark:hover:text-[#EF4444] transition-colors"
         >
-          <ArrowRight className="w-4 h-4" />
-          <span>العودة إلى الرئيسية</span>
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Home</span>
         </button>
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10 pb-6">
@@ -130,33 +129,33 @@ export function CustomQuizBuilderView({
             </span>
             <div>
               <div className="flex items-center gap-2 text-xs text-[#57534E] dark:text-[#A8A29E] mb-1">
-                <span>تدريب واختبار مخصص</span>
+                <span>Custom Quiz Builder</span>
                 <span aria-hidden="true">·</span>
-                <span>متعدد الفصول والمهارات</span>
+                <span>Multi-Chapter &amp; Multi-Skill</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                صمّم جلستك التدريبية
+                Configure Your Practice Session
               </h1>
             </div>
           </div>
 
           <p className="text-sm text-[#57534E] dark:text-[#A8A29E] max-w-md">
-            اختر فصلاً واحداً أو عدة فصول معاً، وحدّد مهارة واحدة أو جميع المهارات العشر في وضع
-            التدريب أو الاختبار.
+            Select one or more chapters, choose a specific skill or all 10 drill modes, and run in
+            Practice or Exam mode.
           </p>
         </div>
       </div>
 
-      {/* ١. اختيار الفصول */}
+      {/* 1. Chapter Selection */}
       <div className="rounded-xl border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-white dark:bg-[#1E1C1A] p-6 sm:p-7 space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1C1917]/8 dark:border-[#F5F2EB]/8 pb-4">
           <div>
             <h2 className="text-lg font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-              ١. اختيار الفصول الدراسية
+              1. Select Chapters
             </h2>
             <p className="text-xs text-[#57534E] dark:text-[#A8A29E] mt-0.5 tabular-nums">
-              الفصول المحددة: {selectedChapterIds.length} من أصل {populatedUnlockedChapterIds.length}{' '}
-              فصل مفتوح لك حالياً
+              Selected: {selectedChapterIds.length} of {populatedUnlockedChapterIds.length} unlocked
+              chapters
             </p>
           </div>
 
@@ -167,7 +166,7 @@ export function CustomQuizBuilderView({
               disabled={allPopulatedSelected}
               className="px-3.5 py-2 min-h-[38px] rounded-md border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#121110] text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB] hover:border-[#B91C1C]/45 disabled:opacity-45 transition-colors"
             >
-              تحديد الكل
+              Select All
             </button>
             <button
               type="button"
@@ -175,7 +174,7 @@ export function CustomQuizBuilderView({
               disabled={selectedChapterIds.length === 0}
               className="px-3.5 py-2 min-h-[38px] rounded-md border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 text-xs font-semibold text-[#57534E] dark:text-[#A8A29E] hover:text-[#B91C1C] dark:hover:text-[#EF4444] disabled:opacity-40 transition-colors"
             >
-              إلغاء التحديد
+              Clear Selection
             </button>
           </div>
         </div>
@@ -193,7 +192,7 @@ export function CustomQuizBuilderView({
                 disabled={isUnlocked && isEmpty}
                 onClick={() => toggleChapter(chapter)}
                 aria-pressed={isSelected}
-                className={`text-right rounded-xl border p-4 flex items-center justify-between gap-3 transition-all duration-150 ${
+                className={`text-left rounded-xl border p-4 flex items-center justify-between gap-3 transition-all duration-150 ${
                   !isUnlocked
                     ? 'border-[#D97706]/25 dark:border-[#F59E0B]/25 bg-[#F2ECE1]/65 dark:bg-[#181614] hover:border-[#D97706]/55'
                     : isEmpty
@@ -221,10 +220,10 @@ export function CustomQuizBuilderView({
                     </p>
                     <p className="text-xs text-[#57534E] dark:text-[#A8A29E] truncate tabular-nums">
                       {!isUnlocked
-                        ? '🔒 مغلق · اضغط للتفعيل'
+                        ? 'Locked · Click to unlock'
                         : isEmpty
-                          ? 'قيد الإضافة'
-                          : `${chapter.vocab.length} مفردة · ${chapter.sentences.length} جملة`}
+                          ? 'Coming soon'
+                          : `${chapter.vocab.length} vocab · ${chapter.sentences.length} sentences`}
                     </p>
                   </div>
                 </div>
@@ -250,21 +249,21 @@ export function CustomQuizBuilderView({
         </div>
       </div>
 
-      {/* ٢. اختيار نوع التدريب (مهارة واحدة أو جميع المهارات العشر) */}
+      {/* 2. Drill Skill Scope */}
       <div className="rounded-xl border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-white dark:bg-[#1E1C1A] p-6 sm:p-7 space-y-5">
         <div className="border-b border-[#1C1917]/8 dark:border-[#F5F2EB]/8 pb-4">
           <h2 className="text-lg font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-            ٢. اختيار المهارة التدريبية
+            2. Select Drill Skill
           </h2>
           <p className="text-xs text-[#57534E] dark:text-[#A8A29E] mt-0.5">
-            اختر جميع الأنماط العشرة معاً أو ركّز على مهارة واحدة فقط.
+            Combine all 10 drill types together or focus on a single skill.
           </p>
         </div>
 
         <button
           type="button"
           onClick={() => setDrillScope('all')}
-          className={`w-full text-right rounded-xl border p-4 flex items-center justify-between gap-4 transition-all duration-150 ${
+          className={`w-full text-left rounded-xl border p-4 flex items-center justify-between gap-4 transition-all duration-150 ${
             drillScope === 'all'
               ? 'border-[#B91C1C] dark:border-[#EF4444] bg-[#B91C1C]/8 dark:bg-[#EF4444]/14 ring-1 ring-[#B91C1C]/25 dark:ring-[#EF4444]/25'
               : 'border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F9F6F0]/60 dark:bg-[#121110]/60 hover:border-[#B91C1C]/40'
@@ -274,15 +273,15 @@ export function CustomQuizBuilderView({
             <Layers className="w-5 h-5 text-[#D97706] dark:text-[#F59E0B] shrink-0" />
             <div>
               <p className="text-sm font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                جميع الأنماط التدريبية (١٠ أنماط شاملة)
+                All Drill Modes (10 Comprehensive Skills)
               </p>
               <p className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-                مزيج متوازن من المفردات والنغمات والتوصيل والاستماع وترجمة وتكوين الجمل
+                Balanced blend of vocabulary, Pinyin tones, matching, listening, and sentence drills
               </p>
             </div>
           </div>
           <span className="text-xs font-bold tabular-nums text-[#57534E] dark:text-[#A8A29E] shrink-0">
-            {countAvailableQuestionsForConfig(CHAPTERS_DATA, selectedChapterIds, 'all')} سؤال
+            {countAvailableQuestionsForConfig(CHAPTERS_DATA, selectedChapterIds, 'all')} Qs
           </span>
         </button>
 
@@ -301,7 +300,7 @@ export function CustomQuizBuilderView({
                 key={dt}
                 type="button"
                 onClick={() => setDrillScope(dt)}
-                className={`text-right rounded-xl border p-4 flex flex-col justify-between gap-2 transition-all duration-150 ${
+                className={`text-left rounded-xl border p-4 flex flex-col justify-between gap-2 transition-all duration-150 ${
                   isSelected
                     ? 'border-[#B91C1C] dark:border-[#EF4444] bg-[#B91C1C]/8 dark:bg-[#EF4444]/14 ring-1 ring-[#B91C1C]/25 dark:ring-[#EF4444]/25'
                     : 'border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F9F6F0]/50 dark:bg-[#121110]/50 hover:border-[#B91C1C]/40'
@@ -309,9 +308,10 @@ export function CustomQuizBuilderView({
               >
                 <div className="flex items-center justify-between gap-2 text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums">
                   <span>
-                    {String(idx + 1).padStart(2, '0')} · {meta.requires === 'vocab' ? 'مفردات' : 'جمل'}
+                    {String(idx + 1).padStart(2, '0')} ·{' '}
+                    {meta.requires === 'vocab' ? 'Vocab' : 'Sentences'}
                   </span>
-                  <span className="font-bold">{countForDrill} سؤال</span>
+                  <span className="font-bold">{countForDrill} Qs</span>
                 </div>
                 <p className="text-sm font-bold text-[#1C1917] dark:text-[#F5F2EB]">
                   {meta.titleAr}
@@ -322,12 +322,11 @@ export function CustomQuizBuilderView({
         </div>
       </div>
 
-      {/* ٣. عدد الأسئلة ووضع الجلسة */}
+      {/* 3. Question Limit & 4. Session Mode */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* عدد الأسئلة */}
         <div className="rounded-xl border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-white dark:bg-[#1E1C1A] p-6 space-y-4">
           <h2 className="text-base font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-            ٣. عدد الأسئلة في الجلسة
+            3. Question Count
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {QUESTION_LIMIT_OPTIONS.map((opt) => {
@@ -350,16 +349,15 @@ export function CustomQuizBuilderView({
           </div>
         </div>
 
-        {/* وضع التدريب أم وضع الامتحان */}
         <div className="rounded-xl border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-white dark:bg-[#1E1C1A] p-6 space-y-4">
           <h2 className="text-base font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-            ٤. وضع التشغيل
+            4. Session Mode
           </h2>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setMode('practice')}
-              className={`p-3.5 rounded-lg border text-right transition-all ${
+              className={`p-3.5 rounded-lg border text-left transition-all ${
                 mode === 'practice'
                   ? 'border-[#15803D] dark:border-[#22C55E] bg-[#15803D]/10 dark:bg-[#22C55E]/15 text-[#15803D] dark:text-[#22C55E]'
                   : 'border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F9F6F0] dark:bg-[#121110] text-[#57534E] dark:text-[#A8A29E]'
@@ -367,15 +365,15 @@ export function CustomQuizBuilderView({
             >
               <div className="flex items-center gap-2 font-bold text-sm mb-1">
                 <GraduationCap className="w-4 h-4 shrink-0" />
-                <span>وضع التدريب</span>
+                <span>Practice Mode</span>
               </div>
-              <p className="text-xs opacity-85">تصحيح فوري وإظهار الإجابة بعد كل سؤال</p>
+              <p className="text-xs opacity-85">Instant grading and feedback after each item</p>
             </button>
 
             <button
               type="button"
               onClick={() => setMode('exam')}
-              className={`p-3.5 rounded-lg border text-right transition-all ${
+              className={`p-3.5 rounded-lg border text-left transition-all ${
                 mode === 'exam'
                   ? 'border-[#B91C1C] dark:border-[#EF4444] bg-[#B91C1C]/10 dark:bg-[#EF4444]/15 text-[#B91C1C] dark:text-[#EF4444]'
                   : 'border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F9F6F0] dark:bg-[#121110] text-[#57534E] dark:text-[#A8A29E]'
@@ -383,24 +381,24 @@ export function CustomQuizBuilderView({
             >
               <div className="flex items-center gap-2 font-bold text-sm mb-1">
                 <ClipboardCheck className="w-4 h-4 shrink-0" />
-                <span>وضع الاختبار</span>
+                <span>Exam Mode</span>
               </div>
-              <p className="text-xs opacity-85">تنقل حر ونتيجة ومراجعة شاملة في النهاية</p>
+              <p className="text-xs opacity-85">Free navigation with full review upon submission</p>
             </button>
           </div>
         </div>
       </div>
 
-      {/* شريط الانطلاق */}
+      {/* Launch Bar */}
       <div className="neo-frame rounded-xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#1E1C1A]">
         <div className="space-y-1">
-          <p className="text-xs text-[#57534E] dark:text-[#A8A29E]">ملخص الجلسة المخصصة</p>
+          <p className="text-xs text-[#57534E] dark:text-[#A8A29E]">Custom Session Summary</p>
           <p className="text-base font-bold text-[#1C1917] dark:text-[#F5F2EB] tabular-nums">
             {canStart
-              ? `ستبدأ جلسة من ${effectiveQuestionCount} سؤال (من أصل ${availableQuestionsCount} متاح) في ${
-                  mode === 'practice' ? 'وضع التدريب' : 'وضع الاختبار'
+              ? `Ready to start ${effectiveQuestionCount} questions (of ${availableQuestionsCount} available) in ${
+                  mode === 'practice' ? 'Practice Mode' : 'Exam Mode'
                 }`
-              : 'يرجى تحديد فصل واحد متاح على الأقل للبدء'}
+              : 'Please select at least one available chapter to begin'}
           </p>
         </div>
 
@@ -410,8 +408,8 @@ export function CustomQuizBuilderView({
           onClick={handleLaunch}
           className="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 min-h-[48px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white font-bold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
         >
-          <span>ابدأ الجلسة المخصصة</span>
-          <ArrowLeft className="w-4 h-4" />
+          <span>Start Custom Session</span>
+          <ArrowRight className="w-4 h-4" />
         </button>
       </div>
       <LockedAccessModal

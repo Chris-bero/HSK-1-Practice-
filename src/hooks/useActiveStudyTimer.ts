@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * مؤقت ذكي لاحتساب وقت الدراسة الفعلي فقط عندما تكون الصفحة مرئية ونشطة.
- * يتوقف تلقائياً عند إخفاء التبويب أو فقدان التركيز عبر visibilitychange.
+ * Active study timer that tracks elapsed time only while the page is visible and focused.
+ * Automatically pauses when the browser tab is hidden or loses focus via visibilitychange.
  */
 export function useActiveStudyTimer(
   isEnabled: boolean,
@@ -56,19 +56,21 @@ export function useActiveStudyTimer(
   }, [isEnabled]);
 }
 
-export function formatStudyDurationAr(totalSeconds: number): string {
+export function formatStudyDuration(totalSeconds: number): string {
   const totalMinutes = Math.floor(totalSeconds / 60);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
 
   if (hours === 0 && minutes === 0) {
-    return totalSeconds > 0 ? 'أقل من دقيقة' : '٠ دقيقة';
+    return totalSeconds > 0 ? '< 1 min' : '0 min';
   }
   if (hours === 0) {
-    return `${minutes} دقيقة`;
+    return `${minutes} min`;
   }
   if (minutes === 0) {
-    return `${hours} ساعة`;
+    return `${hours} hr`;
   }
-  return `${hours} س ${minutes} د`;
+  return `${hours}h ${minutes}m`;
 }
+
+export const formatStudyDurationAr = formatStudyDuration;

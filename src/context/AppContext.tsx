@@ -7,7 +7,6 @@ import React, {
   useState,
 } from 'react';
 import { ALL_DRILL_TYPES, CHAPTERS_DATA } from '../data/chaptersData';
-import { ALL_HSK_PATTERN_IDS } from '../data/mockExamsData';
 import { authenticateStudent } from '../data/students';
 import { useActiveStudyTimer } from '../hooks/useActiveStudyTimer';
 import {
@@ -20,11 +19,7 @@ import {
   ChapterStatEntry,
   DrillStatEntry,
   DrillType,
-  HskMockExamResult,
-  HskPatternId,
-  HskPatternStatEntry,
   MistakeItem,
-  MockExamAttempt,
   QuestionAnswerRecord,
   SheetsSyncPayload,
   Student,
@@ -33,16 +28,17 @@ import {
   StudyBookmarkItemType,
   UnlockedAccess,
 } from '../types';
+import { STORAGE_KEYS as APP_STORAGE_KEYS } from '../config/appConfig';
 import { getOrCreateClientDeviceId, parseUnlockedAccess } from '../utils/accessControl';
 
 type ThemeMode = 'light' | 'dark';
 
 const STORAGE_KEYS = {
-  SESSION: 'chinese_portal_active_student_v1',
-  THEME: 'chinese_portal_theme_v1',
-  PINYIN: 'chinese_portal_show_pinyin_v1',
-  PROGRESS_PREFIX: 'chinese_portal_progress_v1_',
-  BOOKMARKS_PREFIX: 'chinese_portal_bookmarks_v1_',
+  SESSION: APP_STORAGE_KEYS.ACTIVE_STUDENT,
+  THEME: APP_STORAGE_KEYS.THEME,
+  PINYIN: APP_STORAGE_KEYS.SHOW_PINYIN,
+  PROGRESS_PREFIX: APP_STORAGE_KEYS.PROGRESS_PREFIX,
+  BOOKMARKS_PREFIX: APP_STORAGE_KEYS.BOOKMARKS_PREFIX,
 };
 
 export function makeStudyBookmarkKey(itemType: StudyBookmarkItemType, itemId: string): string {
@@ -94,7 +90,7 @@ function saveStudentBookmarks(
       JSON.stringify(bookmarks)
     );
   } catch {
-    // تجاهل أخطاء مساحة التخزين
+    // Ignore storage quota errors
   }
 }
 
@@ -110,23 +106,6 @@ function makeMistakeKey(chapterId: number, drillType: DrillType, sourceItemId: s
   return `${chapterId}::${drillType}::${sourceItemId}`;
 }
 
-function normalizeHskPatternEntry(
-  raw?: Partial<HskPatternStatEntry> | null
-): HskPatternStatEntry {
-  const solved = Math.max(0, Number(raw?.solved ?? raw?.attempted ?? 0));
-  const correct = Math.max(0, Math.min(solved, Number(raw?.correct ?? 0)));
-  const wrong =
-    raw?.wrong !== undefined ? Math.max(0, Number(raw.wrong)) : Math.max(0, solved - correct);
-  const accuracyPercent = solved > 0 ? Math.round((correct / solved) * 100) : 0;
-  return {
-    solved,
-    attempted: solved,
-    correct,
-    wrong,
-    accuracyPercent,
-  };
-}
-
 function createEmptyProgress(studentId: string): StudentProgress {
   const drillStats = {} as Record<DrillType, DrillStatEntry>;
   const drillTimeSeconds = {} as Record<DrillType, number>;
@@ -138,11 +117,6 @@ function createEmptyProgress(studentId: string): StudentProgress {
   const chapterStats = {} as Record<number, ChapterStatEntry>;
   for (const ch of CHAPTERS_DATA) {
     chapterStats[ch.id] = { solved: 0, correct: 0, completedDrills: [] };
-  }
-
-  const hskPatternStats = {} as Record<HskPatternId, HskPatternStatEntry>;
-  for (const pid of ALL_HSK_PATTERN_IDS) {
-    hskPatternStats[pid] = normalizeHskPatternEntry();
   }
 
   return {
@@ -157,9 +131,6 @@ function createEmptyProgress(studentId: string): StudentProgress {
     drillTimeSeconds,
     chapterStats,
     mistakes: [],
-    mockExamHistory: [],
-    hskPatternStats,
-    hskMockResults: [],
   };
 }
 
@@ -198,15 +169,6 @@ function loadStudentProgress(studentId: string): StudentProgress {
         )
       : [];
 
-    const mergedHskPatternStats = { ...fallback.hskPatternStats! };
-    if (parsed.hskPatternStats) {
-      for (const pid of ALL_HSK_PATTERN_IDS) {
-        if (parsed.hskPatternStats[pid]) {
-          mergedHskPatternStats[pid] = normalizeHskPatternEntry(parsed.hskPatternStats[pid]);
-        }
-      }
-    }
-
     return {
       ...fallback,
       ...parsed,
@@ -215,9 +177,6 @@ function loadStudentProgress(studentId: string): StudentProgress {
       drillTimeSeconds: mergedDrillTime,
       chapterStats: mergedChapterStats,
       mistakes: cleanedMistakes,
-      mockExamHistory: Array.isArray(parsed.mockExamHistory) ? parsed.mockExamHistory : [],
-      hskPatternStats: mergedHskPatternStats,
-      hskMockResults: Array.isArray(parsed.hskMockResults) ? parsed.hskMockResults : [],
       studyDates: Array.isArray(parsed.studyDates) ? parsed.studyDates : fallback.studyDates,
     };
   } catch {
@@ -232,7 +191,7 @@ function saveStudentProgress(progress: StudentProgress): void {
       JSON.stringify(progress)
     );
   } catch {
-    // تجاهل أخطاء مساحة التخزين
+    // Ignore storage quota errors
   }
 }
 
@@ -325,16 +284,6 @@ interface AppContextValue {
     drillElapsedSeconds?: Partial<Record<DrillType, number>>,
     options?: { isMistakeReview?: boolean }
   ) => Promise<SyncResult | null>;
-  recordMockExamAttempt: (
-    attempt: MockExamAttempt,
-    records: QuestionAnswerRecord[]
-  ) => Promise<SyncResult | null>;
-  recordHskPatternPractice: (
-    patternId: HskPatternId,
-    attempted: number,
-    correct: number
-  ) => Promise<SyncResult | null>;
-  recordHskFixedMockExam: (result: HskMockExamResult) => Promise<SyncResult | null>;
   studyVault: Record<string, StudentStudyBookmark>;
   vaultCount: number;
   isItemBookmarked: (itemType: StudyBookmarkItemType, itemId: string) => boolean;
@@ -418,7 +367,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem(STORAGE_KEYS.THEME, theme);
     } catch {
-      // تجاهل
+      // Ignore storage errors
     }
   }, [theme]);
 
@@ -426,7 +375,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem(STORAGE_KEYS.PINYIN, String(showPinyin));
     } catch {
-      // تجاهل
+      // Ignore storage errors
     }
   }, [showPinyin]);
 
@@ -470,7 +419,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       try {
         localStorage.removeItem(STORAGE_KEYS.SESSION);
       } catch {
-        // تجاهل
+        // Ignore storage errors
       }
       return null;
     }
@@ -494,7 +443,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       try {
         localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updatedStudent));
       } catch {
-        // تجاهل
+        // Ignore storage errors
       }
       return updatedStudent;
     });
@@ -502,7 +451,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return latestAccess;
   }, [currentStudent]);
 
-  // مزامنة صلاحيات الطالب وحالة ارتباط الجهاز تلقائياً من Google Sheets عند فتح أو تحديث الصفحة
+  // Automatically sync student permissions and device binding from Google Sheets on page load/refresh
   useEffect(() => {
     if (!currentStudent) return;
     let active = true;
@@ -517,7 +466,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         try {
           localStorage.removeItem(STORAGE_KEYS.SESSION);
         } catch {
-          // تجاهل
+          // Ignore storage errors
         }
         return;
       }
@@ -542,7 +491,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         try {
           localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updatedStudent));
         } catch {
-          // تجاهل
+          // Ignore storage errors
         }
         return updatedStudent;
       });
@@ -582,7 +531,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       try {
         localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(normalizedStudent));
       } catch {
-        // تجاهل
+        // Ignore storage errors
       }
       return true;
     },
@@ -597,7 +546,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.removeItem(STORAGE_KEYS.SESSION);
     } catch {
-      // تجاهل
+      // Ignore storage errors
     }
   }, []);
 
@@ -780,7 +729,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           completedDrills,
         };
 
-        // تحديث قائمة الأخطاء (إضافة الخطأ أو إزالته عند الإجابة الصحيحة في وضع مراجعة الأخطاء)
+        // Update mistakes bank (add mistake or clear it when answered correctly in Mistake Review mode)
         if (rec.sourceItemId) {
           const mKey = makeMistakeKey(rec.chapterId, rec.drillType, rec.sourceItemId);
           if (!rec.isCorrect) {
@@ -845,217 +794,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [currentStudent, progress]
   );
 
-  const recordMockExamAttempt = useCallback(
-    async (
-      attempt: MockExamAttempt,
-      records: QuestionAnswerRecord[]
-    ): Promise<SyncResult | null> => {
-      if (!currentStudent || !progress) return null;
 
-      const addedSolved = records.length;
-      const addedCorrect = records.filter((r) => r.isCorrect).length;
-      const addedWrong = addedSolved - addedCorrect;
-
-      const updatedChapterStats: Record<number, ChapterStatEntry> = {
-        ...progress.chapterStats,
-      };
-      const updatedDrillStats: Record<DrillType, DrillStatEntry> = {
-        ...progress.drillStats,
-      };
-
-      for (const rec of records) {
-        const existingDrill = updatedDrillStats[rec.drillType] ?? { attempted: 0, correct: 0 };
-        updatedDrillStats[rec.drillType] = {
-          attempted: existingDrill.attempted + 1,
-          correct: existingDrill.correct + (rec.isCorrect ? 1 : 0),
-        };
-
-        const prevCh = updatedChapterStats[rec.chapterId] ?? {
-          solved: 0,
-          correct: 0,
-          completedDrills: [],
-        };
-        updatedChapterStats[rec.chapterId] = {
-          solved: prevCh.solved + 1,
-          correct: prevCh.correct + (rec.isCorrect ? 1 : 0),
-          completedDrills: prevCh.completedDrills,
-        };
-      }
-
-      const nowIso = attempt.completedAt || new Date().toISOString();
-      const today = getTodayIsoDate();
-      const studyDates = progress.studyDates.includes(today)
-        ? progress.studyDates
-        : [...progress.studyDates, today];
-
-      const prevHistory = progress.mockExamHistory ?? [];
-      const updatedProgress: StudentProgress = {
-        ...progress,
-        totalSolved: progress.totalSolved + addedSolved,
-        correctCount: progress.correctCount + addedCorrect,
-        wrongCount: progress.wrongCount + addedWrong,
-        studyDates,
-        lastActive: nowIso,
-        drillStats: updatedDrillStats,
-        chapterStats: updatedChapterStats,
-        mockExamHistory: [attempt, ...prevHistory].slice(0, 25),
-      };
-
-      saveStudentProgress(updatedProgress);
-      setProgress(updatedProgress);
-
-      const accuracyPercent =
-        updatedProgress.totalSolved > 0
-          ? Math.round((updatedProgress.correctCount / updatedProgress.totalSolved) * 100)
-          : 0;
-      const overallProgressPercent = computeOverallProgress(updatedProgress);
-      const activeMinutes = Math.round(updatedProgress.activeSeconds / 60);
-
-      const payload: SheetsSyncPayload = {
-        studentId: currentStudent.id,
-        studentName: currentStudent.name,
-        studentCode: currentStudent.code,
-        totalSolved: updatedProgress.totalSolved,
-        correctCount: updatedProgress.correctCount,
-        wrongCount: updatedProgress.wrongCount,
-        accuracyPercent,
-        activeMinutes,
-        overallProgressPercent,
-        lastActive: nowIso,
-      };
-
-      const result = await syncStudentStatsToSheets(payload);
-      setLastSyncResult(result);
-      return result;
-    },
-    [currentStudent, progress]
-  );
-
-  // تسجيل نتائج تدريبات أنماط HSK 3.0 بشكل مستقل تماماً عن إحصائيات تدريبات الفصول اليومية
-  const recordHskPatternPractice = useCallback(
-    async (
-      patternId: HskPatternId,
-      attempted: number,
-      correct: number
-    ): Promise<SyncResult | null> => {
-      if (!currentStudent || !progress || attempted <= 0) return null;
-
-      const nowIso = new Date().toISOString();
-      const today = getTodayIsoDate();
-      const studyDates = progress.studyDates.includes(today)
-        ? progress.studyDates
-        : [...progress.studyDates, today];
-
-      const currentPatternStats = {} as Record<HskPatternId, HskPatternStatEntry>;
-      for (const pid of ALL_HSK_PATTERN_IDS) {
-        currentPatternStats[pid] = normalizeHskPatternEntry(progress.hskPatternStats?.[pid]);
-      }
-
-      const prevEntry = currentPatternStats[patternId];
-      const nextSolved = prevEntry.solved + attempted;
-      const nextCorrect = prevEntry.correct + correct;
-      const nextWrong = Math.max(0, nextSolved - nextCorrect);
-      const nextAccuracy = nextSolved > 0 ? Math.round((nextCorrect / nextSolved) * 100) : 0;
-
-      currentPatternStats[patternId] = {
-        solved: nextSolved,
-        attempted: nextSolved,
-        correct: nextCorrect,
-        wrong: nextWrong,
-        accuracyPercent: nextAccuracy,
-      };
-
-      const updatedProgress: StudentProgress = {
-        ...progress,
-        studyDates,
-        lastActive: nowIso,
-        hskPatternStats: currentPatternStats,
-      };
-
-      saveStudentProgress(updatedProgress);
-      setProgress(updatedProgress);
-
-      const accuracyPercent =
-        updatedProgress.totalSolved > 0
-          ? Math.round((updatedProgress.correctCount / updatedProgress.totalSolved) * 100)
-          : 0;
-      const overallProgressPercent = computeOverallProgress(updatedProgress);
-      const activeMinutes = Math.round(updatedProgress.activeSeconds / 60);
-
-      const payload: SheetsSyncPayload = {
-        studentId: currentStudent.id,
-        studentName: currentStudent.name,
-        studentCode: currentStudent.code,
-        totalSolved: updatedProgress.totalSolved,
-        correctCount: updatedProgress.correctCount,
-        wrongCount: updatedProgress.wrongCount,
-        accuracyPercent,
-        activeMinutes,
-        overallProgressPercent,
-        lastActive: nowIso,
-        hskMockResults: updatedProgress.hskMockResults ?? [],
-        hskPatternStats: currentPatternStats,
-      };
-
-      const result = await syncStudentStatsToSheets(payload);
-      setLastSyncResult(result);
-      return result;
-    },
-    [currentStudent, progress]
-  );
-
-  // تسجيل نتيجة الامتحان التجريبي الموحّد بشكل مستقل تماماً عن تدريبات الفصول اليومية
-  const recordHskFixedMockExam = useCallback(
-    async (examResult: HskMockExamResult): Promise<SyncResult | null> => {
-      if (!currentStudent || !progress) return null;
-
-      const nowIso = examResult.completedAt || new Date().toISOString();
-      const today = getTodayIsoDate();
-      const studyDates = progress.studyDates.includes(today)
-        ? progress.studyDates
-        : [...progress.studyDates, today];
-
-      const prevResults = progress.hskMockResults ?? [];
-      const updatedHskResults = [examResult, ...prevResults].slice(0, 40);
-
-      const updatedProgress: StudentProgress = {
-        ...progress,
-        studyDates,
-        lastActive: nowIso,
-        hskMockResults: updatedHskResults,
-      };
-
-      saveStudentProgress(updatedProgress);
-      setProgress(updatedProgress);
-
-      const accuracyPercent =
-        updatedProgress.totalSolved > 0
-          ? Math.round((updatedProgress.correctCount / updatedProgress.totalSolved) * 100)
-          : 0;
-      const overallProgressPercent = computeOverallProgress(updatedProgress);
-      const activeMinutes = Math.round(updatedProgress.activeSeconds / 60);
-
-      const payload: SheetsSyncPayload = {
-        studentId: currentStudent.id,
-        studentName: currentStudent.name,
-        studentCode: currentStudent.code,
-        totalSolved: updatedProgress.totalSolved,
-        correctCount: updatedProgress.correctCount,
-        wrongCount: updatedProgress.wrongCount,
-        accuracyPercent,
-        activeMinutes,
-        overallProgressPercent,
-        lastActive: nowIso,
-        hskMockResults: updatedHskResults,
-        hskPatternStats: updatedProgress.hskPatternStats ?? ({} as Record<HskPatternId, HskPatternStatEntry>),
-      };
-
-      const syncRes = await syncStudentStatsToSheets(payload);
-      setLastSyncResult(syncRes);
-      return syncRes;
-    },
-    [currentStudent, progress]
-  );
 
   const analytics = useMemo<ComputedAnalytics>(() => {
     if (!progress) {
@@ -1120,9 +859,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     lastSyncResult,
     addDrillElapsedTime,
     recordCompletedSession,
-    recordMockExamAttempt,
-    recordHskPatternPractice,
-    recordHskFixedMockExam,
     studyVault,
     vaultCount,
     isItemBookmarked,

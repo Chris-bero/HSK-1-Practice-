@@ -1,8 +1,8 @@
 export interface UnlockedAccess {
   chapters: number[];
-  intlMocks: number[];
-  arabicMocks: number[];
-  patterns: number[];
+  intlMocks?: number[];
+  arabicMocks?: number[];
+  patterns?: number[];
 }
 
 export interface Student {
@@ -78,8 +78,6 @@ export type AppView =
   | 'labs'
   | 'vault'
   | 'custom-builder'
-  | 'hsk-portal'
-  | 'mock-exam'
   | 'drill'
   | 'analytics';
 
@@ -107,41 +105,6 @@ export interface TeacherBroadcast {
   updatedAt: string;
 }
 
-export type HskPatternId =
-  | 'listening-p1'
-  | 'listening-p2'
-  | 'listening-p3'
-  | 'listening-p4'
-  | 'reading-p1'
-  | 'reading-p2'
-  | 'reading-p3-4';
-
-export interface HskPatternStatEntry {
-  solved: number;
-  attempted: number;
-  correct: number;
-  wrong: number;
-  accuracyPercent: number;
-}
-
-export interface HskMockExamResult {
-  id: string;
-  examId: string;
-  examTitle: string;
-  examTrack: 'international' | 'arabic';
-  modelNumber: number;
-  completedAt: string;
-  listeningCorrect: number;
-  listeningTotal: number;
-  listeningScore: number;
-  readingCorrect: number;
-  readingTotal: number;
-  readingScore: number;
-  totalScore: number;
-  maxScore: number;
-  passed: boolean;
-  elapsedSeconds: number;
-}
 
 export interface CustomQuizConfig {
   chapterIds: number[];
@@ -229,21 +192,6 @@ export interface ChapterStatEntry {
   completedDrills: DrillType[];
 }
 
-export interface MockExamAttempt {
-  id: string;
-  completedAt: string;
-  listeningCorrect: number;
-  listeningTotal: number;
-  listeningScore: number;
-  readingCorrect: number;
-  readingTotal: number;
-  readingScore: number;
-  totalScore: number;
-  maxScore: number;
-  passed: boolean;
-  elapsedSeconds: number;
-}
-
 export interface StudentProgress {
   studentId: string;
   totalSolved: number;
@@ -256,10 +204,6 @@ export interface StudentProgress {
   drillTimeSeconds: Record<DrillType, number>;
   chapterStats: Record<number, ChapterStatEntry>;
   mistakes: MistakeItem[];
-  mockExamHistory?: MockExamAttempt[];
-  /** Separate HSK 3.0 International Portal analytics */
-  hskPatternStats?: Record<HskPatternId, HskPatternStatEntry>;
-  hskMockResults?: HskMockExamResult[];
 }
 
 export interface SheetsSyncPayload {
@@ -273,7 +217,5 @@ export interface SheetsSyncPayload {
   activeMinutes: number;
   overallProgressPercent: number;
   lastActive: string;
-  hskMockResults?: string | HskMockExamResult[];
-  hskPatternStats?: string | Record<HskPatternId, HskPatternStatEntry>;
   unlockedAccess?: string | UnlockedAccess;
 }

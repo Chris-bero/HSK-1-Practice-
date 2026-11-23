@@ -44,28 +44,28 @@ const SIMILAR_INITIAL_PAIRS: [string, string][] = [
 ];
 
 const FALLBACK_VOCAB_DISTRACTORS: { hanzi: string; pinyin: string; arabic: string }[] = [
-  { hanzi: '学习', pinyin: 'xué xí', arabic: 'يدرس / يتعلم' },
-  { hanzi: '朋友', pinyin: 'péng you', arabic: 'صديق' },
-  { hanzi: '老师', pinyin: 'lǎo shī', arabic: 'معلم' },
-  { hanzi: '明天', pinyin: 'míng tiān', arabic: 'غداً' },
-  { hanzi: '高兴', pinyin: 'gāo xìng', arabic: 'سعيد' },
+  { hanzi: '学习', pinyin: 'xué xí', arabic: 'to study / learn' },
+  { hanzi: '朋友', pinyin: 'péng you', arabic: 'friend' },
+  { hanzi: '老师', pinyin: 'lǎo shī', arabic: 'teacher' },
+  { hanzi: '明天', pinyin: 'míng tiān', arabic: 'tomorrow' },
+  { hanzi: '高兴', pinyin: 'gāo xìng', arabic: 'happy' },
 ];
 
 const FALLBACK_SENTENCE_DISTRACTORS: { hanzi: string; pinyin: string; arabic: string }[] = [
   {
     hanzi: '我是学生，我在学习汉语。',
     pinyin: 'wǒ shì xué shēng, wǒ zài xué xí hàn yǔ.',
-    arabic: 'أنا طالب، وأدرس اللغة الصينية.',
+    arabic: 'I am a student, and I am studying Chinese.',
   },
   {
     hanzi: '今天天气很好，我们去学校。',
     pinyin: 'jīn tiān tiān qì hěn hǎo, wǒ men qù xué xiào.',
-    arabic: 'الطقس جميل اليوم، سنذهب إلى المدرسة.',
+    arabic: 'The weather is nice today; we are going to school.',
   },
   {
     hanzi: '请问，老师在教室吗？',
     pinyin: 'qǐng wèn, lǎo shī zài jiào shì ma?',
-    arabic: 'عفواً، هل المعلم في قاعة الدرس؟',
+    arabic: 'Excuse me, is the teacher in the classroom?',
   },
 ];
 
@@ -314,7 +314,7 @@ function buildVocabQuestion(
         chapterId: chapter.id,
         sourceItemId: item.id,
         drillType,
-        promptPrimary: 'استمع جيداً ثم اختر الرمز الصيني المطابق',
+        promptPrimary: 'Listen carefully and choose the matching Chinese character',
         audioText: item.hanzi,
         options,
         correctOptionId: 'correct',
@@ -423,7 +423,7 @@ function buildSentenceQuestion(
         return EXTRA_PINYIN_LOOKUP[hanzi];
       };
 
-      // استخدام [targetBlank, ...blankDistractors] حصرياً دون سحب كلمات عشوائية من جمل أخرى
+      // Exclusively use [targetBlank, ...blankDistractors] without pulling random words from other sentences
       const explicitDistractors: string[] = [];
       const seen = new Set<string>([s.targetBlank]);
       for (const d of s.blankDistractors ?? []) {
@@ -519,14 +519,14 @@ export function generateSingleDrillQuestions(
         chapterId: chapter.id,
         sourceItemId: `m2-${chunk.map((c) => c.id).join('_')}`,
         drillType,
-        promptPrimary: 'صل كل رمز صيني بمعناه العربي الصحيح',
+        promptPrimary: 'Match each Chinese word to its correct meaning',
         matchingEntries: chunk.map((v) => ({
           id: v.id,
           hanzi: v.hanzi,
           pinyin: v.pinyin,
           arabic: v.arabic,
         })),
-        correctDisplay: chunk.map((c) => `${c.hanzi} ← ${c.arabic}`).join(' · '),
+        correctDisplay: chunk.map((c) => `${c.hanzi} → ${c.arabic}`).join(' · '),
       }));
     }
 
@@ -543,14 +543,14 @@ export function generateSingleDrillQuestions(
         chapterId: chapter.id,
         sourceItemId: `m3-${chunk.map((c) => c.id).join('_')}`,
         drillType,
-        promptPrimary: 'اربط الرمز الصيني بالنطق الصوتي والمعنى العربي المطابق',
+        promptPrimary: 'Connect each Chinese word with its Pinyin and matching meaning',
         matchingEntries: chunk.map((v) => ({
           id: v.id,
           hanzi: v.hanzi,
           pinyin: v.pinyin,
           arabic: v.arabic,
         })),
-        correctDisplay: chunk.map((c) => `${c.hanzi} (${c.pinyin}) ← ${c.arabic}`).join(' · '),
+        correctDisplay: chunk.map((c) => `${c.hanzi} (${c.pinyin}) → ${c.arabic}`).join(' · '),
       }));
     }
 
@@ -637,8 +637,8 @@ export function generateMistakeReviewQuestions(
           drillType: m.drillType,
           promptPrimary:
             m.drillType === 'match-2-col'
-              ? 'صل كل رمز صيني بمعناه العربي الصحيح'
-              : 'اربط الرمز الصيني بالنطق الصوتي والمعنى العربي المطابق',
+              ? 'Match each Chinese word to its correct meaning'
+              : 'Connect each Chinese word with its Pinyin and matching meaning',
           matchingEntries: fallbackItems.map((v) => ({
             id: v.id,
             hanzi: v.hanzi,
@@ -647,8 +647,8 @@ export function generateMistakeReviewQuestions(
           })),
           correctDisplay:
             m.drillType === 'match-2-col'
-              ? fallbackItems.map((c) => `${c.hanzi} ← ${c.arabic}`).join(' · ')
-              : fallbackItems.map((c) => `${c.hanzi} (${c.pinyin}) ← ${c.arabic}`).join(' · '),
+              ? fallbackItems.map((c) => `${c.hanzi} → ${c.arabic}`).join(' · ')
+              : fallbackItems.map((c) => `${c.hanzi} (${c.pinyin}) → ${c.arabic}`).join(' · '),
         });
       }
     }

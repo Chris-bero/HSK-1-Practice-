@@ -30,7 +30,7 @@ export function RadicalsExplorerLab({ onPracticeWord }: RadicalsExplorerLabProps
     [unlockedAccess]
   );
 
-  // حساب الكلمات المطابقة من الفصول المفتوحة لكل جذر من الجذور الـ 20
+  // Compute matching curriculum words from unlocked chapters for each of the 20 radicals
   const matchesByRadical = useMemo(() => {
     const map = new Map<string, MatchedCurriculumWord[]>();
     for (const rad of HSK_RADICALS_DATA) {
@@ -87,20 +87,20 @@ export function RadicalsExplorerLab({ onPracticeWord }: RadicalsExplorerLabProps
 
   return (
     <div className="space-y-6">
-      {/* شبكة الجذور الـ 20 الأساسية */}
+      {/* Core 20 radicals grid */}
       <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-              أهم ٢٠ جذراً صينياً في منهج HSK 3.0 (المستوى الأول)
+              Top 20 Chinese Radicals in HSK 3.0 Level 1
             </h2>
             <p className="text-xs text-[#57534E] dark:text-[#A8A29E] mt-0.5">
-              اضغط على أي جذر لاكتشاف معناه، حيلة حفظه البصرية، وجميع مفردات المنهج التي تحتوي
-              عليه.
+              Select any radical to explore its meaning, visual memory cue, and every matching word
+              in the curriculum.
             </p>
           </div>
           <span className="text-xs font-semibold text-[#57534E] dark:text-[#A8A29E] tabular-nums">
-            الفصول المفعّلة: {unlockedChapters.length} من ١٥
+            Unlocked chapters: {unlockedChapters.length} of 15
           </span>
         </div>
 
@@ -113,7 +113,7 @@ export function RadicalsExplorerLab({ onPracticeWord }: RadicalsExplorerLabProps
                 key={rad.id}
                 type="button"
                 onClick={() => setSelectedRadicalId(rad.id)}
-                className={`text-right p-3 rounded-xl border transition-all flex flex-col justify-between gap-1.5 ${
+                className={`text-left p-3 rounded-xl border transition-all flex flex-col justify-between gap-1.5 ${
                   isSelected
                     ? 'border-[#B91C1C] dark:border-[#EF4444] bg-[#B91C1C]/8 dark:bg-[#EF4444]/15 shadow-xs'
                     : 'border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F9F6F0]/70 dark:bg-[#141312] hover:border-[#B91C1C]/45 dark:hover:border-[#EF4444]/45'
@@ -135,9 +135,9 @@ export function RadicalsExplorerLab({ onPracticeWord }: RadicalsExplorerLabProps
                 </div>
                 <div>
                   <p className="text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB] truncate">
-                    {rad.meaningAr}
+                    {rad.meaningEn || rad.meaningAr}
                   </p>
-                  <p className="font-pinyin text-[10px] text-[#57534E] dark:text-[#A8A29E] truncate text-right">
+                  <p className="font-pinyin text-[10px] text-[#57534E] dark:text-[#A8A29E] truncate text-left">
                     {rad.pinyin}
                   </p>
                 </div>
@@ -147,7 +147,7 @@ export function RadicalsExplorerLab({ onPracticeWord }: RadicalsExplorerLabProps
         </div>
       </div>
 
-      {/* بطاقة تفاصيل الجذر المختار والكلمات المطابقة */}
+      {/* Selected radical details & matching curriculum words */}
       <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] overflow-hidden">
         <div className="p-5 sm:p-6 bg-[#F2ECE1]/70 dark:bg-[#25221F] border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10 flex flex-col md:flex-row md:items-center gap-5">
           <div className="w-20 h-20 rounded-xl border-2 border-[#B91C1C]/45 dark:border-[#EF4444]/45 bg-white dark:bg-[#1E1C1A] flex items-center justify-center shrink-0">
@@ -159,43 +159,44 @@ export function RadicalsExplorerLab({ onPracticeWord }: RadicalsExplorerLabProps
           <div className="flex-1 space-y-2">
             <div className="flex flex-wrap items-center gap-2.5">
               <h3 className="text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                جذر {activeRadical.meaningAr}
+                Radical: {activeRadical.meaningEn}
               </h3>
               <span className="font-pinyin text-xs font-bold px-2.5 py-0.5 rounded bg-white dark:bg-[#1E1C1A] border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 text-[#57534E] dark:text-[#A8A29E]">
-                {activeRadical.pinyin} · {activeRadical.meaningEn}
+                {activeRadical.pinyin}
               </span>
             </div>
 
             <div className="rounded-lg border border-[#D97706]/30 dark:border-[#F59E0B]/30 bg-[#D97706]/8 dark:bg-[#F59E0B]/10 px-3.5 py-2.5 flex items-start gap-2">
               <Lightbulb className="w-4 h-4 text-[#B45309] dark:text-[#F59E0B] shrink-0 mt-0.5" />
               <p className="text-xs sm:text-sm text-[#78350F] dark:text-[#FDE68A] leading-relaxed">
-                <strong>حيلة بصرية للحفظ:</strong> {activeRadical.memoryTipAr}
+                <strong>Visual Memory Tip:</strong> {activeRadical.memoryTipAr}
               </p>
             </div>
           </div>
         </div>
 
-        {/* قائمة الكلمات المطابقة من المنهج */}
+        {/* Matching curriculum vocabulary list */}
         <div className="p-5 sm:p-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#B91C1C] dark:text-[#EF4444]" />
               <h4 className="text-sm sm:text-base font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                مفردات المنهج المحتوية على هذا الجذر ({activeMatches.length})
+                Curriculum Words Containing This Radical ({activeMatches.length})
               </h4>
             </div>
             <span className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-              الرمز الملوّن بالأحمر هو الرمز الحامل للجذر
+              Characters highlighted in red contain the radical
             </span>
           </div>
 
           {activeMatches.length === 0 ? (
             <div className="rounded-lg border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-[#F9F6F0] dark:bg-[#141312] p-6 text-center space-y-1">
               <p className="text-sm font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                لا توجد مفردات مطابقة لهذا الجذر في الفصول المفتوحة حالياً
+                No matching words found in your currently unlocked chapters
               </p>
               <p className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-                ستظهر مفردات هذا الجذر تلقائياً فور تفعيل الفصول المتقدمة في حسابك.
+                Words containing this radical will appear automatically once higher chapters are
+                unlocked on your account.
               </p>
             </div>
           ) : (
@@ -247,7 +248,7 @@ export function RadicalsExplorerLab({ onPracticeWord }: RadicalsExplorerLabProps
                         }`}
                       >
                         <Volume2 className="w-3.5 h-3.5 shrink-0" />
-                        <span>استمع</span>
+                        <span>Listen</span>
                       </button>
 
                       <button
@@ -258,7 +259,7 @@ export function RadicalsExplorerLab({ onPracticeWord }: RadicalsExplorerLabProps
                         className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-lg bg-[#1C1917] hover:bg-[#B91C1C] dark:bg-[#F5F2EB] dark:hover:bg-[#EF4444] text-white dark:text-[#121110] dark:hover:text-white text-xs font-bold transition-colors whitespace-nowrap"
                       >
                         <PenTool className="w-3.5 h-3.5 shrink-0" />
-                        <span>تدرّب على كتابته</span>
+                        <span>Practice Writing</span>
                       </button>
                     </div>
                   </div>

@@ -31,13 +31,13 @@ export function FillInBlankDrill({
 
   return (
     <div className="space-y-6">
-      {/* بطاقة الجملة: بدون ترجمة عربية قبل الإجابة للاعتماد على السياق والنحو الصيني */}
+      {/* Sentence card: translation hidden until answered to encourage context & grammar reading */}
       <div className="neo-frame rounded-xl py-9 px-6 text-center space-y-4 bg-white dark:bg-[#1E1C1A]">
         <p className="text-xs font-semibold text-[#57534E] dark:text-[#A8A29E]">
-          اختر الكلمة الصينية المناسبة لإكمال الفراغ في الجملة
+          Select the appropriate Chinese word to complete the blank in the sentence
         </p>
 
-        {/* معاينة الجملة مع تمييز الإجابة الصحيحة بالأخضر وشطب الإجابة الخاطئة بالأحمر عند التصحيح */}
+        {/* Sentence preview highlighting correct answer in green and striking wrong choice in red */}
         <div
           dir="ltr"
           className="font-hanzi text-2xl sm:text-4xl font-bold text-[#1C1917] dark:text-[#F5F2EB] leading-relaxed flex flex-wrap items-center justify-center gap-1"
@@ -71,7 +71,7 @@ export function FillInBlankDrill({
         </div>
       </div>
 
-      {/* ٤ خيارات صينية فقط من [targetBlank, ...blankDistractors] */}
+      {/* 4 Chinese options from [targetBlank, ...blankDistractors] */}
       <div className="grid grid-cols-2 gap-3.5">
         {(question.options ?? []).map((opt) => {
           const isSelected = selectedOptionId === opt.id;
@@ -104,7 +104,7 @@ export function FillInBlankDrill({
               onClick={() => onSelectOption(opt.id, opt.label, isCorrectOption)}
               className={`min-h-[78px] px-5 py-4 rounded-xl border flex items-center justify-between gap-3 transition-all duration-150 ${cardClass}`}
             >
-              <div className="flex flex-col items-start">
+              <div className="flex flex-col items-start text-left">
                 <span className="font-hanzi text-2xl sm:text-3xl font-bold">{opt.label}</span>
                 {showPinyin && opt.subLabel && (
                   <span className="font-pinyin text-xs sm:text-sm text-[#57534E] dark:text-[#A8A29E] mt-1">
@@ -121,7 +121,7 @@ export function FillInBlankDrill({
         })}
       </div>
 
-      {/* صندوق التغذية الراجعة: يكشف الجملة الصينية الكاملة والبينين والترجمة العربية بعد الإجابة فقط */}
+      {/* Feedback panel: reveals full Chinese sentence, Pinyin, and meaning after answering */}
       {showFeedback && (
         <div
           className={`rounded-xl border p-5 flex items-start gap-3.5 ${
@@ -145,8 +145,8 @@ export function FillInBlankDrill({
               }`}
             >
               {isCorrectSelected
-                ? 'إجابة صحيحة! أحسنت.'
-                : `إجابة غير صحيحة — الكلمة الصحيحة هي: ${targetBlank}`}
+                ? 'Correct! Well done.'
+                : `Incorrect — the correct word is: ${targetBlank}`}
             </p>
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
@@ -154,7 +154,7 @@ export function FillInBlankDrill({
                 {question.sentenceFullHanzi && (
                   <p
                     dir="ltr"
-                    className="font-hanzi text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB] text-right"
+                    className="font-hanzi text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB] text-left"
                   >
                     {question.sentenceFullHanzi}
                   </p>
@@ -167,7 +167,7 @@ export function FillInBlankDrill({
                 )}
 
                 <p className="text-sm text-[#57534E] dark:text-[#A8A29E]">
-                  المعنى:{' '}
+                  Meaning:{' '}
                   <strong className="text-[#1C1917] dark:text-[#F5F2EB]">
                     {question.promptPrimary}
                   </strong>

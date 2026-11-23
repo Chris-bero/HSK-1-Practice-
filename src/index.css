@@ -29,14 +29,14 @@
   }
 
   html {
-    font-family: 'Tajawal', 'Cairo', system-ui, sans-serif;
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     background-color: var(--canvas);
     color: var(--ink);
     scroll-behavior: smooth;
   }
 
   h1, h2, h3, h4, button {
-    font-family: 'Cairo', 'Tajawal', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   .dark body {
@@ -51,7 +51,7 @@
 }
 
 .font-pinyin {
-  font-family: 'Tajawal', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   direction: ltr;
   unicode-bidi: isolate;
 }
@@ -74,7 +74,7 @@
 }
 
 .hsk-ruby rt {
-  font-family: 'Tajawal', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 0.46em;
   font-weight: 600;
   line-height: 1.15;
@@ -367,10 +367,10 @@
     font-weight: 600 !important;
     color: #000000 !important;
     margin-left: auto !important;
-    text-align: right !important;
+    text-align: left !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    direction: rtl !important;
+    direction: ltr !important;
   }
 
   .vocab-a3-print-footer {
@@ -521,7 +521,7 @@
   }
 
   .vocab-cat-print-table td.cat-p-arabic {
-    text-align: right !important;
+    text-align: left !important;
     font-size: 9pt !important;
   }
 
@@ -583,7 +583,7 @@
   }
 
   .grammar-print-trap {
-    border-right: 3px solid #000000 !important;
+    border-left: 3px solid #000000 !important;
     background: #fafafa !important;
     padding: 3.5px 6px !important;
     margin-bottom: 5px !important;
@@ -644,7 +644,7 @@
     font-size: 8.5pt !important;
     font-weight: 700 !important;
     color: #000000 !important;
-    text-align: right !important;
+    text-align: left !important;
   }
 
   .vault-print-table td {

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
-  ArrowRight,
+  ArrowLeft,
   CheckCircle2,
-  ChevronLeft,
+  ChevronRight,
   Eye,
   EyeOff,
   Play,
@@ -38,7 +38,7 @@ export function ConfusablesTrapsLab() {
   const [activeCategory, setActiveCategory] = useState<ConfusableCategory>('visual-phonetic');
   const [speakingKey, setSpeakingKey] = useState<string | null>(null);
 
-  // حالة اختبار المتشابهات السريع (15 سؤالاً)
+  // Quick Similarity & Traps Quiz state (15 questions)
   const [isQuizMode, setIsQuizMode] = useState(false);
   const [quizDeck, setQuizDeck] = useState<ConfusableQuizQuestion[]>(CONFUSABLES_QUIZ_QUESTIONS);
   const [quizIndex, setQuizIndex] = useState(0);
@@ -46,7 +46,7 @@ export function ConfusablesTrapsLab() {
   const [correctCount, setCorrectCount] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
 
-  // ضبط صفحة الطباعة لـ A4 عمودي لورقة ملخص المتشابهات
+  // Set A4 portrait page orientation for the printable cheat sheet
   useEffect(() => {
     const styleId = 'confusables-dynamic-print-page';
     let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
@@ -128,7 +128,7 @@ export function ConfusablesTrapsLab() {
   };
 
   // =========================================================================
-  // واجهة اختبار المتشابهات السريع (15 سؤالاً)
+  // Similarity & Exam Traps Quick Quiz (15 questions)
   // =========================================================================
   if (isQuizMode) {
     const completedPrompt =
@@ -150,8 +150,8 @@ export function ConfusablesTrapsLab() {
             }}
             className="inline-flex items-center gap-2 text-sm font-semibold text-[#57534E] dark:text-[#A8A29E] hover:text-[#B91C1C] dark:hover:text-[#EF4444] transition-colors"
           >
-            <ArrowRight className="w-4 h-4" />
-            <span>العودة إلى بطاقات المتشابهات وفخاخ الامتحان</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Similarity & Exam Traps Guide</span>
           </button>
 
           <button
@@ -165,7 +165,7 @@ export function ConfusablesTrapsLab() {
             }`}
           >
             {showPinyin ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            <span>{showPinyin ? 'إخفاء البينين' : 'إظهار البينين'}</span>
+            <span>{showPinyin ? 'Hide Pinyin' : 'Show Pinyin'}</span>
           </button>
         </div>
 
@@ -176,17 +176,17 @@ export function ConfusablesTrapsLab() {
             </div>
             <div className="space-y-1.5">
               <h2 className="text-2xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                نتيجتك في اختبار المتشابهات وفخاخ الامتحان
+                Similarity & Exam Traps Quiz Result
               </h2>
               <p className="text-base font-bold tabular-nums text-[#B91C1C] dark:text-[#EF4444]">
                 {correctCount} / {quizDeck.length} ({Math.round((correctCount / quizDeck.length) * 100)}%)
               </p>
               <p className="text-xs sm:text-sm text-[#57534E] dark:text-[#A8A29E] max-w-md mx-auto">
                 {correctCount >= 13
-                  ? 'ممتاز جداً! أصبحت متمكناً من تفادي فخاخ امتحان HSK 3.0.'
+                  ? 'Outstanding! You have mastered avoiding common HSK 3.0 exam traps.'
                   : correctCount >= 9
-                  ? 'أداء جيد! راجع بطاقات الأخطاء سريعاً وستصل للدرجة الكاملة.'
-                  : 'بداية جيدة! راجع فروق القواعد والمتشابهات في البطاقات ثم أعد الاختبار.'}
+                  ? 'Solid performance! Review the comparison cards quickly to hit 100%.'
+                  : 'Good start! Study the character and grammar comparisons, then retry the quiz.'}
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
@@ -196,31 +196,31 @@ export function ConfusablesTrapsLab() {
                 className="inline-flex items-center gap-2 px-6 py-2.5 min-h-[44px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-sm font-bold"
               >
                 <RotateCcw className="w-4 h-4" />
-                <span>إعادة الاختبار (15 سؤالاً)</span>
+                <span>Retake Quiz (15 Questions)</span>
               </button>
               <button
                 type="button"
                 onClick={() => setIsQuizMode(false)}
                 className="px-5 py-2.5 min-h-[44px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 text-sm font-bold text-[#1C1917] dark:text-[#F5F2EB]"
               >
-                العودة للملخص
+                Back to Cheat Sheet
               </button>
             </div>
           </div>
         ) : (
           currentQuestion && (
             <div className="neo-frame rounded-xl p-6 sm:p-8 space-y-6">
-              {/* التقدم والنتيجة الحية */}
+              {/* Progress & live score */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2 text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums">
                   <span>
-                    السؤال {quizIndex + 1} من {quizDeck.length} ·{' '}
+                    Question {quizIndex + 1} of {quizDeck.length} ·{' '}
                     {currentQuestion.category === 'visual-phonetic'
-                      ? 'متشابهات شكلية وصوتية'
-                      : 'فخاخ القواعد والاستخدام'}
+                      ? 'Visual & Phonetic Confusables'
+                      : 'Grammar & Usage Traps'}
                   </span>
                   <span className="font-bold text-[#15803D] dark:text-[#22C55E]">
-                    الإجابات الصحيحة: {correctCount}
+                    Correct: {correctCount}
                   </span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-[#F2ECE1] dark:bg-[#292623] overflow-hidden">
@@ -231,7 +231,7 @@ export function ConfusablesTrapsLab() {
                 </div>
               </div>
 
-              {/* نص السؤال */}
+              {/* Question prompt */}
               <div className="rounded-xl border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-[#F9F6F0]/75 dark:bg-[#141312] p-6 text-center space-y-2.5">
                 <p
                   dir="ltr"
@@ -249,7 +249,7 @@ export function ConfusablesTrapsLab() {
                 </p>
               </div>
 
-              {/* الاختيارات */}
+              {/* Options */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {currentQuestion.options.map((opt, idx) => {
                   const isSelected = selectedOption === idx;
@@ -289,7 +289,7 @@ export function ConfusablesTrapsLab() {
                 })}
               </div>
 
-              {/* التغذية الراجعة الفورية مع الشرح العربي */}
+              {/* Instant explanation feedback */}
               {selectedOption !== null && (
                 <div
                   className={`rounded-xl border p-4 sm:p-5 space-y-3 ${
@@ -303,15 +303,13 @@ export function ConfusablesTrapsLab() {
                       {selectedOption === currentQuestion.correctIndex ? (
                         <>
                           <CheckCircle2 className="w-5 h-5 text-[#15803D] dark:text-[#22C55E]" />
-                          <span className="text-[#15803D] dark:text-[#22C55E]">
-                            إجابة صحيحة!
-                          </span>
+                          <span className="text-[#15803D] dark:text-[#22C55E]">Correct!</span>
                         </>
                       ) : (
                         <>
                           <XCircle className="w-5 h-5 text-[#B91C1C] dark:text-[#EF4444]" />
                           <span className="text-[#B91C1C] dark:text-[#EF4444]">
-                            الإجابة الصحيحة هي:{' '}
+                            Correct answer:{' '}
                             <span className="font-hanzi text-base">
                               {currentQuestion.options[currentQuestion.correctIndex].hanzi}
                             </span>
@@ -326,7 +324,7 @@ export function ConfusablesTrapsLab() {
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-white dark:bg-[#1E1C1A] text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB]"
                     >
                       <Volume2 className="w-3.5 h-3.5 text-[#B91C1C] dark:text-[#EF4444]" />
-                      <span>استمع للجملة الصحيحة</span>
+                      <span>Listen to Correct Sentence</span>
                     </button>
                   </div>
 
@@ -341,9 +339,9 @@ export function ConfusablesTrapsLab() {
                       className="inline-flex items-center gap-1.5 px-5 py-2.5 min-h-[42px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-xs sm:text-sm font-bold"
                     >
                       <span>
-                        {quizIndex + 1 >= quizDeck.length ? 'عرض النتيجة النهائية' : 'السؤال التالي'}
+                        {quizIndex + 1 >= quizDeck.length ? 'View Final Score' : 'Next Question'}
                       </span>
-                      <ChevronLeft className="w-4 h-4" />
+                      <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -357,21 +355,21 @@ export function ConfusablesTrapsLab() {
 
   return (
     <div className="space-y-6">
-      {/* شريط التحكم العلوي (يُخفى عند الطباعة) */}
+      {/* Top control bar (hidden on print) */}
       <div className="no-print rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-5 sm:p-6 space-y-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums">
               <span className="font-bold text-[#B91C1C] dark:text-[#EF4444]">
-                مختبر المتشابهات وفخاخ الامتحان
+                Similarity & Exam Traps Lab
               </span>
               <span aria-hidden="true">·</span>
-              <span>١٠ متشابهات شكلية وصوتية</span>
+              <span>10 Visual & Phonetic Pairs</span>
               <span aria-hidden="true">·</span>
-              <span>١٠ فخاخ قواعد HSK 3.0</span>
+              <span>10 HSK 3.0 Grammar Traps</span>
             </div>
             <h2 className="text-lg sm:text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-              دليل التمييز السريع وتفادي فخاخ الامتحان
+              Quick Differentiation & Exam Trap Guide
             </h2>
           </div>
 
@@ -382,7 +380,7 @@ export function ConfusablesTrapsLab() {
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white text-xs sm:text-sm font-bold transition-colors whitespace-nowrap shrink-0"
             >
               <Play className="w-4 h-4 shrink-0" />
-              <span>اختبر نفسك في المتشابهات (15 سؤالاً)</span>
+              <span>Take Similarity Quiz (15 Qs)</span>
             </button>
 
             <button
@@ -391,16 +389,16 @@ export function ConfusablesTrapsLab() {
               className="inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg border border-[#1C1917]/18 dark:border-[#F5F2EB]/18 bg-[#F9F6F0] dark:bg-[#121110] hover:border-[#B91C1C]/50 dark:hover:border-[#EF4444]/50 text-[#1C1917] dark:text-[#F5F2EB] text-xs sm:text-sm font-bold transition-colors whitespace-nowrap shrink-0"
             >
               <Printer className="w-4 h-4 text-[#D97706] dark:text-[#F59E0B] shrink-0" />
-              <span>طباعة ملخص المتشابهات (PDF أبيض وأسود)</span>
+              <span>Print Cheat Sheet (B&W PDF)</span>
             </button>
           </div>
         </div>
 
-        {/* التبويبان الفرعيان + زر البينين */}
+        {/* Category tabs + Pinyin toggle */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div
             role="tablist"
-            aria-label="أقسام مختبر المتشابهات"
+            aria-label="Similarity Lab sections"
             className="inline-flex flex-wrap items-center gap-1 p-1 rounded-lg bg-[#F2ECE1] dark:bg-[#141312] border border-[#1C1917]/10 dark:border-[#F5F2EB]/10"
           >
             <button
@@ -415,7 +413,7 @@ export function ConfusablesTrapsLab() {
               }`}
             >
               <Scale className="w-4 h-4 shrink-0" />
-              <span>المتشابهات الشكلية والصوتية ({visualGroups.length})</span>
+              <span>Visual & Phonetic Confusables ({visualGroups.length})</span>
             </button>
 
             <button
@@ -430,7 +428,7 @@ export function ConfusablesTrapsLab() {
               }`}
             >
               <AlertTriangle className="w-4 h-4 shrink-0" />
-              <span>فخاخ القواعد والاستخدام ({grammarGroups.length})</span>
+              <span>Grammar & Usage Traps ({grammarGroups.length})</span>
             </button>
           </div>
 
@@ -445,12 +443,12 @@ export function ConfusablesTrapsLab() {
             }`}
           >
             {showPinyin ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            <span>{showPinyin ? 'إخفاء البينين (Ruby)' : 'إظهار البينين (Ruby)'}</span>
+            <span>{showPinyin ? 'Hide Pinyin (Ruby)' : 'Show Pinyin (Ruby)'}</span>
           </button>
         </div>
       </div>
 
-      {/* بطاقات المقارنة التفاعلية على الشاشة */}
+      {/* Interactive comparison cards */}
       <div className="no-print space-y-5">
         {visibleGroups.map((group) => {
           const itemCols =
@@ -465,7 +463,7 @@ export function ConfusablesTrapsLab() {
               key={group.id}
               className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-5 sm:p-6 space-y-5"
             >
-              {/* رأس البطاقة */}
+              {/* Card header */}
               <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
                 <div className="flex items-center gap-2.5">
                   <span className="text-xs font-bold tabular-nums text-[#B91C1C] dark:text-[#EF4444]">
@@ -480,7 +478,7 @@ export function ConfusablesTrapsLab() {
                 </span>
               </div>
 
-              {/* المقارنة جنباً إلى جنب */}
+              {/* Side-by-side comparison */}
               <div className={`grid ${itemCols} gap-3`}>
                 {group.items.map((item, idx) => {
                   const keyBase = `${group.id}-item-${idx}`;
@@ -547,21 +545,21 @@ export function ConfusablesTrapsLab() {
                 })}
               </div>
 
-              {/* صندوق فخ الامتحان / الفرق السريع */}
+              {/* Exam trap / key distinction callout */}
               <div className="rounded-lg border border-[#D97706]/35 dark:border-[#F59E0B]/35 bg-[#FFFBEB]/80 dark:bg-[#451A03]/25 p-4 flex items-start gap-3">
                 <AlertTriangle className="w-4 h-4 text-[#B45309] dark:text-[#F59E0B] shrink-0 mt-0.5" />
                 <p className="text-xs sm:text-sm text-[#1C1917] dark:text-[#F5F2EB] leading-relaxed">
-                  <strong className="text-[#B45309] dark:text-[#F59E0B] ml-1.5">
-                    فخ الامتحان / الفرق السريع:
+                  <strong className="text-[#B45309] dark:text-[#F59E0B] mr-1.5">
+                    Exam Trap / Key Distinction:
                   </strong>
                   {group.trapTipAr}
                 </p>
               </div>
 
-              {/* جمل الأمثلة المتقابلة */}
+              {/* Contrastive example sentences */}
               <div className="space-y-2">
                 <div className="text-xs font-bold text-[#57534E] dark:text-[#A8A29E]">
-                  أمثلة تطبيقية للتمييز:
+                  Applied Contrast Examples:
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {group.examples.map((ex, exIdx) => {
@@ -588,7 +586,7 @@ export function ConfusablesTrapsLab() {
                           <button
                             type="button"
                             onClick={() => handleSpeak(exKey, ex.hanzi, 1.0)}
-                            aria-label="استماع بسرعة عادية"
+                            aria-label="Listen at normal speed"
                             className={`inline-flex items-center gap-1 px-2 py-1.5 min-h-[32px] rounded-md border text-[11px] font-bold tabular-nums ${
                               exNormal
                                 ? 'border-[#B91C1C] bg-[#B91C1C] text-white'
@@ -601,7 +599,7 @@ export function ConfusablesTrapsLab() {
                           <button
                             type="button"
                             onClick={() => handleSpeak(exKey, ex.hanzi, 0.7)}
-                            aria-label="استماع بسرعة بطيئة"
+                            aria-label="Listen at slow speed"
                             className={`inline-flex items-center gap-1 px-2 py-1.5 min-h-[32px] rounded-md border text-[11px] font-bold tabular-nums ${
                               exSlow
                                 ? 'border-[#D97706] bg-[#D97706] text-white'
@@ -622,24 +620,24 @@ export function ConfusablesTrapsLab() {
       </div>
 
       {/* ================================================================= */}
-      {/* نسخة الطباعة المخصصة (ملخص المتشابهات وفخاخ الامتحان A4 أبيض وأسود) */}
+      {/* Printable B&W A4 Cheat Sheet (Similarity & Exam Traps)            */}
       {/* ================================================================= */}
-      <div className="hidden print-only confusables-print-sheet" dir="rtl">
+      <div className="hidden print-only confusables-print-sheet">
         <div className="vault-print-header">
-          <h2>ملخص المتشابهات وفخاخ امتحان HSK 3.0 — المستوى الأول (الفصول 1–15)</h2>
+          <h2>HSK 3.0 Level 1 — Confusables & Exam Traps Cheat Sheet (Chapters 1–15)</h2>
           <p>
-            ورقة مراجعة ليلة الامتحان · 10 متشابهات شكلية وصوتية + 10 فخاخ قواعد واستخدام
+            Pre-Exam Review Sheet · 10 Visual & Phonetic Confusables + 10 Grammar & Usage Traps
           </p>
         </div>
 
         {(
           [
             {
-              heading: 'أولاً: المتشابهات الشكلية والصوتية (10 مجموعات)',
+              heading: 'Part 1: Visual & Phonetic Confusables (10 Groups)',
               list: visualGroups,
             },
             {
-              heading: 'ثانياً: فخاخ القواعد والاستخدام (10 فخاخ امتحانية)',
+              heading: 'Part 2: Grammar & Usage Traps (10 Exam Traps)',
               list: grammarGroups,
             },
           ] as const
@@ -652,9 +650,9 @@ export function ConfusablesTrapsLab() {
               <thead>
                 <tr>
                   <th style={{ width: '5%', textAlign: 'center' }}>#</th>
-                  <th style={{ width: '28%' }}>المقارنة (Hanzi / Pinyin)</th>
-                  <th style={{ width: '37%' }}>فخ الامتحان والفرق السريع</th>
-                  <th style={{ width: '30%' }}>أمثلة سريعة</th>
+                  <th style={{ width: '28%' }}>Comparison (Hanzi / Pinyin)</th>
+                  <th style={{ width: '37%' }}>Exam Trap & Quick Distinction</th>
+                  <th style={{ width: '30%' }}>Quick Examples</th>
                 </tr>
               </thead>
               <tbody>

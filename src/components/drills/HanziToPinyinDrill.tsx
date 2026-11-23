@@ -11,8 +11,8 @@ interface DrillEngineProps {
 }
 
 /**
- * محرك الرمز الصيني إلى البينين (٥ خيارات: ١ صحيح + ٢ متغير نغمة + ٢ مقاطع متشابهة).
- * يعرض البينين دائماً بغض النظر عن زر الإخفاء العام لأنه موضوع الاختبار.
+ * Hanzi-to-Pinyin drill engine (5 options: 1 correct + 2 tone distractors + 2 similar syllables).
+ * Always displays Pinyin options regardless of the global Pinyin visibility toggle.
  */
 export function HanziToPinyinDrill({
   question,
@@ -27,14 +27,14 @@ export function HanziToPinyinDrill({
     <div className="space-y-8">
       <div className="neo-frame rounded-xl py-10 px-6 text-center space-y-3 bg-white dark:bg-[#1E1C1A]">
         <p className="text-xs font-semibold text-[#57534E] dark:text-[#A8A29E]">
-          اختر النطق الصوتي والنغمة الصحيحة من بين الخيارات الخمسة
+          Select the correct Pinyin pronunciation and tone from the five options
         </p>
         <div className="font-hanzi text-5xl sm:text-6xl font-bold text-[#1C1917] dark:text-[#F5F2EB] leading-snug">
           {question.promptPrimary}
         </div>
         {question.promptSecondary && (
           <p className="text-sm text-[#57534E] dark:text-[#A8A29E]">
-            المعنى: {question.promptSecondary}
+            Meaning: {question.promptSecondary}
           </p>
         )}
         <div className="pt-2">
@@ -42,7 +42,7 @@ export function HanziToPinyinDrill({
         </div>
       </div>
 
-      {/* ٥ خيارات للبينين */}
+      {/* 5 Pinyin options */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
         {(question.options ?? []).map((opt) => {
           const isSelected = selectedOptionId === opt.id;
