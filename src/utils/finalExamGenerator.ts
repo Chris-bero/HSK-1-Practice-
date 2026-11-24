@@ -14,16 +14,99 @@ import {
   SentenceItem,
   VocabItem,
 } from '../types';
+import { buildFourPinyinOptions, EXTRA_PINYIN_LOOKUP } from './chapterExamGenerator';
 import {
-  buildFourPinyinOptions,
+  buildCloseTranslationDistractors,
   CHINESE_SWAP_RULES,
   ENGLISH_SWAP_RULES,
-  EXTRA_PINYIN_LOOKUP,
   generateMutatedVariants,
   shuffleWithRng,
-} from './chapterExamGenerator';
+} from './translationDistractors';
 
-const FINAL_EXAM_DURATION_SECONDS = 60 * 60; // 60 minutes for 50 questions
+export const FINAL_EXAM_PART_TARGETS = {
+  part1: 20, // 10 Meaning + 10 Pinyin & Tones
+  part2: 15, // 15 Grammar & Fill-in-the-Blank
+  part3: 15, // Up to 15 unique Reading & Dialogue Comprehension passages
+  part4: 15, // 15 Sentence Translation (anti-elimination close distractors)
+  part5: 15, // 15 True or False (balanced 8 TRUE / 7 FALSE)
+} as const;
+
+export const FINAL_EXAM_TARGET_TOTAL =
+  FINAL_EXAM_PART_TARGETS.part1 +
+  FINAL_EXAM_PART_TARGETS.part2 +
+  FINAL_EXAM_PART_TARGETS.part3 +
+  FINAL_EXAM_PART_TARGETS.part4 +
+  FINAL_EXAM_PART_TARGETS.part5; // 80 questions
+
+export const FINAL_EXAM_DURATION_MINUTES = 90;
+const FINAL_EXAM_DURATION_SECONDS = FINAL_EXAM_DURATION_MINUTES * 60; // 90 minutes for 80 questions
+
+export interface FinalExamScopeEstimate {
+  partCounts: [number, number, number, number, number];
+  totalQuestions: number;
+  targetTotal: number;
+  isCapped: boolean;
+  minChaptersForFullExam: number;
+  durationMinutes: number;
+}
+
+/**
+ * Estimates exact Final Exam question counts for a selected chapter scope,
+ * ensuring zero repeated vocabulary, sentences, reading passages, or T/F items.
+ */
+export function estimateFinalExamScope(chapterIds: number[]): FinalExamScopeEstimate {
+  if (chapterIds.length === 0) {
+    return {
+      partCounts: [
+        FINAL_EXAM_PART_TARGETS.part1,
+        FINAL_EXAM_PART_TARGETS.part2,
+        FINAL_EXAM_PART_TARGETS.part3,
+        FINAL_EXAM_PART_TARGETS.part4,
+        FINAL_EXAM_PART_TARGETS.part5,
+      ],
+      totalQuestions: FINAL_EXAM_TARGET_TOTAL,
+      targetTotal: FINAL_EXAM_TARGET_TOTAL,
+      isCapped: false,
+      minChaptersForFullExam: 4,
+      durationMinutes: FINAL_EXAM_DURATION_MINUTES,
+    };
+  }
+
+  const idSet = new Set<number>(chapterIds);
+  const selected = CHAPTERS_DATA.filter((c) => idSet.has(c.id));
+  const vocabTotal = selected.reduce((sum, c) => sum + c.vocab.length, 0);
+  const validBlankTotal = selected.reduce(
+    (sum, c) =>
+      sum +
+      c.sentences.filter(
+        (s) => s.targetBlank && s.hanzi.includes(s.targetBlank) && (s.blankDistractors?.length ?? 0) >= 3
+      ).length,
+    0
+  );
+  const sentenceTotal = selected.reduce((sum, c) => sum + c.sentences.length, 0);
+  const readingTotal = READING_COMPREHENSION_DATA.filter((item) => idSet.has(item.chapterId)).length;
+  const tfItems = selected.flatMap((c) => getChapterTrueFalseItems(c.id));
+  const tfTrueTotal = tfItems.filter((i) => i.isTrue).length;
+  const tfFalseTotal = tfItems.filter((i) => !i.isTrue).length;
+
+  const p1 = Math.min(FINAL_EXAM_PART_TARGETS.part1, vocabTotal);
+  const p2 = Math.min(FINAL_EXAM_PART_TARGETS.part2, validBlankTotal);
+  const p3 = Math.min(FINAL_EXAM_PART_TARGETS.part3, readingTotal);
+  const p4 = Math.min(FINAL_EXAM_PART_TARGETS.part4, sentenceTotal);
+  const targetTrue = Math.ceil(FINAL_EXAM_PART_TARGETS.part5 / 2);
+  const targetFalse = Math.floor(FINAL_EXAM_PART_TARGETS.part5 / 2);
+  const p5 = Math.min(targetTrue, tfTrueTotal) + Math.min(targetFalse, tfFalseTotal);
+
+  const totalQuestions = p1 + p2 + p3 + p4 + p5;
+  return {
+    partCounts: [p1, p2, p3, p4, p5],
+    totalQuestions,
+    targetTotal: FINAL_EXAM_TARGET_TOTAL,
+    isCapped: totalQuestions < FINAL_EXAM_TARGET_TOTAL,
+    minChaptersForFullExam: 4,
+    durationMinutes: FINAL_EXAM_DURATION_MINUTES,
+  };
+}
 
 export interface FinalExamModelMeta {
   id: FinalExamModelId;
@@ -43,9 +126,9 @@ export const FINAL_EXAM_MODELS: FinalExamModelMeta[] = [
     code: 'MODEL 1',
     label: 'Model 1 — Standardized Mock Exam A',
     shortTitle: 'Model 1',
-    subtitle: 'Fixed Standardized Paper A · 50 Questions · 60 Min',
+    subtitle: 'Fixed Standardized Paper A · 80 Questions · 90 Min',
     description:
-      'Fixed-seed comprehensive mock exam. Every student selecting the same chapters receives the exact same 50 questions and choices for fair score comparison.',
+      'Fixed-seed comprehensive mock exam. Every student selecting the same chapters receives the exact same 80 questions and choices for fair score comparison.',
     isDeterministic: true,
     seedSalt: 'HSK1-FINAL-MODEL-1-ALPHA-2026',
     partitionSlot: 0,
@@ -55,9 +138,9 @@ export const FINAL_EXAM_MODELS: FinalExamModelMeta[] = [
     code: 'MODEL 2',
     label: 'Model 2 — Standardized Mock Exam B',
     shortTitle: 'Model 2',
-    subtitle: 'Fixed Standardized Paper B · 50 Questions · 60 Min',
+    subtitle: 'Fixed Standardized Paper B · 80 Questions · 90 Min',
     description:
-      'Second fixed-seed comprehensive paper with a distinct question set drawn from your chosen chapters — ideal for a second timed benchmark.',
+      'Second fixed-seed comprehensive 80-question paper with a distinct question set drawn from your chosen chapters — ideal for a second timed benchmark.',
     isDeterministic: true,
     seedSalt: 'HSK1-FINAL-MODEL-2-BETA-2026',
     partitionSlot: 1,
@@ -67,9 +150,9 @@ export const FINAL_EXAM_MODELS: FinalExamModelMeta[] = [
     code: 'MODEL 3',
     label: 'Model 3 — Standardized Mock Exam C',
     shortTitle: 'Model 3',
-    subtitle: 'Fixed Standardized Paper C · 50 Questions · 60 Min',
+    subtitle: 'Fixed Standardized Paper C · 80 Questions · 90 Min',
     description:
-      'Third fixed-seed standardized paper covering a separate slice of vocabulary, dialogues, translations, and grammar traps.',
+      'Third fixed-seed standardized 80-question paper covering a separate slice of vocabulary, dialogues, translations, and grammar traps.',
     isDeterministic: true,
     seedSalt: 'HSK1-FINAL-MODEL-3-GAMMA-2026',
     partitionSlot: 2,
@@ -79,9 +162,9 @@ export const FINAL_EXAM_MODELS: FinalExamModelMeta[] = [
     code: 'DYNAMIC',
     label: 'Random Comprehensive Exam',
     shortTitle: 'Random Exam',
-    subtitle: 'Fresh Randomized Generator · 50 Questions · 60 Min',
+    subtitle: 'Fresh Randomized Generator · 80 Questions · 90 Min',
     description:
-      'Generates a brand-new randomized 50-question comprehensive exam across your selected chapters every time you start or retake.',
+      'Generates a brand-new randomized 80-question comprehensive exam across your selected chapters every time you start or retake.',
     isDeterministic: false,
     seedSalt: 'HSK1-FINAL-RANDOM',
     partitionSlot: null,
@@ -198,11 +281,13 @@ function buildFinalPartOne(
   scopeSeed: number,
   rng: () => number
 ): FinalExamQuestion[] {
-  const picked = pickForModel(vocabPool, 10, partitionSlot, scopeSeed ^ 0x11111111, rng);
+  const targetCount = Math.min(FINAL_EXAM_PART_TARGETS.part1, vocabPool.length);
+  const picked = pickForModel(vocabPool, targetCount, partitionSlot, scopeSeed ^ 0x11111111, rng);
+  const meaningCut = Math.ceil(picked.length / 2);
 
   return picked.map((item, idx) => {
     const qNum = idx + 1;
-    const isMeaningQuestion = idx < 5;
+    const isMeaningQuestion = idx < meaningCut;
 
     if (isMeaningQuestion) {
       const sameChapterCandidates = vocabPool.filter(
@@ -287,7 +372,14 @@ function buildFinalPartTwo(
   const validSentences = sentencePool.filter(
     (s) => s.targetBlank && s.hanzi.includes(s.targetBlank) && (s.blankDistractors?.length ?? 0) >= 3
   );
-  const picked = pickForModel(validSentences, 10, partitionSlot, scopeSeed ^ 0x22222222, rng);
+  const targetCount = Math.min(FINAL_EXAM_PART_TARGETS.part2, validSentences.length);
+  const picked = pickForModel(
+    validSentences,
+    targetCount,
+    partitionSlot,
+    scopeSeed ^ 0x22222222,
+    rng
+  );
 
   const lookupPinyin = (hanzi: string) => {
     const fromScope = vocabPool.find((v) => v.hanzi === hanzi);
@@ -362,8 +454,8 @@ function buildFinalPartThree(
   );
 
   // Cap Part III strictly to the unique curated reading passages available for the chosen scope
-  // (max 10) so narrow 1–2 chapter scopes never repeat passages or duplicate Part IV sentences.
-  const targetCount = Math.min(10, curatedPool.length);
+  // (up to 15) so narrow 1–3 chapter scopes never repeat passages or duplicate Part IV sentences.
+  const targetCount = Math.min(FINAL_EXAM_PART_TARGETS.part3, curatedPool.length);
   const pickedCurated = pickForModel(
     curatedPool,
     targetCount,
@@ -432,38 +524,31 @@ function buildFinalPartFour(
   scopeSeed: number,
   rng: () => number
 ): FinalExamQuestion[] {
-  const picked = pickForModel(sentencePool, 10, partitionSlot, scopeSeed ^ 0x44444444, rng);
+  const targetCount = Math.min(FINAL_EXAM_PART_TARGETS.part4, sentencePool.length);
+  const picked = pickForModel(sentencePool, targetCount, partitionSlot, scopeSeed ^ 0x44444444, rng);
+  const zhToEnCut = Math.ceil(picked.length * 0.6);
 
   return picked.map((s, idx) => {
-    const qNum = 31 + idx;
+    const qNum = 51 + idx;
     const enMut = generateMutatedVariants(s.arabic, ENGLISH_SWAP_RULES, 3, rng);
     const zhMut = generateMutatedVariants(s.hanzi, CHINESE_SWAP_RULES, 3, rng);
 
-    let direction: 'zh-to-en' | 'en-to-zh' = idx < 6 ? 'zh-to-en' : 'en-to-zh';
+    let direction: 'zh-to-en' | 'en-to-zh' = idx < zhToEnCut ? 'zh-to-en' : 'en-to-zh';
     if (direction === 'zh-to-en' && enMut.variants.length < 3 && zhMut.variants.length >= 3) {
       direction = 'en-to-zh';
     } else if (direction === 'en-to-zh' && zhMut.variants.length < 3 && enMut.variants.length >= 3) {
       direction = 'zh-to-en';
     }
 
+    const { distractors, trapHint } = buildCloseTranslationDistractors(
+      { id: s.id, chapterId: s.chapterId, hanzi: s.hanzi, arabic: s.arabic },
+      sentencePool,
+      direction,
+      3,
+      rng
+    );
+
     if (direction === 'zh-to-en') {
-      const distractors = [...enMut.variants];
-      const fallbackPool = shuffleWithRng(
-        sentencePool.filter((other) => other.id !== s.id && other.arabic !== s.arabic),
-        rng
-      );
-      for (const fb of fallbackPool) {
-        if (distractors.length >= 3) break;
-        if (!distractors.includes(fb.arabic)) {
-          distractors.push(fb.arabic);
-        }
-      }
-
-      const trapHint =
-        enMut.tagsUsed.length > 0
-          ? `Watch closely for swapped ${enMut.tagsUsed.slice(0, 3).join(' / ')} details among the choices.`
-          : 'Compare every pronoun, time word, and verb carefully against the Chinese original.';
-
       return {
         id: `final-p4-ch${s.chapterId}-${s.id}-${qNum}`,
         number: qNum,
@@ -492,23 +577,6 @@ function buildFinalPartFour(
         explanation: `"${s.hanzi}" accurately translates to "${s.arabic}". ${trapHint}`,
       };
     }
-
-    const distractors = [...zhMut.variants];
-    const fallbackPool = shuffleWithRng(
-      sentencePool.filter((other) => other.id !== s.id && other.hanzi !== s.hanzi),
-      rng
-    );
-    for (const fb of fallbackPool) {
-      if (distractors.length >= 3) break;
-      if (!distractors.includes(fb.hanzi)) {
-        distractors.push(fb.hanzi);
-      }
-    }
-
-    const trapHint =
-      zhMut.tagsUsed.length > 0
-        ? `Check the exact Chinese ${zhMut.tagsUsed.slice(0, 3).join(' / ')} characters — distractors alter just one key detail.`
-        : 'Verify every pronoun, measure word, and time word against the English sentence.';
 
     return {
       id: `final-p4-ch${s.chapterId}-${s.id}-${qNum}`,
@@ -551,8 +619,11 @@ function buildFinalPartFive(
   const trueItems = scopedItems.filter((item) => item.isTrue);
   const falseItems = scopedItems.filter((item) => !item.isTrue);
 
-  const pickedTrue = pickForModel(trueItems, 5, partitionSlot, scopeSeed ^ 0x55555555, rng);
-  const pickedFalse = pickForModel(falseItems, 5, partitionSlot, scopeSeed ^ 0x5a5a5a5a, rng);
+  const targetTrue = Math.min(Math.ceil(FINAL_EXAM_PART_TARGETS.part5 / 2), trueItems.length);
+  const targetFalse = Math.min(Math.floor(FINAL_EXAM_PART_TARGETS.part5 / 2), falseItems.length);
+
+  const pickedTrue = pickForModel(trueItems, targetTrue, partitionSlot, scopeSeed ^ 0x55555555, rng);
+  const pickedFalse = pickForModel(falseItems, targetFalse, partitionSlot, scopeSeed ^ 0x5a5a5a5a, rng);
   const picked = shuffleWithRng([...pickedTrue, ...pickedFalse], rng);
 
   return picked.map((item, idx) => {
@@ -650,14 +721,19 @@ export function generateFinalExam(
   const rangeLabel = (qs: FinalExamQuestion[]) =>
     qs.length > 0 ? `Questions ${qs[0].number}–${qs[qs.length - 1].number}` : 'No Questions';
 
+  const meaningCount = p1.filter((q) => q.drillType === 'hanzi-to-arabic').length;
+  const pinyinCount = p1.length - meaningCount;
+  const trueCount = p5.filter((q) => q.isStatementTrue).length;
+  const falseCount = p5.length - trueCount;
+
   const parts: FinalExamPart[] = [
     {
       partNumber: 1,
       romanNumeral: 'I',
       title: 'Vocabulary & Pinyin — Meaning & Tone Recognition',
-      subtitle: `${rangeLabel(p1)} · 5 Hanzi → Meaning + 5 Hanzi → Pinyin & Tones`,
+      subtitle: `${rangeLabel(p1)} · ${meaningCount} Hanzi → Meaning + ${pinyinCount} Hanzi → Pinyin & Tones`,
       instructions:
-        'Choose the single exact English meaning (first 5) or accurate Pinyin with tone marks (next 5) for each Chinese word.',
+        'Choose the single exact English meaning or accurate Pinyin with tone marks for each Chinese word.',
       questions: p1,
     },
     {
@@ -684,14 +760,14 @@ export function generateFinalExam(
       title: 'Sentence Translation — Precision & Nuance',
       subtitle: `${rangeLabel(p4)} · Close-Distractor Traps`,
       instructions:
-        'Choose the exact translation. Distractors intentionally swap pronouns, times, quantities, or negation — inspect every detail.',
+        'Choose the exact translation. Distractors intentionally mirror length and vocabulary while introducing negation, time, pronoun, or word-meaning traps.',
       questions: p4,
     },
     {
       partNumber: 5,
       romanNumeral: 'V',
       title: 'True or False — Grammar & Usage Judgment',
-      subtitle: `${rangeLabel(p5)} · Balanced 5 TRUE / 5 FALSE Statements`,
+      subtitle: `${rangeLabel(p5)} · Balanced ${trueCount} TRUE / ${falseCount} FALSE Statements`,
       instructions:
         'Decide whether each Chinese sentence is grammatically and semantically natural (TRUE) or contains a mistake (FALSE).',
       questions: p5,
@@ -706,7 +782,7 @@ export function generateFinalExam(
   return {
     modelId,
     modelLabel: meta.label,
-    modelSubtitle: meta.subtitle.replace(/\b50 Questions\b/, `${totalQuestions} Questions`),
+    modelSubtitle: meta.subtitle.replace(/\b80 Questions\b/, `${totalQuestions} Questions`),
     isDeterministic: meta.isDeterministic,
     seedTag,
     chapterIds: effectiveChapterIds,

@@ -169,7 +169,7 @@ export function HomeView({ onNavigate, onStartMistakeReview }: HomeViewProps) {
                 ·
               </span>
               <span className="text-[#57534E] dark:text-[#A8A29E]">
-                50 Questions · 5 Parts · 60-Min Timer
+                80 Questions · 5 Parts · 90-Min Timer
               </span>
               {bestFinalExam && (
                 <>

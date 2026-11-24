@@ -753,7 +753,9 @@ export function FinalExamRunnerView({
             </div>
 
             <div className="text-xs text-[#57534E] dark:text-[#A8A29E] space-y-1 sm:text-right tabular-nums">
-              <p className="font-bold text-[#1C1917] dark:text-[#F5F2EB]">Time Limit: 60 Minutes</p>
+              <p className="font-bold text-[#1C1917] dark:text-[#F5F2EB]">
+                Time Limit: {Math.round(examPaper.durationSeconds / 60)} Minutes
+              </p>
               <p>
                 {examPaper.parts.length} Parts · {examPaper.totalQuestions} Points
               </p>

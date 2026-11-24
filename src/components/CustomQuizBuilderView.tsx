@@ -2,16 +2,19 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
+  BookOpen,
   Check,
   ClipboardCheck,
   GraduationCap,
+  Headphones,
   Layers,
   Lock,
+  PenTool,
   SlidersHorizontal,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
-import { ALL_DRILL_TYPES, CHAPTERS_DATA, DRILL_METADATA } from '../data/chaptersData';
+import { CHAPTERS_DATA, DRILL_METADATA } from '../data/chaptersData';
 import { ChapterData, CustomQuizConfig, DrillType, QuizMode } from '../types';
 import { isChapterUnlocked } from '../utils/accessControl';
 import { countAvailableQuestionsForConfig } from '../utils/drillGenerators';
@@ -28,6 +31,128 @@ const QUESTION_LIMIT_OPTIONS: { value: 10 | 20 | 40 | 'all'; label: string }[] =
   { value: 40, label: '40 Questions' },
   { value: 'all', label: 'All' },
 ];
+
+interface BuilderDrillItem {
+  type: DrillType;
+  numberLabel: string;
+  skillLabel: string;
+  difficultyLabel: 'Easy' | 'Medium' | 'Advanced';
+  tone: 'jade' | 'gold' | 'cinnabar';
+}
+
+interface BuilderSkillGroup {
+  id: string;
+  title: string;
+  accent: 'jade' | 'gold' | 'cinnabar';
+  drills: BuilderDrillItem[];
+}
+
+const BUILDER_SKILL_GROUPS: BuilderSkillGroup[] = [
+  {
+    id: 'vocab',
+    title: 'Vocabulary & Character Recognition',
+    accent: 'jade',
+    drills: [
+      {
+        type: 'hanzi-to-arabic',
+        numberLabel: '01',
+        skillLabel: 'Recognition',
+        difficultyLabel: 'Easy',
+        tone: 'jade',
+      },
+      {
+        type: 'arabic-to-hanzi',
+        numberLabel: '02',
+        skillLabel: 'Recall',
+        difficultyLabel: 'Easy',
+        tone: 'jade',
+      },
+      {
+        type: 'match-2-col',
+        numberLabel: '05',
+        skillLabel: 'Pairing',
+        difficultyLabel: 'Medium',
+        tone: 'gold',
+      },
+      {
+        type: 'match-3-col',
+        numberLabel: '06',
+        skillLabel: 'Triple Link',
+        difficultyLabel: 'Medium',
+        tone: 'gold',
+      },
+    ],
+  },
+  {
+    id: 'tones',
+    title: 'Pronunciation, Tones & Listening',
+    accent: 'gold',
+    drills: [
+      {
+        type: 'hanzi-to-pinyin',
+        numberLabel: '03',
+        skillLabel: 'Pinyin & Tones',
+        difficultyLabel: 'Medium',
+        tone: 'gold',
+      },
+      {
+        type: 'listening',
+        numberLabel: '04',
+        skillLabel: 'Audio',
+        difficultyLabel: 'Medium',
+        tone: 'gold',
+      },
+    ],
+  },
+  {
+    id: 'sentences',
+    title: 'Sentences, Translation & Grammar',
+    accent: 'cinnabar',
+    drills: [
+      {
+        type: 'sentence-hanzi-to-arabic',
+        numberLabel: '07',
+        skillLabel: 'Translation',
+        difficultyLabel: 'Medium',
+        tone: 'gold',
+      },
+      {
+        type: 'sentence-arabic-to-hanzi',
+        numberLabel: '08',
+        skillLabel: 'Translation',
+        difficultyLabel: 'Medium',
+        tone: 'gold',
+      },
+      {
+        type: 'fill-in-blank',
+        numberLabel: '09',
+        skillLabel: 'Grammar',
+        difficultyLabel: 'Medium',
+        tone: 'gold',
+      },
+      {
+        type: 'sentence-builder',
+        numberLabel: '10',
+        skillLabel: 'Word Order',
+        difficultyLabel: 'Advanced',
+        tone: 'cinnabar',
+      },
+      {
+        type: 'true-false',
+        numberLabel: '11',
+        skillLabel: 'Grammar Logic',
+        difficultyLabel: 'Advanced',
+        tone: 'cinnabar',
+      },
+    ],
+  },
+];
+
+function getToneTextClass(tone: 'jade' | 'gold' | 'cinnabar'): string {
+  if (tone === 'jade') return 'text-[#15803D] dark:text-[#22C55E]';
+  if (tone === 'gold') return 'text-[#B45309] dark:text-[#F59E0B]';
+  return 'text-[#B91C1C] dark:text-[#EF4444]';
+}
 
 export function CustomQuizBuilderView({
   onStartCustomQuiz,
@@ -250,33 +375,36 @@ export function CustomQuizBuilderView({
       </div>
 
       {/* 2. Drill Skill Scope */}
-      <div className="rounded-xl border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-white dark:bg-[#1E1C1A] p-6 sm:p-7 space-y-5">
+      <div className="rounded-xl border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-white dark:bg-[#1E1C1A] p-6 sm:p-7 space-y-6">
         <div className="border-b border-[#1C1917]/8 dark:border-[#F5F2EB]/8 pb-4">
           <h2 className="text-lg font-bold text-[#1C1917] dark:text-[#F5F2EB]">
             2. Select Drill Skill
           </h2>
           <p className="text-xs text-[#57534E] dark:text-[#A8A29E] mt-0.5">
-            Combine all 11 drill types together or focus on a single skill.
+            Combine all 11 drill modes together or target a single skill from the 3 domains below.
           </p>
         </div>
 
         <button
           type="button"
           onClick={() => setDrillScope('all')}
-          className={`w-full text-left rounded-xl border p-4 flex items-center justify-between gap-4 transition-all duration-150 ${
+          className={`w-full text-left rounded-xl border p-4 sm:p-5 flex items-center justify-between gap-4 transition-all duration-150 ${
             drillScope === 'all'
-              ? 'border-[#B91C1C] dark:border-[#EF4444] bg-[#B91C1C]/8 dark:bg-[#EF4444]/14 ring-1 ring-[#B91C1C]/25 dark:ring-[#EF4444]/25'
+              ? 'border-[#B91C1C] dark:border-[#EF4444] bg-[#B91C1C]/7 dark:bg-[#EF4444]/12 ring-1 ring-[#B91C1C]/25 dark:ring-[#EF4444]/25'
               : 'border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F9F6F0]/60 dark:bg-[#121110]/60 hover:border-[#B91C1C]/40'
           }`}
         >
-          <div className="flex items-center gap-3">
-            <Layers className="w-5 h-5 text-[#D97706] dark:text-[#F59E0B] shrink-0" />
+          <div className="flex items-center gap-3.5">
+            <span className="w-10 h-10 rounded-lg border border-[#D97706]/30 dark:border-[#F59E0B]/30 bg-[#D97706]/10 dark:bg-[#F59E0B]/12 flex items-center justify-center shrink-0">
+              <Layers className="w-5 h-5 text-[#B45309] dark:text-[#F59E0B]" />
+            </span>
             <div>
-              <p className="text-sm font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                All Drill Modes (10 Comprehensive Skills)
+              <p className="text-sm sm:text-base font-bold text-[#1C1917] dark:text-[#F5F2EB]">
+                All 11 Drill Modes (Full Curriculum Mix)
               </p>
-              <p className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-                Balanced blend of vocabulary, Pinyin tones, matching, listening, and sentence drills
+              <p className="text-xs text-[#57534E] dark:text-[#A8A29E] mt-0.5">
+                Balanced blend of vocabulary, Pinyin tones, listening, matching, translation,
+                grammar blanks, sentence builder, and True/False
               </p>
             </div>
           </div>
@@ -285,38 +413,82 @@ export function CustomQuizBuilderView({
           </span>
         </button>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {ALL_DRILL_TYPES.map((dt, idx) => {
-            const meta = DRILL_METADATA[dt];
-            const countForDrill = countAvailableQuestionsForConfig(
-              CHAPTERS_DATA,
-              selectedChapterIds,
-              dt
-            );
-            const isSelected = drillScope === dt;
+        {/* Grouped Skill Domains */}
+        <div className="space-y-6">
+          {BUILDER_SKILL_GROUPS.map((group) => {
+            const GroupIcon =
+              group.accent === 'jade'
+                ? BookOpen
+                : group.accent === 'gold'
+                  ? Headphones
+                  : PenTool;
 
             return (
-              <button
-                key={dt}
-                type="button"
-                onClick={() => setDrillScope(dt)}
-                className={`text-left rounded-xl border p-4 flex flex-col justify-between gap-2 transition-all duration-150 ${
-                  isSelected
-                    ? 'border-[#B91C1C] dark:border-[#EF4444] bg-[#B91C1C]/8 dark:bg-[#EF4444]/14 ring-1 ring-[#B91C1C]/25 dark:ring-[#EF4444]/25'
-                    : 'border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F9F6F0]/50 dark:bg-[#121110]/50 hover:border-[#B91C1C]/40'
-                }`}
-              >
-                <div className="flex items-center justify-between gap-2 text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums">
-                  <span>
-                    {String(idx + 1).padStart(2, '0')} ·{' '}
-                    {meta.requires === 'vocab' ? 'Vocab' : 'Sentences'}
+              <div key={group.id} className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div
+                    className={`inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider ${getToneTextClass(
+                      group.accent
+                    )}`}
+                  >
+                    <GroupIcon className="w-3.5 h-3.5 shrink-0" />
+                    <span>{group.title}</span>
+                  </div>
+                  <span className="text-[11px] font-medium text-[#57534E] dark:text-[#A8A29E] tabular-nums">
+                    {group.drills.length} modes
                   </span>
-                  <span className="font-bold">{countForDrill} Qs</span>
                 </div>
-                <p className="text-sm font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                  {meta.titleAr}
-                </p>
-              </button>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {group.drills.map((item) => {
+                    const meta = DRILL_METADATA[item.type];
+                    const countForDrill = countAvailableQuestionsForConfig(
+                      CHAPTERS_DATA,
+                      selectedChapterIds,
+                      item.type
+                    );
+                    const isSelected = drillScope === item.type;
+
+                    return (
+                      <button
+                        key={item.type}
+                        type="button"
+                        onClick={() => setDrillScope(item.type)}
+                        className={`text-left rounded-xl border p-4 flex flex-col justify-between gap-2.5 transition-all duration-150 ${
+                          isSelected
+                            ? 'border-[#B91C1C] dark:border-[#EF4444] bg-[#B91C1C]/7 dark:bg-[#EF4444]/12 ring-1 ring-[#B91C1C]/25 dark:ring-[#EF4444]/25'
+                            : 'border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F9F6F0]/55 dark:bg-[#121110]/55 hover:border-[#B91C1C]/40 dark:hover:border-[#EF4444]/40'
+                        }`}
+                      >
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between gap-2 text-[11px] tabular-nums">
+                            <span className="flex items-center gap-1.5 text-[#57534E] dark:text-[#A8A29E]">
+                              <strong className="text-[#1C1917]/80 dark:text-[#F5F2EB]/80">
+                                {item.numberLabel}
+                              </strong>
+                              <span aria-hidden="true">·</span>
+                              <span>{item.skillLabel}</span>
+                              <span aria-hidden="true">·</span>
+                              <strong className={getToneTextClass(item.tone)}>
+                                {item.difficultyLabel}
+                              </strong>
+                            </span>
+                            <span className="font-bold text-[#1C1917] dark:text-[#F5F2EB] shrink-0">
+                              {countForDrill} Qs
+                            </span>
+                          </div>
+                          <p className="text-sm font-bold text-[#1C1917] dark:text-[#F5F2EB]">
+                            {meta.titleAr}
+                          </p>
+                          <p className="text-xs text-[#57534E] dark:text-[#A8A29E] line-clamp-2 leading-relaxed">
+                            {meta.descriptionAr}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </div>

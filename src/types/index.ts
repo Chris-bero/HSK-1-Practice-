@@ -299,7 +299,7 @@ export interface FinalExamDialogueLine {
 
 export interface FinalExamQuestion {
   id: string;
-  number: number; // 1..50
+  number: number; // 1..80
   part: FinalExamPartNumber;
   chapterId: number;
   drillType: DrillType;

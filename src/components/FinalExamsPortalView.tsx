@@ -15,10 +15,14 @@ import {
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { CHAPTERS_DATA } from '../data/chaptersData';
-import { READING_COMPREHENSION_DATA } from '../data/readingComprehensionData';
 import { ChapterData, FinalExamModelId, FinalExamResult } from '../types';
 import { isChapterUnlocked } from '../utils/accessControl';
-import { FINAL_EXAM_MODELS, formatChapterScopeLabel } from '../utils/finalExamGenerator';
+import {
+  estimateFinalExamScope,
+  FINAL_EXAM_DURATION_MINUTES,
+  FINAL_EXAM_MODELS,
+  formatChapterScopeLabel,
+} from '../utils/finalExamGenerator';
 import { LockedAccessModal } from './LockedAccessModal';
 
 interface FinalExamsPortalViewProps {
@@ -99,17 +103,16 @@ export function FinalExamsPortalView({
     const chapters = CHAPTERS_DATA.filter((c) => selectedSet.has(c.id));
     const vocabCount = chapters.reduce((sum, c) => sum + c.vocab.length, 0);
     const sentenceCount = chapters.reduce((sum, c) => sum + c.sentences.length, 0);
-    const availableReadingCount = READING_COMPREHENSION_DATA.filter((item) =>
-      selectedSet.has(item.chapterId)
-    ).length;
-    const partThreeCount = chapters.length === 0 ? 10 : Math.min(10, availableReadingCount);
-    const estimatedTotalQuestions = chapters.length === 0 ? 50 : 40 + partThreeCount;
+    const estimate = estimateFinalExamScope(selectedChapterIds);
     return {
       chapterCount: chapters.length,
       vocabCount,
       sentenceCount,
-      partThreeCount,
-      estimatedTotalQuestions,
+      partCounts: estimate.partCounts,
+      estimatedTotalQuestions: estimate.totalQuestions,
+      isCapped: estimate.isCapped,
+      minChaptersForFullExam: estimate.minChaptersForFullExam,
+      durationMinutes: estimate.durationMinutes,
       scopeLabel: formatChapterScopeLabel(selectedChapterIds),
     };
   }, [selectedChapterIds]);
@@ -164,7 +167,7 @@ export function FinalExamsPortalView({
                 Final Exams Portal
               </h1>
               <p className="text-sm text-[#57534E] dark:text-[#A8A29E] max-w-2xl leading-relaxed">
-                Take standardized 50-question comprehensive mock exams (Models 1–3) for fair
+                Take standardized 80-question comprehensive mock exams (Models 1–3) for fair
                 benchmark comparison, or generate a fresh randomized exam across any custom chapter
                 range — from midterms to the full 15-chapter curriculum.
               </p>
@@ -190,7 +193,7 @@ export function FinalExamsPortalView({
             </div>
             <div className="rounded-lg border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-[#F9F6F0] dark:bg-[#141312] px-3.5 py-2.5">
               <p className="text-lg font-extrabold text-[#D97706] dark:text-[#F59E0B] tabular-nums">
-                60m
+                {FINAL_EXAM_DURATION_MINUTES}m
               </p>
               <p className="text-[11px] font-semibold text-[#57534E] dark:text-[#A8A29E]">
                 Timer
@@ -339,13 +342,15 @@ export function FinalExamsPortalView({
           </p>
         )}
 
-        {canLaunch && scopeStats.partThreeCount < 10 && (
-          <p className="text-xs font-medium text-[#92400E] dark:text-[#F59E0B] bg-[#D97706]/8 dark:bg-[#F59E0B]/10 border border-[#D97706]/25 rounded-lg px-3.5 py-2">
+        {canLaunch && scopeStats.isCapped && (
+          <p className="text-xs font-medium text-[#92400E] dark:text-[#F59E0B] bg-[#D97706]/8 dark:bg-[#F59E0B]/10 border border-[#D97706]/25 rounded-lg px-3.5 py-2.5 leading-relaxed">
             Narrow scope selected ({scopeStats.chapterCount}{' '}
-            {scopeStats.chapterCount === 1 ? 'chapter' : 'chapters'}): Part III is capped to{' '}
-            <strong>{scopeStats.partThreeCount} unique reading passages</strong> (
-            {scopeStats.estimatedTotalQuestions} total questions) so no passages repeat. Select 3+
-            chapters for a full 50-question paper.
+            {scopeStats.chapterCount === 1 ? 'chapter' : 'chapters'}): This paper is automatically
+            capped to{' '}
+            <strong>{scopeStats.estimatedTotalQuestions} unique questions</strong> (including{' '}
+            <strong>{scopeStats.partCounts[2]} unique reading passages</strong>) so no passages or
+            items ever repeat. Select {scopeStats.minChaptersForFullExam}+ chapters for a full
+            80-question Final Exam.
           </p>
         )}
       </div>
@@ -358,9 +363,9 @@ export function FinalExamsPortalView({
               Step 2 · Choose Your Final Exam Paper
             </h2>
             <p className="text-xs sm:text-sm text-[#57534E] dark:text-[#A8A29E]">
-              Every exam covers 5 Parts ({scopeStats.estimatedTotalQuestions} Questions for current
-              scope): Vocabulary &amp; Pinyin, Grammar Blanks, Reading &amp; Dialogue Comprehension,
-              Sentence Translation, and True/False.
+              Covers 5 Parts ({scopeStats.estimatedTotalQuestions} Questions for current scope ·{' '}
+              {scopeStats.durationMinutes} min): Vocabulary &amp; Pinyin, Grammar Blanks, Reading
+              &amp; Dialogue Comprehension, Sentence Translation, and True/False.
             </p>
           </div>
         </div>
@@ -447,29 +452,26 @@ export function FinalExamsPortalView({
                     {model.description}
                   </p>
 
-                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-[#57534E] dark:text-[#A8A29E]">
-                    <span className="px-2 py-1 rounded bg-[#F9F6F0] dark:bg-[#141312] border border-[#1C1917]/8 dark:border-[#F5F2EB]/8">
-                      I · Vocab &amp; Pinyin (10)
-                    </span>
-                    <span className="px-2 py-1 rounded bg-[#F9F6F0] dark:bg-[#141312] border border-[#1C1917]/8 dark:border-[#F5F2EB]/8">
-                      II · Grammar Blanks (10)
-                    </span>
-                    <span className="px-2 py-1 rounded bg-[#F9F6F0] dark:bg-[#141312] border border-[#1C1917]/8 dark:border-[#F5F2EB]/8">
-                      III · Reading &amp; Dialogues ({scopeStats.partThreeCount})
-                    </span>
-                    <span className="px-2 py-1 rounded bg-[#F9F6F0] dark:bg-[#141312] border border-[#1C1917]/8 dark:border-[#F5F2EB]/8">
-                      IV · Translation Traps (10)
-                    </span>
-                    <span className="px-2 py-1 rounded bg-[#F9F6F0] dark:bg-[#141312] border border-[#1C1917]/8 dark:border-[#F5F2EB]/8">
-                      V · True / False (10)
-                    </span>
+                  <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums">
+                    <span>I · Vocab &amp; Pinyin ({scopeStats.partCounts[0]})</span>
+                    <span aria-hidden="true">·</span>
+                    <span>II · Grammar Blanks ({scopeStats.partCounts[1]})</span>
+                    <span aria-hidden="true">·</span>
+                    <span>III · Reading &amp; Dialogues ({scopeStats.partCounts[2]})</span>
+                    <span aria-hidden="true">·</span>
+                    <span>IV · Translation Traps ({scopeStats.partCounts[3]})</span>
+                    <span aria-hidden="true">·</span>
+                    <span>V · True / False ({scopeStats.partCounts[4]})</span>
                   </div>
                 </div>
 
                 <div className="pt-3 border-t border-[#1C1917]/10 dark:border-[#F5F2EB]/10 flex flex-wrap items-center justify-between gap-3">
-                  <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#57534E] dark:text-[#A8A29E]">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#57534E] dark:text-[#A8A29E] tabular-nums">
                     <Clock className="w-3.5 h-3.5" />
-                    <span>60 min · Scope: {scopeStats.scopeLabel}</span>
+                    <span>
+                      {scopeStats.durationMinutes} min · {scopeStats.estimatedTotalQuestions} Qs ·{' '}
+                      {scopeStats.scopeLabel}
+                    </span>
                   </div>
 
                   <button

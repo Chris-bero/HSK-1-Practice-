@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   ArrowLeft,
+  ArrowRight,
   BookOpen,
   CheckCircle2,
   ChevronDown,
@@ -9,6 +10,7 @@ import {
   Clock,
   FileText,
   GraduationCap,
+  Headphones,
   Layers,
   Mic,
   PenTool,
@@ -36,82 +38,167 @@ interface ChapterHubViewProps {
   onBack: () => void;
 }
 
+type SkillFilter = 'all' | 'vocab' | 'tones' | 'translation' | 'grammar';
+
 interface DrillCardConfig {
   type: DrillType;
   numberLabel: string;
-  difficultyLabel: string;
+  skillFilter: Exclude<SkillFilter, 'all'>;
+  skillLabel: string;
+  difficultyLabel: 'Easy' | 'Medium' | 'Advanced';
   difficultyTone: 'jade' | 'gold' | 'cinnabar';
 }
 
-const FOUNDATION_DRILLS: DrillCardConfig[] = [
+interface DrillSkillGroup {
+  id: string;
+  kicker: string;
+  title: string;
+  subtitle: string;
+  accent: 'jade' | 'gold' | 'cinnabar';
+  drills: DrillCardConfig[];
+}
+
+const DRILL_SKILL_GROUPS: DrillSkillGroup[] = [
   {
-    type: 'hanzi-to-arabic',
-    numberLabel: '01',
-    difficultyLabel: 'Foundation · Easy',
-    difficultyTone: 'jade',
+    id: 'vocab-recognition',
+    kicker: 'Group 1 · 4 Vocabulary & Matching Drills',
+    title: 'Vocabulary & Character Recognition',
+    subtitle: 'Build fast Hanzi-to-English recognition, active recall, and multi-column pairing.',
+    accent: 'jade',
+    drills: [
+      {
+        type: 'hanzi-to-arabic',
+        numberLabel: '01',
+        skillFilter: 'vocab',
+        skillLabel: 'Recognition',
+        difficultyLabel: 'Easy',
+        difficultyTone: 'jade',
+      },
+      {
+        type: 'arabic-to-hanzi',
+        numberLabel: '02',
+        skillFilter: 'vocab',
+        skillLabel: 'Recall',
+        difficultyLabel: 'Easy',
+        difficultyTone: 'jade',
+      },
+      {
+        type: 'match-2-col',
+        numberLabel: '05',
+        skillFilter: 'vocab',
+        skillLabel: 'Pairing',
+        difficultyLabel: 'Medium',
+        difficultyTone: 'gold',
+      },
+      {
+        type: 'match-3-col',
+        numberLabel: '06',
+        skillFilter: 'vocab',
+        skillLabel: 'Triple Link',
+        difficultyLabel: 'Medium',
+        difficultyTone: 'gold',
+      },
+    ],
   },
   {
-    type: 'arabic-to-hanzi',
-    numberLabel: '02',
-    difficultyLabel: 'Foundation · Easy',
-    difficultyTone: 'jade',
+    id: 'tones-listening',
+    kicker: 'Group 2 · 2 Audio & Tone Drills',
+    title: 'Pronunciation, Tones & Listening',
+    subtitle: 'Sharpen Mandarin tone discrimination and spoken word recognition at normal or slow speed.',
+    accent: 'gold',
+    drills: [
+      {
+        type: 'hanzi-to-pinyin',
+        numberLabel: '03',
+        skillFilter: 'tones',
+        skillLabel: 'Pinyin & Tones',
+        difficultyLabel: 'Medium',
+        difficultyTone: 'gold',
+      },
+      {
+        type: 'listening',
+        numberLabel: '04',
+        skillFilter: 'tones',
+        skillLabel: 'Audio',
+        difficultyLabel: 'Medium',
+        difficultyTone: 'gold',
+      },
+    ],
   },
   {
-    type: 'hanzi-to-pinyin',
-    numberLabel: '03',
-    difficultyLabel: 'Foundation · Medium',
-    difficultyTone: 'gold',
-  },
-  {
-    type: 'listening',
-    numberLabel: '04',
-    difficultyLabel: 'Foundation · Medium',
-    difficultyTone: 'gold',
-  },
-  {
-    type: 'match-2-col',
-    numberLabel: '05',
-    difficultyLabel: 'Foundation · Medium',
-    difficultyTone: 'gold',
-  },
-  {
-    type: 'match-3-col',
-    numberLabel: '06',
-    difficultyLabel: 'Foundation · Medium',
-    difficultyTone: 'gold',
+    id: 'sentences-grammar',
+    kicker: 'Group 3 · 5 Translation & Grammar Drills',
+    title: 'Sentences, Translation & Grammar',
+    subtitle: 'Apply vocabulary in context with anti-elimination translation traps, blanks, word order, and True/False logic.',
+    accent: 'cinnabar',
+    drills: [
+      {
+        type: 'sentence-hanzi-to-arabic',
+        numberLabel: '07',
+        skillFilter: 'translation',
+        skillLabel: 'Translation',
+        difficultyLabel: 'Medium',
+        difficultyTone: 'gold',
+      },
+      {
+        type: 'sentence-arabic-to-hanzi',
+        numberLabel: '08',
+        skillFilter: 'translation',
+        skillLabel: 'Translation',
+        difficultyLabel: 'Medium',
+        difficultyTone: 'gold',
+      },
+      {
+        type: 'fill-in-blank',
+        numberLabel: '09',
+        skillFilter: 'grammar',
+        skillLabel: 'Grammar',
+        difficultyLabel: 'Medium',
+        difficultyTone: 'gold',
+      },
+      {
+        type: 'sentence-builder',
+        numberLabel: '10',
+        skillFilter: 'grammar',
+        skillLabel: 'Word Order',
+        difficultyLabel: 'Advanced',
+        difficultyTone: 'cinnabar',
+      },
+      {
+        type: 'true-false',
+        numberLabel: '11',
+        skillFilter: 'grammar',
+        skillLabel: 'Grammar Logic',
+        difficultyLabel: 'Advanced',
+        difficultyTone: 'cinnabar',
+      },
+    ],
   },
 ];
 
-const APPLIED_DRILLS: DrillCardConfig[] = [
+const ALL_DRILL_CONFIGS: DrillCardConfig[] = DRILL_SKILL_GROUPS.flatMap((g) => g.drills);
+
+const SKILL_FILTER_OPTIONS: { id: SkillFilter; label: string; count: number }[] = [
+  { id: 'all', label: 'All Drills', count: ALL_DRILL_CONFIGS.length },
   {
-    type: 'sentence-hanzi-to-arabic',
-    numberLabel: '07',
-    difficultyLabel: 'Applied · Medium',
-    difficultyTone: 'gold',
+    id: 'vocab',
+    label: 'Vocab & Matching',
+    count: ALL_DRILL_CONFIGS.filter((d) => d.skillFilter === 'vocab').length,
   },
   {
-    type: 'sentence-arabic-to-hanzi',
-    numberLabel: '08',
-    difficultyLabel: 'Applied · Medium',
-    difficultyTone: 'gold',
+    id: 'tones',
+    label: 'Tones & Listening',
+    count: ALL_DRILL_CONFIGS.filter((d) => d.skillFilter === 'tones').length,
   },
   {
-    type: 'fill-in-blank',
-    numberLabel: '09',
-    difficultyLabel: 'Applied · Medium',
-    difficultyTone: 'gold',
+    id: 'translation',
+    label: 'Translation',
+    count: ALL_DRILL_CONFIGS.filter((d) => d.skillFilter === 'translation').length,
   },
   {
-    type: 'sentence-builder',
-    numberLabel: '10',
-    difficultyLabel: 'Applied · Advanced',
-    difficultyTone: 'cinnabar',
-  },
-  {
-    type: 'true-false',
-    numberLabel: '11',
-    difficultyLabel: 'Applied · Advanced',
-    difficultyTone: 'cinnabar',
+    id: 'grammar',
+    label: 'Grammar & Logic',
+    count: ALL_DRILL_CONFIGS.filter((d) => d.skillFilter === 'grammar').length,
   },
 ];
 
@@ -123,6 +210,17 @@ function getDifficultyColorClasses(tone: 'jade' | 'gold' | 'cinnabar'): string {
     return 'text-[#B45309] dark:text-[#F59E0B]';
   }
   return 'text-[#B91C1C] dark:text-[#EF4444]';
+}
+
+function parseChapterSubtitle(subtitle: string): {
+  englishTheme: string;
+  chineseLesson: string | null;
+} {
+  const match = subtitle.match(/^(.*?)\s*[（(]([^()（）]+)[）)]\s*$/);
+  if (match) {
+    return { englishTheme: match[1].trim(), chineseLesson: match[2].trim() };
+  }
+  return { englishTheme: subtitle.trim(), chineseLesson: null };
 }
 
 function DrillFormatMiniPreview({ type }: { type: DrillType }) {
@@ -345,6 +443,9 @@ export function ChapterHubView({
   const [studyDrawerOpen, setStudyDrawerOpen] = useState(false);
   const [studyDrawerTab, setStudyDrawerTab] = useState<'vocab' | 'sentences'>('vocab');
   const [speakingItemKey, setSpeakingItemKey] = useState<string | null>(null);
+  const [activeSkillFilter, setActiveSkillFilter] = useState<SkillFilter>('all');
+
+  const { englishTheme, chineseLesson } = parseChapterSubtitle(chapter.subtitleAr);
 
   const chapterSavedCount = Object.values(studyVault).filter(
     (entry) => entry.chapterId === chapter.id
@@ -408,21 +509,29 @@ export function ChapterHubView({
             type="button"
             disabled={!available}
             onClick={() => onStartDrill(cfg.type)}
-            className={`text-left rounded-xl border p-5 flex flex-col justify-between gap-4 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] ${
-              available
-                ? 'border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] hover:border-[#B91C1C]/45 dark:hover:border-[#EF4444]/45 hover:-translate-y-0.5'
-                : 'border-[#1C1917]/8 dark:border-[#F5F2EB]/8 bg-[#F2ECE1]/60 dark:bg-[#181614] opacity-60 cursor-not-allowed'
+            className={`group text-left rounded-xl border p-5 flex flex-col justify-between gap-4 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] dark:focus-visible:ring-[#EF4444] ${
+              !available
+                ? 'border-[#1C1917]/8 dark:border-[#F5F2EB]/8 bg-[#F2ECE1]/60 dark:bg-[#181614] opacity-60 cursor-not-allowed'
+                : isCompleted
+                  ? 'border-[#15803D]/25 dark:border-[#22C55E]/25 bg-white dark:bg-[#1E1C1A] shadow-[0_1px_2px_rgba(28,25,23,0.03)] hover:shadow-[0_10px_22px_-12px_rgba(21,128,61,0.22)] dark:hover:shadow-[0_10px_22px_-12px_rgba(0,0,0,0.45)] hover:border-[#15803D]/55 dark:hover:border-[#22C55E]/55 hover:-translate-y-0.5'
+                  : 'border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] shadow-[0_1px_2px_rgba(28,25,23,0.03)] hover:shadow-[0_10px_22px_-12px_rgba(28,25,23,0.16)] dark:hover:shadow-[0_10px_22px_-12px_rgba(0,0,0,0.45)] hover:border-[#B91C1C]/45 dark:hover:border-[#EF4444]/45 hover:-translate-y-0.5'
             }`}
           >
-            <div className="space-y-3">
-              {/* Tier, Index & Completion */}
+            <div className="space-y-3.5">
+              {/* Unboxed Index · Skill · Difficulty + Completion */}
               <div className="flex items-center justify-between gap-2 text-xs">
-                <div className="flex items-center gap-2 tabular-nums">
-                  <span className="font-bold text-[#57534E] dark:text-[#A8A29E]">
+                <div className="flex flex-wrap items-center gap-1.5 tabular-nums">
+                  <span className="font-bold text-[#1C1917]/75 dark:text-[#F5F2EB]/75">
                     {cfg.numberLabel}
                   </span>
-                  <span aria-hidden="true" className="text-[#1C1917]/20 dark:text-[#F5F2EB]/20">
-                    |
+                  <span aria-hidden="true" className="text-[#1C1917]/25 dark:text-[#F5F2EB]/25">
+                    ·
+                  </span>
+                  <span className="font-semibold text-[#57534E] dark:text-[#A8A29E]">
+                    {cfg.skillLabel}
+                  </span>
+                  <span aria-hidden="true" className="text-[#1C1917]/25 dark:text-[#F5F2EB]/25">
+                    ·
                   </span>
                   <span className={`font-bold ${getDifficultyColorClasses(cfg.difficultyTone)}`}>
                     {cfg.difficultyLabel}
@@ -430,15 +539,15 @@ export function ChapterHubView({
                 </div>
 
                 {isCompleted && (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#15803D] dark:text-[#22C55E]">
-                    <CheckCircle2 className="w-4 h-4" />
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-[#15803D] dark:text-[#22C55E] shrink-0">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Done</span>
                   </span>
                 )}
               </div>
 
-              <div>
-                <h3 className="text-base font-bold text-[#1C1917] dark:text-[#F5F2EB] mb-1">
+              <div className="space-y-1">
+                <h3 className="text-[15px] sm:text-base font-bold text-[#1C1917] dark:text-[#F5F2EB] leading-snug group-hover:text-[#B91C1C] dark:group-hover:text-[#EF4444] transition-colors">
                   {meta.titleAr}
                 </h3>
                 <p className="text-xs text-[#57534E] dark:text-[#A8A29E] leading-relaxed">
@@ -453,12 +562,13 @@ export function ChapterHubView({
             <div className="flex items-center justify-between pt-3 border-t border-[#1C1917]/8 dark:border-[#F5F2EB]/8 text-xs">
               <span className="text-[#57534E] dark:text-[#A8A29E] tabular-nums">
                 {available
-                  ? `${itemCount} ${cfg.type === 'true-false' ? 'statements' : meta.requires === 'vocab' ? 'words' : 'sentences'} available`
+                  ? `${itemCount} ${cfg.type === 'true-false' ? 'statements' : meta.requires === 'vocab' ? 'words' : 'sentences'}`
                   : 'No items available'}
               </span>
               {available && (
-                <span className="font-bold text-[#B91C1C] dark:text-[#EF4444]">
-                  {selectedMode === 'practice' ? 'Practice Now' : 'Start Exam'}
+                <span className="inline-flex items-center gap-1 font-bold text-[#B91C1C] dark:text-[#EF4444]">
+                  <span>{selectedMode === 'practice' ? 'Practice' : 'Start Exam'}</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </span>
               )}
             </div>
@@ -491,17 +601,28 @@ export function ChapterHubView({
             <span className="cinnabar-seal font-hanzi w-14 h-14 rounded-lg flex items-center justify-center text-2xl font-bold bg-white dark:bg-[#1E1C1A] shrink-0">
               {chapter.chineseNumeral}
             </span>
-            <div>
-              <div className="flex items-center gap-2 text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums mb-1">
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums">
+                <span className="font-bold uppercase tracking-wider text-[#1C1917]/80 dark:text-[#F5F2EB]/80">
+                  {chapter.titleAr} · 第{chapter.id}课
+                </span>
+                <span aria-hidden="true">·</span>
                 <span>{chapter.vocab.length} vocab</span>
                 <span aria-hidden="true">·</span>
                 <span>{chapter.sentences.length} sentences</span>
                 <span aria-hidden="true">·</span>
-                <span>{completionPercent}% complete</span>
+                <span className="font-semibold text-[#15803D] dark:text-[#22C55E]">
+                  {completionPercent}% complete
+                </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                {chapter.titleAr}: {chapter.subtitleAr}
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1C1917] dark:text-[#F5F2EB] leading-snug">
+                {englishTheme}
               </h1>
+              {chineseLesson && (
+                <p className="font-hanzi text-sm sm:text-base font-medium text-[#57534E] dark:text-[#A8A29E]">
+                  {chineseLesson}
+                </p>
+              )}
             </div>
           </div>
 
@@ -954,62 +1075,130 @@ export function ChapterHubView({
             )}
           </div>
 
-          {/* Tier 1: Foundation Drills */}
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-              <div className="flex items-center gap-3">
-                <span className="w-10 h-10 rounded-lg border border-[#15803D]/30 dark:border-[#22C55E]/30 bg-[#15803D]/10 dark:bg-[#22C55E]/12 flex items-center justify-center shrink-0">
-                  <BookOpen className="w-5 h-5 text-[#15803D] dark:text-[#22C55E]" />
-                </span>
-                <div>
-                  <div className="text-xs font-bold text-[#15803D] dark:text-[#22C55E]">
-                    Part 1 · 6 Vocabulary &amp; Pronunciation Drills
-                  </div>
-                  <h2 className="text-lg sm:text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                    Foundation Level — Vocabulary &amp; Tones
-                  </h2>
+          {/* 11 Daily Practice Drills Section Header & Skill Filter Bar */}
+          <div className="space-y-6 pt-2">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10 pb-5">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums">
+                  <span className="font-bold text-[#B91C1C] dark:text-[#EF4444]">
+                    Daily Drill Suite
+                  </span>
+                  <span aria-hidden="true">·</span>
+                  <span>11 Skill Modes across 3 Domains</span>
+                  <span aria-hidden="true">·</span>
+                  <span className="font-bold text-[#15803D] dark:text-[#22C55E]">
+                    {completedDrills.size}/11 Completed
+                  </span>
                 </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
+                  Choose a Practice Drill by Skill
+                </h2>
               </div>
-              <p className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-                Hanzi recognition, Pinyin tones, listening, and column matching
-              </p>
-            </div>
 
-            {renderDrillGrid(FOUNDATION_DRILLS)}
-          </div>
-
-          {/* Visual Separator */}
-          <div className="relative py-2" role="separator">
-            <div className="border-t border-[#1C1917]/12 dark:border-[#F5F2EB]/12" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="px-4 bg-[#F9F6F0] dark:bg-[#121110] text-xs font-bold text-[#57534E] dark:text-[#A8A29E]">
-                Advancing from Vocabulary to Sentences &amp; Structure
-              </span>
-            </div>
-          </div>
-
-          {/* Tier 2: Applied Drills */}
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-              <div className="flex items-center gap-3">
-                <span className="w-10 h-10 rounded-lg border border-[#B91C1C]/30 dark:border-[#EF4444]/30 bg-[#B91C1C]/10 dark:bg-[#EF4444]/12 flex items-center justify-center shrink-0">
-                  <PenTool className="w-5 h-5 text-[#B91C1C] dark:text-[#EF4444]" />
-                </span>
-                <div>
-                  <div className="text-xs font-bold text-[#B91C1C] dark:text-[#EF4444]">
-                    Part 2 · 5 Sentence &amp; Context Drills
-                  </div>
-                  <h2 className="text-lg sm:text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                    Applied Level — Sentences &amp; Construction
-                  </h2>
-                </div>
+              {/* Interactive Skill Filter Control */}
+              <div
+                role="tablist"
+                aria-label="Filter chapter drills by skill"
+                className="inline-flex flex-wrap items-center gap-1 p-1 rounded-lg border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-[#F2ECE1]/80 dark:bg-[#1A1816]"
+              >
+                {SKILL_FILTER_OPTIONS.map((opt) => {
+                  const isActive = activeSkillFilter === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      onClick={() => setActiveSkillFilter(opt.id)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[34px] rounded-md text-xs font-bold transition-colors whitespace-nowrap tabular-nums ${
+                        isActive
+                          ? 'bg-white dark:bg-[#2A2724] text-[#B91C1C] dark:text-[#EF4444] shadow-xs'
+                          : 'text-[#57534E] dark:text-[#A8A29E] hover:text-[#1C1917] dark:hover:text-[#F5F2EB]'
+                      }`}
+                    >
+                      <span>{opt.label}</span>
+                      <span
+                        className={`text-[11px] font-semibold ${
+                          isActive
+                            ? 'text-[#B91C1C]/80 dark:text-[#EF4444]/85'
+                            : 'text-[#57534E]/75 dark:text-[#A8A29E]/75'
+                        }`}
+                      >
+                        {opt.count}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-              <p className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-                Contextual translation, fill-in-the-blank, sentence assembly, and True/False grammar judgment
-              </p>
             </div>
 
-            {renderDrillGrid(APPLIED_DRILLS)}
+            {activeSkillFilter === 'all' ? (
+              <div className="space-y-9">
+                {DRILL_SKILL_GROUPS.map((group) => {
+                  const completedInGroup = group.drills.filter((d) =>
+                    completedDrills.has(d.type)
+                  ).length;
+
+                  const iconWrapClasses =
+                    group.accent === 'jade'
+                      ? 'border-[#15803D]/30 dark:border-[#22C55E]/30 bg-[#15803D]/10 dark:bg-[#22C55E]/12 text-[#15803D] dark:text-[#22C55E]'
+                      : group.accent === 'gold'
+                        ? 'border-[#D97706]/30 dark:border-[#F59E0B]/30 bg-[#D97706]/10 dark:bg-[#F59E0B]/12 text-[#B45309] dark:text-[#F59E0B]'
+                        : 'border-[#B91C1C]/30 dark:border-[#EF4444]/30 bg-[#B91C1C]/10 dark:bg-[#EF4444]/12 text-[#B91C1C] dark:text-[#EF4444]';
+
+                  const kickerClasses =
+                    group.accent === 'jade'
+                      ? 'text-[#15803D] dark:text-[#22C55E]'
+                      : group.accent === 'gold'
+                        ? 'text-[#B45309] dark:text-[#F59E0B]'
+                        : 'text-[#B91C1C] dark:text-[#EF4444]';
+
+                  const GroupIcon =
+                    group.accent === 'jade'
+                      ? BookOpen
+                      : group.accent === 'gold'
+                        ? Headphones
+                        : PenTool;
+
+                  return (
+                    <div key={group.id} className="space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+                        <div className="flex items-start sm:items-center gap-3">
+                          <span
+                            className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 ${iconWrapClasses}`}
+                          >
+                            <GroupIcon className="w-5 h-5" />
+                          </span>
+                          <div>
+                            <div
+                              className={`flex flex-wrap items-center gap-2 text-xs font-bold tabular-nums ${kickerClasses}`}
+                            >
+                              <span>{group.kicker}</span>
+                              <span aria-hidden="true">·</span>
+                              <span>
+                                {completedInGroup}/{group.drills.length} done
+                              </span>
+                            </div>
+                            <h3 className="text-lg font-bold text-[#1C1917] dark:text-[#F5F2EB]">
+                              {group.title}
+                            </h3>
+                          </div>
+                        </div>
+                        <p className="text-xs text-[#57534E] dark:text-[#A8A29E] sm:max-w-sm sm:text-right">
+                          {group.subtitle}
+                        </p>
+                      </div>
+
+                      {renderDrillGrid(group.drills)}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              renderDrillGrid(
+                ALL_DRILL_CONFIGS.filter((d) => d.skillFilter === activeSkillFilter)
+              )
+            )}
           </div>
         </>
       )}

@@ -15,6 +15,7 @@ import {
   SessionDrillKey,
   VocabItem,
 } from '../types';
+import { buildCloseTranslationDistractors } from './translationDistractors';
 
 const TONE_MAP: Record<string, [string, string, string, string]> = {
   a: ['ā', 'á', 'ǎ', 'à'],
@@ -206,31 +207,6 @@ function collectVocabPool(chapter: ChapterData, excludeHanzi: string, count: num
   return shuffleArray(combined).slice(0, count);
 }
 
-function collectSentencePool(
-  chapter: ChapterData,
-  excludeHanzi: string,
-  excludeArabic: string,
-  count: number
-) {
-  const fromChapter = chapter.sentences.filter(
-    (s) => s.hanzi !== excludeHanzi && s.arabic !== excludeArabic
-  );
-  const combined: { hanzi: string; pinyin: string; arabic: string }[] = [...fromChapter];
-
-  for (const fb of FALLBACK_SENTENCE_DISTRACTORS) {
-    if (combined.length >= count) break;
-    if (
-      fb.hanzi !== excludeHanzi &&
-      fb.arabic !== excludeArabic &&
-      !combined.some((x) => x.hanzi === fb.hanzi || x.arabic === fb.arabic)
-    ) {
-      combined.push(fb);
-    }
-  }
-
-  return shuffleArray(combined).slice(0, count);
-}
-
 function buildVocabQuestion(
   chapter: ChapterData,
   drillType: DrillType,
@@ -342,7 +318,26 @@ function buildSentenceQuestion(
 ): DrillQuestion | null {
   switch (drillType) {
     case 'sentence-hanzi-to-arabic': {
-      const arDistractors = collectSentencePool(chapter, s.hanzi, s.arabic, 3);
+      const pool = [
+        ...chapter.sentences.map((item) => ({
+          id: item.id,
+          chapterId: chapter.id,
+          hanzi: item.hanzi,
+          arabic: item.arabic,
+        })),
+        ...FALLBACK_SENTENCE_DISTRACTORS.map((fb, i) => ({
+          id: `fb-${i}`,
+          chapterId: -1,
+          hanzi: fb.hanzi,
+          arabic: fb.arabic,
+        })),
+      ];
+      const { distractors, trapHint } = buildCloseTranslationDistractors(
+        { id: s.id, chapterId: chapter.id, hanzi: s.hanzi, arabic: s.arabic },
+        pool,
+        'zh-to-en',
+        3
+      );
       return {
         id: `st-h2a-${chapter.id}-${s.id}-${idx}`,
         chapterId: chapter.id,
@@ -354,17 +349,37 @@ function buildSentenceQuestion(
         audioText: s.hanzi,
         options: shuffleArray([
           { id: 'correct', label: s.arabic },
-          ...arDistractors.map((d, i) => ({ id: `d-${i}`, label: d.arabic })),
+          ...distractors.map((label, i) => ({ id: `d-${i}`, label })),
         ]),
         correctOptionId: 'correct',
         correctDisplay: s.arabic,
         correctPinyinDisplay: s.pinyin,
         meaningDisplay: s.hanzi,
+        explanation: trapHint,
       };
     }
 
     case 'sentence-arabic-to-hanzi': {
-      const zhDistractors = collectSentencePool(chapter, s.hanzi, s.arabic, 3);
+      const pool = [
+        ...chapter.sentences.map((item) => ({
+          id: item.id,
+          chapterId: chapter.id,
+          hanzi: item.hanzi,
+          arabic: item.arabic,
+        })),
+        ...FALLBACK_SENTENCE_DISTRACTORS.map((fb, i) => ({
+          id: `fb-${i}`,
+          chapterId: -1,
+          hanzi: fb.hanzi,
+          arabic: fb.arabic,
+        })),
+      ];
+      const { distractors, trapHint } = buildCloseTranslationDistractors(
+        { id: s.id, chapterId: chapter.id, hanzi: s.hanzi, arabic: s.arabic },
+        pool,
+        'en-to-zh',
+        3
+      );
       return {
         id: `st-a2h-${chapter.id}-${s.id}-${idx}`,
         chapterId: chapter.id,
@@ -374,11 +389,10 @@ function buildSentenceQuestion(
         promptPrimary: s.arabic,
         audioText: s.hanzi,
         options: shuffleArray([
-          { id: 'correct', label: s.hanzi, subLabel: s.pinyin, isHanzi: true },
-          ...zhDistractors.map((d, i) => ({
+          { id: 'correct', label: s.hanzi, isHanzi: true },
+          ...distractors.map((label, i) => ({
             id: `d-${i}`,
-            label: d.hanzi,
-            subLabel: d.pinyin,
+            label,
             isHanzi: true,
           })),
         ]),
@@ -386,6 +400,7 @@ function buildSentenceQuestion(
         correctDisplay: s.hanzi,
         correctPinyinDisplay: s.pinyin,
         meaningDisplay: s.arabic,
+        explanation: trapHint,
       };
     }
 
