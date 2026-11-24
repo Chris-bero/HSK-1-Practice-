@@ -6,6 +6,8 @@ import {
   ChevronDown,
   ChevronUp,
   ClipboardCheck,
+  Clock,
+  FileText,
   GraduationCap,
   Layers,
   Mic,
@@ -18,6 +20,7 @@ import {
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { DRILL_METADATA } from '../data/chaptersData';
+import { getChapterTrueFalseItems } from '../data/trueFalseData';
 import { ChapterData, DrillType, QuizMode, SessionDrillKey } from '../types';
 import { speakChinese, stopChineseSpeech } from '../utils/speech';
 import { BookmarkNoteControls } from './BookmarkNoteControls';
@@ -28,6 +31,7 @@ interface ChapterHubViewProps {
   selectedMode: QuizMode;
   onModeChange: (mode: QuizMode) => void;
   onStartDrill: (drillKey: SessionDrillKey) => void;
+  onStartChapterExam: () => void;
   onOpenLab: (tab: 'writing' | 'speaking' | 'speed', chapterId: number) => void;
   onBack: () => void;
 }
@@ -100,6 +104,12 @@ const APPLIED_DRILLS: DrillCardConfig[] = [
   {
     type: 'sentence-builder',
     numberLabel: '10',
+    difficultyLabel: 'Applied · Advanced',
+    difficultyTone: 'cinnabar',
+  },
+  {
+    type: 'true-false',
+    numberLabel: '11',
     difficultyLabel: 'Applied · Advanced',
     difficultyTone: 'cinnabar',
   },
@@ -281,6 +291,26 @@ function DrillFormatMiniPreview({ type }: { type: DrillType }) {
         </div>
       );
 
+    case 'true-false':
+      return (
+        <div
+          aria-hidden="true"
+          className="rounded-lg bg-[#F9F6F0] dark:bg-[#141312] border border-[#1C1917]/8 dark:border-[#F5F2EB]/8 px-3 py-2.5 flex items-center justify-between gap-2"
+        >
+          <span className="font-hanzi text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB]">
+            我明天去学校。
+          </span>
+          <div className="flex items-center gap-1.5 text-[11px] font-bold">
+            <span className="px-2 py-0.5 rounded bg-[#15803D]/12 dark:bg-[#22C55E]/18 text-[#15803D] dark:text-[#22C55E]">
+              ✓ True
+            </span>
+            <span className="px-2 py-0.5 rounded bg-[#B91C1C]/12 dark:bg-[#EF4444]/18 text-[#B91C1C] dark:text-[#EF4444]">
+              ✗ False
+            </span>
+          </div>
+        </div>
+      );
+
     case 'sentence-builder':
     default:
       return (
@@ -307,6 +337,7 @@ export function ChapterHubView({
   selectedMode,
   onModeChange,
   onStartDrill,
+  onStartChapterExam,
   onOpenLab,
   onBack,
 }: ChapterHubViewProps) {
@@ -318,6 +349,16 @@ export function ChapterHubView({
   const chapterSavedCount = Object.values(studyVault).filter(
     (entry) => entry.chapterId === chapter.id
   ).length;
+
+  const chapterExamHistory = (progress?.chapterExamResults ?? []).filter(
+    (res) => res.chapterId === chapter.id
+  );
+  const bestChapterExam = chapterExamHistory.reduce<
+    (typeof chapterExamHistory)[number] | null
+  >((best, cur) => {
+    if (!best || cur.percentage > best.percentage) return cur;
+    return best;
+  }, null);
 
   const handlePlayStudyAudio = (key: string, hanzi: string, rate: 1.0 | 0.7 = 1.0) => {
     const playKey = `${key}-${rate}`;
@@ -338,7 +379,10 @@ export function ChapterHubView({
   const completedDrills = new Set<DrillType>(chapterStats?.completedDrills ?? []);
   const completionPercent = analytics.getChapterCompletion(chapter.id);
 
+  const trueFalseCount = getChapterTrueFalseItems(chapter.id).length;
+
   const isDrillAvailable = (drillType: DrillType) => {
+    if (drillType === 'true-false') return trueFalseCount > 0;
     const req = DRILL_METADATA[drillType].requires;
     return req === 'vocab' ? chapter.vocab.length > 0 : chapter.sentences.length > 0;
   };
@@ -352,7 +396,11 @@ export function ChapterHubView({
         const available = isDrillAvailable(cfg.type);
         const isCompleted = completedDrills.has(cfg.type);
         const itemCount =
-          meta.requires === 'vocab' ? chapter.vocab.length : chapter.sentences.length;
+          cfg.type === 'true-false'
+            ? trueFalseCount
+            : meta.requires === 'vocab'
+              ? chapter.vocab.length
+              : chapter.sentences.length;
 
         return (
           <button
@@ -405,7 +453,7 @@ export function ChapterHubView({
             <div className="flex items-center justify-between pt-3 border-t border-[#1C1917]/8 dark:border-[#F5F2EB]/8 text-xs">
               <span className="text-[#57534E] dark:text-[#A8A29E] tabular-nums">
                 {available
-                  ? `${itemCount} ${meta.requires === 'vocab' ? 'words' : 'sentences'} available`
+                  ? `${itemCount} ${cfg.type === 'true-false' ? 'statements' : meta.requires === 'vocab' ? 'words' : 'sentences'} available`
                   : 'No items available'}
               </span>
               {available && (
@@ -522,32 +570,95 @@ export function ChapterHubView({
         </div>
       ) : (
         <>
-          {/* Mixed Comprehensive Test Banner */}
-          <div className="neo-frame rounded-xl p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-xs font-semibold text-[#D97706] dark:text-[#F59E0B]">
-                <Layers className="w-4 h-4" />
-                <span>Integrated session combining all available drill engines</span>
+          {/* Dedicated Chapter Exam (40 Questions) + Mixed Comprehensive Review */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            {/* Dedicated Chapter Exam (40 Questions) Single-Page Assessment Card */}
+            <div className="lg:col-span-7 neo-frame rounded-xl p-6 sm:p-7 flex flex-col justify-between gap-5 bg-white dark:bg-[#1E1C1A]">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="inline-flex items-center gap-2 text-xs font-bold text-[#B91C1C] dark:text-[#EF4444]">
+                    <FileText className="w-4 h-4" />
+                    <span>Single-Page Exam Sheet · 4 Parts × 10 Questions</span>
+                  </div>
+                  <span className="inline-flex items-center gap-1 text-xs font-bold tabular-nums text-[#57534E] dark:text-[#A8A29E]">
+                    <Clock className="w-3.5 h-3.5 text-[#D97706] dark:text-[#F59E0B]" />
+                    <span>45 min</span>
+                  </span>
+                </div>
+
+                <h2 className="text-xl sm:text-2xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
+                  Chapter Exam <span className="text-[#B91C1C] dark:text-[#EF4444]">(40 Questions)</span>
+                </h2>
+
+                <p className="text-xs sm:text-sm text-[#57534E] dark:text-[#A8A29E] leading-relaxed">
+                  Test your full mastery of {chapter.titleAr} on one timed exam sheet: Part I
+                  Vocabulary &amp; Pinyin, Part II Grammar Fill-in-the-Blank, Part III Precision
+                  Translation, and Part IV True/False traps.
+                </p>
               </div>
-              <h2 className="text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
-                Comprehensive Chapter Review
-              </h2>
-              <p className="text-sm text-[#57534E] dark:text-[#A8A29E]">
-                A balanced mix covering reading, tones, matching, listening, sentence translation,
-                and sentence building in one session.
-              </p>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
+                <div className="text-xs text-[#57534E] dark:text-[#A8A29E] tabular-nums">
+                  {bestChapterExam ? (
+                    <span>
+                      Best score:{' '}
+                      <strong
+                        className={
+                          bestChapterExam.percentage >= 70
+                            ? 'text-[#15803D] dark:text-[#22C55E]'
+                            : 'text-[#B91C1C] dark:text-[#EF4444]'
+                        }
+                      >
+                        {bestChapterExam.score}/{bestChapterExam.total} ({bestChapterExam.percentage}%)
+                      </strong>{' '}
+                      · {chapterExamHistory.length}{' '}
+                      {chapterExamHistory.length === 1 ? 'attempt' : 'attempts'}
+                    </span>
+                  ) : (
+                    <span>Not attempted yet · Auto-graded with full corrections</span>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onStartChapterExam}
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 min-h-[46px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white font-bold text-sm transition-colors whitespace-nowrap shrink-0"
+                >
+                  <ClipboardCheck className="w-4 h-4" />
+                  <span>Start Chapter Exam</span>
+                </button>
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => onStartDrill('mixed')}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 min-h-[46px] rounded-lg bg-[#B91C1C] hover:bg-[#991B1B] dark:bg-[#EF4444] dark:hover:bg-[#DC2626] text-white font-bold text-sm transition-colors whitespace-nowrap shrink-0"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>
-                {selectedMode === 'practice' ? 'Start Mixed Practice' : 'Start Chapter Exam'}
-              </span>
-            </button>
+            {/* Mixed Comprehensive Drill Session Card */}
+            <div className="lg:col-span-5 rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-white dark:bg-[#1E1C1A] p-6 sm:p-7 flex flex-col justify-between gap-5">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-[#D97706] dark:text-[#F59E0B]">
+                  <Layers className="w-4 h-4" />
+                  <span>Quick 11-Mode Sampler</span>
+                </div>
+                <h2 className="text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
+                  Comprehensive Mixed Practice
+                </h2>
+                <p className="text-xs sm:text-sm text-[#57534E] dark:text-[#A8A29E] leading-relaxed">
+                  A rapid one-question-per-mode warm-up combining reading, tones, listening,
+                  matching, sentence building, and True/False.
+                </p>
+              </div>
+
+              <div className="flex justify-end pt-3 border-t border-[#1C1917]/10 dark:border-[#F5F2EB]/10">
+                <button
+                  type="button"
+                  onClick={() => onStartDrill('mixed')}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 min-h-[46px] rounded-lg border border-[#B91C1C] dark:border-[#EF4444] text-[#B91C1C] dark:text-[#EF4444] hover:bg-[#B91C1C] hover:text-white dark:hover:bg-[#EF4444] dark:hover:text-white font-bold text-sm transition-colors whitespace-nowrap shrink-0"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>
+                    {selectedMode === 'practice' ? 'Start Mixed Practice' : 'Start Mixed Quiz'}
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Interactive Chapter Labs */}
@@ -886,7 +997,7 @@ export function ChapterHubView({
                 </span>
                 <div>
                   <div className="text-xs font-bold text-[#B91C1C] dark:text-[#EF4444]">
-                    Part 2 · 4 Sentence &amp; Context Drills
+                    Part 2 · 5 Sentence &amp; Context Drills
                   </div>
                   <h2 className="text-lg sm:text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB]">
                     Applied Level — Sentences &amp; Construction
@@ -894,7 +1005,7 @@ export function ChapterHubView({
                 </div>
               </div>
               <p className="text-xs text-[#57534E] dark:text-[#A8A29E]">
-                Contextual translation, fill-in-the-blank, and Chinese sentence assembly
+                Contextual translation, fill-in-the-blank, sentence assembly, and True/False grammar judgment
               </p>
             </div>
 

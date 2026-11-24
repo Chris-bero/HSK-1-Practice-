@@ -64,7 +64,8 @@ export type DrillType =
   | 'sentence-hanzi-to-arabic'
   | 'sentence-arabic-to-hanzi'
   | 'sentence-builder'
-  | 'fill-in-blank';
+  | 'fill-in-blank'
+  | 'true-false';
 
 export type SessionDrillKey = DrillType | 'mixed';
 
@@ -74,6 +75,9 @@ export type AppView =
   | 'home'
   | 'chapters'
   | 'chapter-hub'
+  | 'chapter-exam'
+  | 'final-exams'
+  | 'final-exam-runner'
   | 'collections'
   | 'labs'
   | 'vault'
@@ -119,6 +123,7 @@ export interface MistakeItem {
   drillType: DrillType;
   sourceItemId: string;
   recordedAt: string;
+  missCount?: number;
 }
 
 export interface DrillOption {
@@ -161,6 +166,12 @@ export interface DrillQuestion {
   sentenceWithBlank?: string;
   sentenceFullHanzi?: string;
   sentenceFullPinyin?: string;
+  /** True or False (Grammar & Usage Judgment) */
+  isStatementTrue?: boolean;
+  correctedHanzi?: string;
+  correctedPinyin?: string;
+  explanation?: string;
+  trapCategory?: string;
   /** Human-readable explanation shown in review / feedback */
   correctDisplay: string;
   correctPinyinDisplay?: string;
@@ -179,6 +190,9 @@ export interface QuestionAnswerRecord {
   matchedCorrectPairs?: number;
   totalMatchingPairs?: number;
   userDisplay: string;
+  /** Optional question prompt & expected answer for granular WrongLog analytics */
+  questionPrompt?: string;
+  correctDisplay?: string;
 }
 
 export interface DrillStatEntry {
@@ -190,6 +204,177 @@ export interface ChapterStatEntry {
   solved: number;
   correct: number;
   completedDrills: DrillType[];
+  timeSeconds?: number;
+}
+
+export type ChapterExamPartNumber = 1 | 2 | 3 | 4;
+
+export interface ChapterExamOption {
+  id: string;
+  label: string;
+  subLabel?: string;
+  isHanzi?: boolean;
+  isPinyin?: boolean;
+}
+
+export interface ChapterExamQuestion {
+  id: string;
+  number: number; // 1..40
+  part: ChapterExamPartNumber;
+  chapterId: number;
+  drillType: DrillType;
+  sourceItemId: string;
+  /** Short format tag shown next to the question number */
+  subTypeLabel: string;
+  promptPrimary: string;
+  promptPinyin?: string;
+  isHanziPrompt?: boolean;
+  /** Part II sentence template with ____ */
+  sentenceWithBlank?: string;
+  targetBlank?: string;
+  /** Audio clip text for playback */
+  audioText?: string;
+  options: ChapterExamOption[];
+  correctOptionId: string;
+  /** Part IV True/False metadata */
+  isStatementTrue?: boolean;
+  correctedHanzi?: string;
+  correctedPinyin?: string;
+  trapCategory?: string;
+  /** Grading & Review explanation fields */
+  correctDisplay: string;
+  correctPinyinDisplay?: string;
+  meaningDisplay?: string;
+  explanation: string;
+}
+
+export interface ChapterExamPart {
+  partNumber: ChapterExamPartNumber;
+  romanNumeral: 'I' | 'II' | 'III' | 'IV';
+  title: string;
+  subtitle: string;
+  instructions: string;
+  questions: ChapterExamQuestion[];
+}
+
+export interface ChapterExamPaper {
+  chapterId: number;
+  chineseNumeral: string;
+  chapterTitle: string;
+  chapterSubtitle: string;
+  totalQuestions: number;
+  durationSeconds: number;
+  parts: ChapterExamPart[];
+}
+
+export interface ChapterExamPartScore {
+  partNumber: ChapterExamPartNumber;
+  romanNumeral: 'I' | 'II' | 'III' | 'IV';
+  title: string;
+  correct: number;
+  total: number;
+}
+
+export interface ChapterExamResult {
+  id: string;
+  chapterId: number;
+  chapterTitle: string;
+  score: number;
+  total: number;
+  percentage: number;
+  partScores: ChapterExamPartScore[];
+  durationSeconds: number;
+  completedAt: string;
+}
+
+export type FinalExamModelId = 'model-1' | 'model-2' | 'model-3' | 'random';
+
+export type FinalExamPartNumber = 1 | 2 | 3 | 4 | 5;
+
+export interface FinalExamDialogueLine {
+  speaker: string;
+  hanzi: string;
+  pinyin: string;
+}
+
+export interface FinalExamQuestion {
+  id: string;
+  number: number; // 1..50
+  part: FinalExamPartNumber;
+  chapterId: number;
+  drillType: DrillType;
+  sourceItemId: string;
+  subTypeLabel: string;
+  promptPrimary: string;
+  promptPinyin?: string;
+  isHanziPrompt?: boolean;
+  /** Part II sentence template with ____ */
+  sentenceWithBlank?: string;
+  targetBlank?: string;
+  /** Part III Reading & Dialogue Comprehension fields */
+  readingFormat?: 'dialogue' | 'passage';
+  dialogueLines?: FinalExamDialogueLine[];
+  passageHanzi?: string;
+  passagePinyin?: string;
+  comprehensionQuestion?: string;
+  /** Audio clip text for playback */
+  audioText?: string;
+  options: ChapterExamOption[];
+  correctOptionId: string;
+  /** Part V True/False metadata */
+  isStatementTrue?: boolean;
+  correctedHanzi?: string;
+  correctedPinyin?: string;
+  trapCategory?: string;
+  /** Grading & Review explanation fields */
+  correctDisplay: string;
+  correctPinyinDisplay?: string;
+  meaningDisplay?: string;
+  explanation: string;
+}
+
+export interface FinalExamPart {
+  partNumber: FinalExamPartNumber;
+  romanNumeral: 'I' | 'II' | 'III' | 'IV' | 'V';
+  title: string;
+  subtitle: string;
+  instructions: string;
+  questions: FinalExamQuestion[];
+}
+
+export interface FinalExamPaper {
+  modelId: FinalExamModelId;
+  modelLabel: string;
+  modelSubtitle: string;
+  isDeterministic: boolean;
+  seedTag: string;
+  chapterIds: number[];
+  scopeLabel: string;
+  totalQuestions: number;
+  durationSeconds: number;
+  parts: FinalExamPart[];
+}
+
+export interface FinalExamPartScore {
+  partNumber: FinalExamPartNumber;
+  romanNumeral: 'I' | 'II' | 'III' | 'IV' | 'V';
+  title: string;
+  correct: number;
+  total: number;
+}
+
+export interface FinalExamResult {
+  id: string;
+  modelId: FinalExamModelId;
+  modelLabel: string;
+  chapterIds: number[];
+  scopeLabel: string;
+  score: number;
+  total: number;
+  percentage: number;
+  partScores: FinalExamPartScore[];
+  durationSeconds: number;
+  completedAt: string;
 }
 
 export interface StudentProgress {
@@ -204,6 +389,8 @@ export interface StudentProgress {
   drillTimeSeconds: Record<DrillType, number>;
   chapterStats: Record<number, ChapterStatEntry>;
   mistakes: MistakeItem[];
+  chapterExamResults?: ChapterExamResult[];
+  finalExamResults?: FinalExamResult[];
 }
 
 export interface SheetsSyncPayload {
@@ -218,4 +405,55 @@ export interface SheetsSyncPayload {
   overallProgressPercent: number;
   lastActive: string;
   unlockedAccess?: string | UnlockedAccess;
+  chapterExamResults?: ChapterExamResult[];
+  finalExamResults?: FinalExamResult[];
+  /** Optional granular analytics bundled with progress syncs */
+  resultEntry?: AnalyticsResultLogEntry;
+  examEntry?: AnalyticsExamLogEntry;
+  wrongEntries?: AnalyticsWrongLogEntry[];
+}
+
+export interface AnalyticsResultLogEntry {
+  ts: string;
+  code: string;
+  name: string;
+  lesson: string;
+  activity: string;
+  kind: string;
+  correct: number;
+  total: number;
+  pct: number;
+  duration_ms: number;
+  device: string;
+}
+
+export interface AnalyticsExamLogEntry {
+  ts: string;
+  code: string;
+  name: string;
+  exam_type: string;
+  exam_title: string;
+  chapters_scope: string;
+  score: number;
+  total: number;
+  pct: number;
+  duration_ms: number;
+  device: string;
+}
+
+export interface AnalyticsWrongLogEntry {
+  ts: string;
+  code: string;
+  name: string;
+  lesson: string;
+  activity: string;
+  question: string;
+  user_answer: string;
+  correct_answer: string;
+}
+
+export interface AnalyticsLogBatchPayload {
+  results?: AnalyticsResultLogEntry[];
+  exams?: AnalyticsExamLogEntry[];
+  wrongLog?: AnalyticsWrongLogEntry[];
 }

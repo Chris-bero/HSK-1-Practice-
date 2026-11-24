@@ -56,6 +56,11 @@ export const DRILL_METADATA: Record<
     descriptionAr: 'Select the right Chinese word to complete the sentence in context.',
     requires: 'sentences',
   },
+  'true-false': {
+    titleAr: 'True or False',
+    descriptionAr: 'Decide whether the Chinese sentence is grammatically and semantically correct.',
+    requires: 'sentences',
+  },
 };
 
 export const ALL_DRILL_TYPES: DrillType[] = [
@@ -69,6 +74,7 @@ export const ALL_DRILL_TYPES: DrillType[] = [
   'sentence-arabic-to-hanzi',
   'sentence-builder',
   'fill-in-blank',
+  'true-false',
 ];
 
 /**

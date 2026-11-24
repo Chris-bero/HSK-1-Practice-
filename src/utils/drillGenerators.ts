@@ -1,5 +1,10 @@
 import { ALL_DRILL_TYPES } from '../data/chaptersData';
 import {
+  findTrueFalseItemById,
+  getChapterTrueFalseItems,
+  TrueFalseItem,
+} from '../data/trueFalseData';
+import {
   ChapterData,
   CustomQuizConfig,
   DrillOption,
@@ -472,6 +477,34 @@ function buildSentenceQuestion(
   }
 }
 
+function buildTrueFalseQuestion(item: TrueFalseItem, idx: number): DrillQuestion {
+  const correctVerdict = item.isTrue ? 'TRUE' : 'FALSE';
+  return {
+    id: `tf-${item.chapterId}-${item.id}-${idx}`,
+    chapterId: item.chapterId,
+    sourceItemId: item.id,
+    drillType: 'true-false',
+    promptPrimary: item.hanzi,
+    promptPinyin: item.pinyin,
+    audioText: item.isTrue ? item.hanzi : (item.correctedHanzi ?? item.hanzi),
+    options: [
+      { id: 'true', label: 'TRUE' },
+      { id: 'false', label: 'FALSE' },
+    ],
+    correctOptionId: item.isTrue ? 'true' : 'false',
+    isStatementTrue: item.isTrue,
+    correctedHanzi: item.correctedHanzi,
+    correctedPinyin: item.correctedPinyin,
+    explanation: item.explanation,
+    trapCategory: item.trapCategory,
+    correctDisplay: item.isTrue
+      ? `${correctVerdict} — ${item.hanzi}`
+      : `${correctVerdict} — Correct: ${item.correctedHanzi ?? ''}`,
+    correctPinyinDisplay: item.isTrue ? item.pinyin : item.correctedPinyin,
+    meaningDisplay: item.meaning,
+  };
+}
+
 export function generateDrillQuestions(
   chapter: ChapterData,
   drillKey: SessionDrillKey
@@ -561,6 +594,11 @@ export function generateSingleDrillQuestions(
       return shuffleArray(sentences)
         .map((s, idx) => buildSentenceQuestion(chapter, drillType, s, idx))
         .filter((q): q is DrillQuestion => q !== null);
+
+    case 'true-false': {
+      const items = getChapterTrueFalseItems(chapter.id);
+      return shuffleArray(items).map((item, idx) => buildTrueFalseQuestion(item, idx));
+    }
   }
 }
 
@@ -625,6 +663,14 @@ export function generateMistakeReviewQuestions(
       return;
     }
 
+    if (m.drillType === 'true-false') {
+      const tfItem = findTrueFalseItemById(chapter.id, m.sourceItemId);
+      if (tfItem) {
+        questions.push(buildTrueFalseQuestion(tfItem, idx));
+      }
+      return;
+    }
+
     if (m.drillType === 'match-2-col' || m.drillType === 'match-3-col') {
       const ids = m.sourceItemId.replace(/^m[23]-/, '').split('_');
       const items = chapter.vocab.filter((v) => ids.includes(v.id));
@@ -679,6 +725,8 @@ export function countAvailableQuestionsForConfig(
         total += ch.vocab.length > 0 ? Math.ceil(ch.vocab.length / 5) : 0;
       } else if (dt === 'match-3-col') {
         total += ch.vocab.length > 0 ? Math.ceil(ch.vocab.length / 4) : 0;
+      } else if (dt === 'true-false') {
+        total += getChapterTrueFalseItems(ch.id).length;
       } else {
         total += ch.sentences.length;
       }

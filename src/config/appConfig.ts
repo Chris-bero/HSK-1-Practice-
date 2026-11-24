@@ -3,8 +3,8 @@
  *
  * 1. Google Apps Script Web App URL:
  *    - Point to your new English Google Sheet's Apps Script Web App deployment by setting
- *      `VITE_SHEETS_WEB_APP_URL` in `.env` (or Vercel Environment Variables), OR by replacing
- *      `DEFAULT_SHEETS_WEB_APP_URL` below.
+ *      `VITE_GOOGLE_SCRIPT_WEB_APP_URL` (or `VITE_SHEETS_WEB_APP_URL`) in `.env` / Vercel
+ *      Environment Variables, OR by replacing `DEFAULT_SHEETS_WEB_APP_URL` below.
  *    - Also mirror the same URL in `public/teacher-dashboard.html` (`DEFAULT_GOOGLE_SCRIPT_URL`).
  *
  * 2. Namespaced localStorage Keys:
@@ -13,13 +13,25 @@
  */
 
 export const DEFAULT_SHEETS_WEB_APP_URL =
-  'https://script.google.com/macros/s/AKfycbxA27jKarngLH1l9aIK8vVxd_vNj1UZG6dXTMqluOcaBe6VoFd0VzE7snVvPXqQFdR_fQ/exec';
+  'https://script.google.com/macros/s/AKfycbyvo-0qAPM2L3yxNLfE5CVGMzHjKZVNoxIlQWCvETvQYSW0xHM0T7AwUqvzkr3Gceo2/exec';
+
+const envGoogleScriptUrl =
+  typeof import.meta !== 'undefined' &&
+  import.meta.env &&
+  typeof import.meta.env.VITE_GOOGLE_SCRIPT_WEB_APP_URL === 'string'
+    ? import.meta.env.VITE_GOOGLE_SCRIPT_WEB_APP_URL.trim()
+    : '';
+
+const envSheetsUrl =
+  typeof import.meta !== 'undefined' &&
+  import.meta.env &&
+  typeof import.meta.env.VITE_SHEETS_WEB_APP_URL === 'string'
+    ? import.meta.env.VITE_SHEETS_WEB_APP_URL.trim()
+    : '';
 
 export const GOOGLE_SCRIPT_WEB_APP_URL: string = (
-  (typeof import.meta !== 'undefined' &&
-    import.meta.env &&
-    typeof import.meta.env.VITE_SHEETS_WEB_APP_URL === 'string' &&
-    import.meta.env.VITE_SHEETS_WEB_APP_URL.trim()) ||
+  envGoogleScriptUrl ||
+  envSheetsUrl ||
   DEFAULT_SHEETS_WEB_APP_URL
 ).trim();
 
@@ -38,4 +50,5 @@ export const STORAGE_KEYS = {
   CLIENT_DEVICE_ID: `${STORAGE_PREFIX}client_device_id_v1`,
   DISMISSED_BROADCASTS: `${STORAGE_PREFIX}dismissed_broadcasts_v1`,
   SPEED_MATCH_BEST_PREFIX: `${STORAGE_PREFIX}speed_best_v1_`,
+  ANALYTICS_RETRY_QUEUE: `${STORAGE_PREFIX}analytics_retry_queue_v1`,
 } as const;

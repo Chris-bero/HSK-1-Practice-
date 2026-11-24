@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { AnalyticsView } from './components/AnalyticsView';
+import { ChapterExamView } from './components/ChapterExamView';
 import { ChapterHubView } from './components/ChapterHubView';
 import { ChaptersGridView } from './components/ChaptersGridView';
 import { CollectionsView } from './components/CollectionsView';
 import { CustomQuizBuilderView } from './components/CustomQuizBuilderView';
 import { DrillSessionRunner, DrillSessionSource } from './components/drills/DrillSessionRunner';
+import { FinalExamRunnerView } from './components/FinalExamRunnerView';
+import { FinalExamsPortalView } from './components/FinalExamsPortalView';
 import { HomeView } from './components/HomeView';
 import { LoginGate } from './components/LoginGate';
 import { Navbar } from './components/Navbar';
@@ -12,7 +15,14 @@ import { SkillLabTab, SkillsLabsView } from './components/SkillsLabsView';
 import { TeacherBroadcastBanner } from './components/TeacherBroadcastBanner';
 import { VaultView } from './components/VaultView';
 import { AppProvider, useApp } from './context/AppContext';
-import { AppView, ChapterData, CustomQuizConfig, QuizMode, SessionDrillKey } from './types';
+import {
+  AppView,
+  ChapterData,
+  CustomQuizConfig,
+  FinalExamModelId,
+  QuizMode,
+  SessionDrillKey,
+} from './types';
 import { isChapterUnlocked } from './utils/accessControl';
 
 function MainShell() {
@@ -27,6 +37,10 @@ function MainShell() {
     chapterId?: number;
     nonce: number;
   }>({ tab: 'writing', nonce: 0 });
+  const [activeFinalExam, setActiveFinalExam] = useState<{
+    modelId: FinalExamModelId;
+    chapterIds: number[];
+  } | null>(null);
 
   if (!currentStudent) {
     return <LoginGate />;
@@ -67,6 +81,18 @@ function MainShell() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleStartChapterExam = () => {
+    if (!activeChapter) return;
+    setView('chapter-exam');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleStartFinalExam = (modelId: FinalExamModelId, chapterIds: number[]) => {
+    setActiveFinalExam({ modelId, chapterIds });
+    setView('final-exam-runner');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleStartCustomQuiz = (config: CustomQuizConfig) => {
     setSessionSource({
       kind: 'custom',
@@ -86,7 +112,12 @@ function MainShell() {
 
   return (
     <div className="min-h-screen paper-lattice bg-[#F9F6F0] dark:bg-[#121110] text-[#1C1917] dark:text-[#F5F2EB] flex flex-col">
-      <Navbar currentView={view} onNavigate={handleNavigate} />
+      <Navbar
+        currentView={view}
+        onNavigate={handleNavigate}
+        onSelectChapter={handleSelectChapter}
+        onStartMistakeReview={handleStartMistakeReview}
+      />
       <TeacherBroadcastBanner />
 
       <main className="flex-1">
@@ -105,8 +136,31 @@ function MainShell() {
             selectedMode={quizMode}
             onModeChange={setQuizMode}
             onStartDrill={handleStartChapterDrill}
+            onStartChapterExam={handleStartChapterExam}
             onOpenLab={handleOpenLab}
             onBack={() => handleNavigate('chapters')}
+          />
+        )}
+
+        {view === 'chapter-exam' && activeChapter && (
+          <ChapterExamView
+            chapter={activeChapter}
+            onExit={() => handleNavigate('chapter-hub')}
+          />
+        )}
+
+        {view === 'final-exams' && (
+          <FinalExamsPortalView
+            onStartFinalExam={handleStartFinalExam}
+            onBack={() => handleNavigate('home')}
+          />
+        )}
+
+        {view === 'final-exam-runner' && activeFinalExam && (
+          <FinalExamRunnerView
+            modelId={activeFinalExam.modelId}
+            chapterIds={activeFinalExam.chapterIds}
+            onExit={() => handleNavigate('final-exams')}
           />
         )}
 
@@ -144,7 +198,7 @@ function MainShell() {
       <footer className="border-t border-[#1C1917]/10 dark:border-[#F5F2EB]/10 py-6 mt-12">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#57534E] dark:text-[#A8A29E]">
           <span>HSK 3.0 Level 1 Practice Portal</span>
-          <span>Interactive Training Platform · 15 Chapters · 10 Drill Modes</span>
+          <span>Interactive Training Platform · 15 Chapters · 11 Drill Modes</span>
         </div>
       </footer>
     </div>

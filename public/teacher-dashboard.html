@@ -777,12 +777,16 @@
         white-space: nowrap;
       }
 
-      thead th[data-sort] {
+      thead th[data-sort],
+      thead th[data-progress-sort],
+      thead th[data-exam-sort] {
         cursor: pointer;
         user-select: none;
       }
 
-      thead th[data-sort]:hover {
+      thead th[data-sort]:hover,
+      thead th[data-progress-sort]:hover,
+      thead th[data-exam-sort]:hover {
         color: var(--ink);
       }
 
@@ -941,39 +945,6 @@
         border-radius: var(--radius-sm);
         border: 1px solid var(--border);
         background-color: var(--canvas);
-      }
-
-      /* ===================== Legacy Pattern Summary Styles ===================== */
-      .hsk-patterns-summary-grid {
-        display: grid;
-        grid-template-columns: repeat(7, minmax(0, 1fr));
-        gap: 10px;
-        padding: 16px 20px;
-      }
-
-      .hsk-pattern-card {
-        padding: 12px;
-        border-radius: var(--radius-sm);
-        border: 1px solid var(--border);
-        background-color: var(--canvas);
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-
-      .hsk-pattern-row-grid {
-        display: grid;
-        grid-template-columns: repeat(7, minmax(64px, 1fr));
-        gap: 6px;
-      }
-
-      .hsk-pattern-cell {
-        padding: 5px 6px;
-        border-radius: 6px;
-        border: 1px solid var(--border);
-        background-color: var(--canvas);
-        font-size: 11px;
-        text-align: center;
       }
 
       .mock-attempt-row {
@@ -1250,18 +1221,6 @@
         gap: 8px;
       }
 
-      .mocks-toggle-grid {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 8px;
-      }
-
-      .patterns-toggle-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 8px;
-      }
-
       .ch-tile {
         min-height: 60px;
         padding: 8px 10px;
@@ -1403,9 +1362,6 @@
         .kpi-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
-        .hsk-patterns-summary-grid {
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-        }
         .bank-drills-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -1456,12 +1412,8 @@
         .presets-grid {
           grid-template-columns: 1fr;
         }
-        .chapters-toggle-grid,
-        .mocks-toggle-grid {
+        .chapters-toggle-grid {
           grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-        .patterns-toggle-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
       }
 
@@ -1469,15 +1421,128 @@
         .kpi-grid {
           grid-template-columns: 1fr;
         }
-        .chapters-toggle-grid,
-        .mocks-toggle-grid {
+        .chapters-toggle-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
-        .patterns-toggle-grid {
+      }
+
+      /* ===================== New Analytics Tabs (Overview, Progress, Exams, Ranking) ===================== */
+      .nav-section-divider {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+      }
+
+      .kpi-grid-6 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .kpi-grid-5 {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .student-name-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        font-family: inherit;
+        font-size: 13.5px;
+        font-weight: 800;
+        color: var(--ink);
+        cursor: pointer;
+        text-align: left;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: color 140ms ease;
+      }
+
+      .student-name-btn:hover {
+        color: var(--accent);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .rank-badge-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 30px;
+        height: 28px;
+        border-radius: var(--radius-sm);
+        font-size: 12.5px;
+        font-weight: 800;
+        color: var(--ink-secondary);
+        background-color: var(--surface-subtle);
+      }
+
+      .rank-badge-num.rank-1 {
+        background-color: var(--amber-soft);
+        color: var(--amber);
+        border: 1px solid var(--amber-border);
+      }
+
+      .rank-badge-num.rank-2 {
+        background-color: var(--surface-subtle);
+        color: var(--ink);
+        border: 1px solid var(--border-strong);
+      }
+
+      .rank-badge-num.rank-3 {
+        background-color: var(--accent-soft);
+        color: var(--accent);
+        border: 1px solid var(--accent-border);
+      }
+
+      th.rank-active-col {
+        color: var(--accent);
+        background-color: var(--accent-soft);
+      }
+
+      td.rank-active-col {
+        background-color: var(--accent-soft);
+        font-weight: 800;
+        color: var(--ink);
+      }
+
+      .mistake-q-cell {
+        max-width: 340px;
+        white-space: normal;
+        line-height: 1.45;
+      }
+
+      .mistake-ans-wrong {
+        color: var(--crimson);
+        font-weight: 700;
+      }
+
+      .mistake-ans-correct {
+        color: var(--jade);
+        font-weight: 700;
+      }
+
+      .global-section-hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 1100px) {
+        .kpi-grid-6 {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .kpi-grid-5 {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 560px) {
+        .kpi-grid-6,
+        .kpi-grid-5 {
           grid-template-columns: 1fr;
-        }
-        .hsk-patterns-summary-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
       }
 
@@ -1502,14 +1567,80 @@
           </div>
 
           <nav class="sidebar-nav" role="tablist" aria-label="Workspace Sections">
-            <div class="nav-section-label">Workspaces</div>
+            <div class="nav-section-label">Analytics</div>
 
             <button
               type="button"
               class="nav-item active"
-              id="navTabStudents"
+              id="navTabOverview"
               role="tab"
               aria-selected="true"
+              aria-controls="panelOverview"
+              data-tab="overview"
+            >
+              <span class="nav-item-main">
+                <span aria-hidden="true">📊</span>
+                <span class="nav-item-text">Overview</span>
+              </span>
+              <span id="navCountOverview" class="nav-count tabular-nums">15</span>
+            </button>
+
+            <button
+              type="button"
+              class="nav-item"
+              id="navTabProgress"
+              role="tab"
+              aria-selected="false"
+              aria-controls="panelProgress"
+              data-tab="progress"
+            >
+              <span class="nav-item-main">
+                <span aria-hidden="true">📈</span>
+                <span class="nav-item-text">Students Progress</span>
+              </span>
+              <span id="navCountProgress" class="nav-count tabular-nums">0</span>
+            </button>
+
+            <button
+              type="button"
+              class="nav-item"
+              id="navTabExams"
+              role="tab"
+              aria-selected="false"
+              aria-controls="panelExams"
+              data-tab="exams"
+            >
+              <span class="nav-item-main">
+                <span aria-hidden="true">📝</span>
+                <span class="nav-item-text">Exams (Chapter &amp; Final)</span>
+              </span>
+              <span id="navCountExams" class="nav-count tabular-nums">0</span>
+            </button>
+
+            <button
+              type="button"
+              class="nav-item"
+              id="navTabRanking"
+              role="tab"
+              aria-selected="false"
+              aria-controls="panelRanking"
+              data-tab="ranking"
+            >
+              <span class="nav-item-main">
+                <span aria-hidden="true">🏆</span>
+                <span class="nav-item-text">Ranking</span>
+              </span>
+              <span id="navCountRanking" class="nav-count tabular-nums">0</span>
+            </button>
+
+            <div class="nav-section-label nav-section-divider">Management</div>
+
+            <button
+              type="button"
+              class="nav-item"
+              id="navTabStudents"
+              role="tab"
+              aria-selected="false"
               aria-controls="panelStudents"
               data-tab="students"
             >
@@ -1557,7 +1688,7 @@
           <div class="topbar-breadcrumb">
             <span>HSK 3.0 Level 1</span>
             <span aria-hidden="true">/</span>
-            <strong id="topbarActiveTitle">Students &amp; Access Management</strong>
+            <strong id="topbarActiveTitle">Class Overview</strong>
           </div>
 
           <div class="topbar-meta tabular-nums">
@@ -1576,8 +1707,8 @@
         <main class="workspace-body">
           <div id="errorBanner" class="error-banner" role="alert"></div>
 
-          <!-- ==================== Top 4 KPI Cards ==================== -->
-          <section class="kpi-grid" aria-label="Platform Performance Summary">
+          <!-- ==================== Top 4 KPI Cards (Students & Access / Chapters) ==================== -->
+          <section id="globalKpiGrid" class="kpi-grid global-section-hidden" aria-label="Platform Performance Summary">
             <article class="kpi-card">
               <span class="kpi-label">Total Enrolled Students</span>
               <span id="kpiTotalStudents" class="kpi-value tabular-nums">0</span>
@@ -1604,7 +1735,7 @@
           </section>
 
           <!-- ==================== Student Broadcast Banner Control ==================== -->
-          <section class="broadcast-card" aria-label="Student Broadcast Banner">
+          <section id="globalBroadcastCard" class="broadcast-card global-section-hidden" aria-label="Student Broadcast Banner">
             <div class="broadcast-card-head">
               <div class="broadcast-head-info">
                 <h2 class="broadcast-title">Student Broadcast Banner</h2>
@@ -1673,8 +1804,246 @@
             </div>
           </section>
 
+          <!-- ==================== New Tab 1: Overview ==================== -->
+          <section id="panelOverview" class="tab-panel" role="tabpanel" aria-labelledby="navTabOverview">
+            <div class="kpi-grid-6" aria-label="Class Overview KPIs">
+              <article class="kpi-card">
+                <span class="kpi-label">Total Enrolled Students</span>
+                <span id="ovKpiStudents" class="kpi-value tabular-nums">0</span>
+                <span id="ovKpiStudentsSub" class="kpi-sub tabular-nums">Active today: 0</span>
+              </article>
+
+              <article class="kpi-card">
+                <span class="kpi-label">Questions Solved</span>
+                <span id="ovKpiQuestions" class="kpi-value tabular-nums">0</span>
+                <span id="ovKpiQuestionsSub" class="kpi-sub tabular-nums">0 drill · 0 exam</span>
+              </article>
+
+              <article class="kpi-card">
+                <span class="kpi-label">Overall Accuracy %</span>
+                <span id="ovKpiAccuracy" class="kpi-value tabular-nums">—</span>
+                <span id="ovKpiAccuracySub" class="kpi-sub tabular-nums">0 correct · 0 wrong</span>
+              </article>
+
+              <article class="kpi-card">
+                <span class="kpi-label">Exams Taken</span>
+                <span id="ovKpiExams" class="kpi-value tabular-nums">0</span>
+                <span id="ovKpiExamsSub" class="kpi-sub tabular-nums">0 Chapter · 0 Final</span>
+              </article>
+
+              <article class="kpi-card">
+                <span class="kpi-label">Total Mistakes</span>
+                <span id="ovKpiMistakes" class="kpi-value tabular-nums tone-crimson">0</span>
+                <span id="ovKpiMistakesSub" class="kpi-sub tabular-nums">0 logged in WrongLog</span>
+              </article>
+
+              <article class="kpi-card">
+                <span class="kpi-label">Total Study Time</span>
+                <span id="ovKpiStudyTime" class="kpi-value tabular-nums tone-accent">0m</span>
+                <span id="ovKpiStudyTimeSub" class="kpi-sub tabular-nums">Avg. 0m per student</span>
+              </article>
+            </div>
+
+            <div class="panel-surface">
+              <div class="panel-header">
+                <div>
+                  <h1 class="panel-title">Class Performance per Lesson</h1>
+                  <p class="panel-subtitle" id="ovLessonTableMeta">
+                    Aggregated from Results, Exams, and student chapter records across all 15 HSK 3.0 Level 1 lessons
+                  </p>
+                </div>
+                <div class="segmented-filters" id="ovLessonFilterBar" role="group" aria-label="Filter lessons">
+                  <button type="button" class="filter-btn active" data-ov-filter="all">All 15 Lessons</button>
+                  <button type="button" class="filter-btn" data-ov-filter="active">With Activity Only</button>
+                </div>
+              </div>
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Lesson</th>
+                      <th>Active Students</th>
+                      <th>Activities</th>
+                      <th>Exams</th>
+                      <th>Accuracy %</th>
+                      <th>Avg Best</th>
+                      <th>Total Study Time</th>
+                      <th>Questions</th>
+                      <th>Mistakes</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ovLessonTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==================== New Tab 2: Students Progress ==================== -->
+          <section id="panelProgress" class="tab-panel hidden" role="tabpanel" aria-labelledby="navTabProgress">
+            <div class="panel-surface">
+              <div class="panel-header">
+                <div>
+                  <h1 class="panel-title">Students Progress &amp; Learning Reports</h1>
+                  <p class="panel-subtitle" id="progressTableMeta">
+                    Showing 0 of 0 students · Click any student name to inspect their full profile, lesson accuracy, exams, and frequent mistakes
+                  </p>
+                </div>
+              </div>
+
+              <div class="toolbar-row">
+                <input
+                  id="progressSearchInput"
+                  type="search"
+                  class="input search-input"
+                  placeholder="Search by student name or code..."
+                  aria-label="Search students progress"
+                />
+                <div style="font-size:12px;color:var(--ink-muted)">
+                  Click column headers to sort · Click a student name for detailed modal report
+                </div>
+              </div>
+
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th data-progress-sort="studentName">Name &amp; Code<span class="sort-arrow"></span></th>
+                      <th data-progress-sort="questionsSolved">Questions Solved<span class="sort-arrow"></span></th>
+                      <th data-progress-sort="correctCount">Correct / Wrong<span class="sort-arrow"></span></th>
+                      <th data-progress-sort="accuracyPercent">Accuracy %<span class="sort-arrow"></span></th>
+                      <th data-progress-sort="chaptersPracticed">Chapters Practiced<span class="sort-arrow"></span></th>
+                      <th data-progress-sort="examsTaken">Exams Taken<span class="sort-arrow"></span></th>
+                      <th data-progress-sort="studyTimeMs">Study Time<span class="sort-arrow"></span></th>
+                      <th data-progress-sort="lastActive">Last Active<span class="sort-arrow"></span></th>
+                    </tr>
+                  </thead>
+                  <tbody id="progressTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==================== New Tab 3: Exams (Chapter & Final) ==================== -->
+          <section id="panelExams" class="tab-panel hidden" role="tabpanel" aria-labelledby="navTabExams">
+            <div class="kpi-grid" aria-label="Exams Summary Metrics">
+              <article class="kpi-card">
+                <span class="kpi-label">Total Exams Submitted</span>
+                <span id="exKpiTotal" class="kpi-value tabular-nums">0</span>
+                <span id="exKpiTotalSub" class="kpi-sub tabular-nums">0 Chapter · 0 Final</span>
+              </article>
+
+              <article class="kpi-card">
+                <span class="kpi-label">Average Exam Accuracy</span>
+                <span id="exKpiAvgPct" class="kpi-value tabular-nums">—</span>
+                <span id="exKpiAvgPctSub" class="kpi-sub tabular-nums">Pass rate (≥70%): —</span>
+              </article>
+
+              <article class="kpi-card">
+                <span class="kpi-label">Exam Questions Answered</span>
+                <span id="exKpiQuestions" class="kpi-value tabular-nums">0</span>
+                <span id="exKpiQuestionsSub" class="kpi-sub tabular-nums">0 correct · 0 mistakes</span>
+              </article>
+
+              <article class="kpi-card">
+                <span class="kpi-label">Average Exam Duration</span>
+                <span id="exKpiAvgTime" class="kpi-value tabular-nums tone-accent">0m</span>
+                <span id="exKpiAvgTimeSub" class="kpi-sub tabular-nums">Total exam time: 0m</span>
+              </article>
+            </div>
+
+            <div class="panel-surface">
+              <div class="panel-header">
+                <div>
+                  <h1 class="panel-title">Chapter &amp; Final Exam Attempts</h1>
+                  <p class="panel-subtitle" id="examsTableMeta">Showing 0 exam attempts</p>
+                </div>
+              </div>
+
+              <div class="toolbar-row">
+                <input
+                  id="examsSearchInput"
+                  type="search"
+                  class="input search-input"
+                  placeholder="Search by student, code, exam title, or scope..."
+                  aria-label="Search exam attempts"
+                />
+
+                <div class="segmented-filters" id="examsTypeFilterBar" role="group" aria-label="Filter by exam type">
+                  <button type="button" class="filter-btn active" data-exam-filter="all">All Exams</button>
+                  <button type="button" class="filter-btn" data-exam-filter="chapter">Chapter Exams</button>
+                  <button type="button" class="filter-btn" data-exam-filter="final">Final Exams</button>
+                </div>
+              </div>
+
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th data-exam-sort="name">Student Name &amp; Code<span class="sort-arrow"></span></th>
+                      <th data-exam-sort="exam_type">Exam Type<span class="sort-arrow"></span></th>
+                      <th data-exam-sort="exam_title">Exam Title &amp; Scope<span class="sort-arrow"></span></th>
+                      <th data-exam-sort="score">Score<span class="sort-arrow"></span></th>
+                      <th data-exam-sort="mistakes">Correct vs. Mistakes<span class="sort-arrow"></span></th>
+                      <th data-exam-sort="pct">Accuracy %<span class="sort-arrow"></span></th>
+                      <th data-exam-sort="duration_ms">Time Spent<span class="sort-arrow"></span></th>
+                      <th data-exam-sort="ts">Date<span class="sort-arrow"></span></th>
+                    </tr>
+                  </thead>
+                  <tbody id="examsTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==================== New Tab 4: Ranking ==================== -->
+          <section id="panelRanking" class="tab-panel hidden" role="tabpanel" aria-labelledby="navTabRanking">
+            <div class="panel-surface">
+              <div class="panel-header">
+                <div>
+                  <h1 class="panel-title">Student Leaderboard &amp; Dynamic Ranking</h1>
+                  <p class="panel-subtitle" id="rankingTableMeta">Ranked by Questions Solved</p>
+                </div>
+              </div>
+
+              <div class="toolbar-row">
+                <div class="segmented-filters" id="rankingMetricBar" role="group" aria-label="Rank students by metric">
+                  <button type="button" class="filter-btn active" data-rank-metric="solved">Questions Solved</button>
+                  <button type="button" class="filter-btn" data-rank-metric="studyTime">Total Study Time</button>
+                  <button type="button" class="filter-btn" data-rank-metric="accuracy">Accuracy %</button>
+                  <button type="button" class="filter-btn" data-rank-metric="exams">Exams Completed</button>
+                </div>
+
+                <input
+                  id="rankingSearchInput"
+                  type="search"
+                  class="input search-input"
+                  style="max-width:260px"
+                  placeholder="Filter leaderboard by name or code..."
+                  aria-label="Filter ranking leaderboard"
+                />
+              </div>
+
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width:70px">Rank</th>
+                      <th>Student Name &amp; Code</th>
+                      <th id="rankColSolved">Questions Solved</th>
+                      <th id="rankColStudyTime">Total Study Time</th>
+                      <th id="rankColAccuracy">Accuracy %</th>
+                      <th id="rankColExams">Exams Completed</th>
+                      <th>Chapters Practiced</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rankingTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
           <!-- ==================== Tab 1: Students & Access Management ==================== -->
-          <section id="panelStudents" class="tab-panel" role="tabpanel" aria-labelledby="navTabStudents">
+          <section id="panelStudents" class="tab-panel hidden" role="tabpanel" aria-labelledby="navTabStudents">
             <div class="panel-surface">
               <div class="panel-header">
                 <div>
@@ -1819,11 +2188,11 @@
               </div>
             </div>
 
-            <!-- 10 Daily Drill Types Bank Inventory -->
+            <!-- 11 Daily Drill Types Bank Inventory -->
             <div class="panel-surface">
               <div class="panel-header">
                 <div>
-                  <h2 class="panel-title">Question Bank Distribution by Daily Drill Type (10 Modes)</h2>
+                  <h2 class="panel-title">Question Bank Distribution by Daily Drill Type (11 Modes)</h2>
                   <p class="panel-subtitle" id="bankInventoryMeta">All 15 chapters active and available</p>
                 </div>
               </div>
@@ -1958,28 +2327,32 @@
         </div>
 
         <div class="modal-body">
-          <div class="kpi-grid" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+          <div class="kpi-grid-5">
             <div class="kpi-card" style="padding:12px 14px">
               <span class="kpi-label">Overall Rating</span>
-              <span id="reportGrade" class="kpi-value" style="font-size:20px">—</span>
+              <span id="reportGrade" class="kpi-value" style="font-size:19px">—</span>
+            </div>
+            <div class="kpi-card" style="padding:12px 14px">
+              <span class="kpi-label">Chapters Solved</span>
+              <span id="reportChaptersCount" class="kpi-value tabular-nums" style="font-size:19px">0 / 15</span>
             </div>
             <div class="kpi-card" style="padding:12px 14px">
               <span class="kpi-label">Overall Accuracy</span>
-              <span id="reportAccuracy" class="kpi-value tabular-nums" style="font-size:20px">0%</span>
+              <span id="reportAccuracy" class="kpi-value tabular-nums" style="font-size:19px">0%</span>
             </div>
             <div class="kpi-card" style="padding:12px 14px">
-              <span class="kpi-label">Solved &amp; Mistakes</span>
-              <span id="reportSolved" class="kpi-value tabular-nums" style="font-size:20px">0 / 0</span>
+              <span class="kpi-label">Solved / Mistakes</span>
+              <span id="reportSolved" class="kpi-value tabular-nums" style="font-size:19px">0 / 0</span>
             </div>
             <div class="kpi-card" style="padding:12px 14px">
-              <span class="kpi-label">Active Study Hours</span>
-              <span id="reportHours" class="kpi-value tabular-nums" style="font-size:20px">0.0 h</span>
+              <span class="kpi-label">Study Time</span>
+              <span id="reportHours" class="kpi-value tabular-nums" style="font-size:19px">0m</span>
             </div>
           </div>
 
           <div class="panel-surface">
             <div class="panel-header" style="padding:12px 16px">
-              <h3 class="panel-title" style="font-size:14.5px">15-Chapter Performance Breakdown</h3>
+              <h3 class="panel-title" style="font-size:14.5px">Lesson-by-Lesson Accuracy (Chapters 1–15)</h3>
               <span style="font-size:11.5px;color:var(--ink-muted)">Excellent 85%+ · Developing 70–84% · Review &lt;70%</span>
             </div>
             <div class="table-scroll">
@@ -1997,6 +2370,57 @@
                 <tbody id="reportChaptersBody"></tbody>
               </table>
             </div>
+          </div>
+
+          <div class="panel-surface">
+            <div class="panel-header" style="padding:12px 16px">
+              <h3 class="panel-title" style="font-size:14.5px">Exams History (Chapter &amp; Final Exams)</h3>
+              <span id="reportAllExamsMeta" style="font-size:11.5px;color:var(--ink-muted)">0 exams recorded</span>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Exam Type</th>
+                    <th>Title &amp; Scope</th>
+                    <th>Score</th>
+                    <th>Correct / Mistakes</th>
+                    <th>Accuracy</th>
+                    <th>Time Spent</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="reportAllExamsBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel-surface">
+            <div class="panel-header" style="padding:12px 16px">
+              <h3 class="panel-title" style="font-size:14.5px">Frequent Mistakes (from WrongLog)</h3>
+              <span id="reportWrongLogMeta" style="font-size:11.5px;color:var(--ink-muted)">0 mistakes logged</span>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Lesson &amp; Activity</th>
+                    <th>Question</th>
+                    <th>Student Answer</th>
+                    <th>Correct Answer</th>
+                    <th>Missed</th>
+                  </tr>
+                </thead>
+                <tbody id="reportWrongLogBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel-surface" style="display:none">
+            <span id="reportChapterExamsMeta"></span>
+            <table><tbody id="reportChapterExamsBody"></tbody></table>
+            <span id="reportFinalExamsMeta"></span>
+            <table><tbody id="reportFinalExamsBody"></tbody></table>
           </div>
         </div>
       </div>
@@ -2053,7 +2477,7 @@
         // Centralized Google Apps Script Web App URL — keep in sync with src/config/appConfig.ts.
         // Update this constant (or override it via the "Google Sheets Sync" modal) when pointing to the new English Google Sheet.
         var DEFAULT_GOOGLE_SCRIPT_URL =
-          'https://script.google.com/macros/s/AKfycbxA27jKarngLH1l9aIK8vVxd_vNj1UZG6dXTMqluOcaBe6VoFd0VzE7snVvPXqQFdR_fQ/exec';
+          'https://script.google.com/macros/s/AKfycbyvo-0qAPM2L3yxNLfE5CVGMzHjKZVNoxIlQWCvETvQYSW0xHM0T7AwUqvzkr3Gceo2/exec';
         var STORAGE_URL_KEY = 'hsk1_en_teacher_sheets_url_v1';
         var STORAGE_THEME_KEY = 'hsk1_en_teacher_theme_v1';
         var LOCAL_REGISTERED_STUDENTS_KEY = 'hsk1_en_registered_students_v1';
@@ -2086,12 +2510,17 @@
           { key: 'sentence-hanzi-to-arabic', titleAr: 'Sentence Translation (ZH -> EN)', requires: 'sentences' },
           { key: 'sentence-arabic-to-hanzi', titleAr: 'Sentence Translation (EN -> ZH)', requires: 'sentences' },
           { key: 'sentence-builder', titleAr: 'Sentence Builder (Word Order)', requires: 'sentences' },
-          { key: 'fill-in-blank', titleAr: 'Fill in the Blank', requires: 'sentences' }
+          { key: 'fill-in-blank', titleAr: 'Fill in the Blank', requires: 'sentences' },
+          { key: 'true-false', titleAr: 'True or False (Grammar & Usage)', requires: 'sentences' }
         ];
 
         var ALL_CHAPTER_NUMS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
         var TAB_TITLES = {
+          overview: 'Class Overview',
+          progress: 'Students Progress',
+          exams: 'Exams (Chapter & Final)',
+          ranking: 'Student Ranking',
           students: 'Students & Access Management',
           chapters: 'Chapters & Daily Drills Analytics'
         };
@@ -2195,9 +2624,49 @@
           }
         ];
 
+        var SAMPLE_RESULTS = [
+          { ts: todayIso, code: 'HSK-1234', name: 'Alex Carter', lesson: 'Chapter 1', activity: 'True or False (Grammar & Usage)', kind: 'true-false', correct: 11, total: 12, pct: 92, duration_ms: 210000, device: 'DEV-A9F214C8E301' },
+          { ts: todayIso, code: 'HSK-1234', name: 'Alex Carter', lesson: 'Chapter 2', activity: 'Fill in the Blank', kind: 'fill-in-blank', correct: 9, total: 10, pct: 90, duration_ms: 240000, device: 'DEV-A9F214C8E301' },
+          { ts: yesterdayIso, code: 'HSK-1234', name: 'Alex Carter', lesson: 'Chapter 3', activity: 'Sentence Translation (EN -> ZH)', kind: 'sentence-arabic-to-hanzi', correct: 6, total: 10, pct: 60, duration_ms: 310000, device: 'DEV-A9F214C8E301' },
+          { ts: todayIso, code: 'HSK-5678', name: 'Maya Lin', lesson: 'Chapter 1', activity: 'Chinese to English (Vocabulary)', kind: 'hanzi-to-arabic', correct: 13, total: 13, pct: 100, duration_ms: 185000, device: 'DEV-B4C198D277A0' },
+          { ts: todayIso, code: 'HSK-5678', name: 'Maya Lin', lesson: 'Chapter 4', activity: 'True or False (Grammar & Usage)', kind: 'true-false', correct: 11, total: 12, pct: 92, duration_ms: 260000, device: 'DEV-B4C198D277A0' },
+          { ts: yesterdayIso, code: 'HSK-5678', name: 'Maya Lin', lesson: 'Chapter 5', activity: 'Sentence Builder (Word Order)', kind: 'sentence-builder', correct: 9, total: 10, pct: 90, duration_ms: 295000, device: 'DEV-B4C198D277A0' },
+          { ts: yesterdayIso, code: 'HSK-2468', name: 'Omar Khalid', lesson: 'Chapter 2', activity: 'Pinyin & Tone Selection', kind: 'hanzi-to-pinyin', correct: 6, total: 10, pct: 60, duration_ms: 280000, device: '' },
+          { ts: twoDaysAgoIso, code: 'HSK-3579', name: 'Hannah Brooks', lesson: 'Chapter 4', activity: 'Fill in the Blank', kind: 'fill-in-blank', correct: 8, total: 10, pct: 80, duration_ms: 230000, device: '' }
+        ];
+
+        var SAMPLE_EXAMS = [
+          { ts: todayIso, code: 'HSK-5678', name: 'Maya Lin', exam_type: 'chapter', exam_title: 'Chapter 1 Exam', chapters_scope: 'Chapter 1', score: 38, total: 40, pct: 95, duration_ms: 920000, device: 'DEV-B4C198D277A0' },
+          { ts: todayIso, code: 'HSK-5678', name: 'Maya Lin', exam_type: 'final-fixed', exam_title: 'Model 1', chapters_scope: 'Chapters 1–5', score: 46, total: 50, pct: 92, duration_ms: 1640000, device: 'DEV-B4C198D277A0' },
+          { ts: yesterdayIso, code: 'HSK-1234', name: 'Alex Carter', exam_type: 'chapter', exam_title: 'Chapter 3 Exam', chapters_scope: 'Chapter 3', score: 31, total: 40, pct: 78, duration_ms: 1180000, device: 'DEV-A9F214C8E301' },
+          { ts: yesterdayIso, code: 'HSK-2468', name: 'Omar Khalid', exam_type: 'chapter', exam_title: 'Chapter 2 Exam', chapters_scope: 'Chapter 2', score: 25, total: 40, pct: 63, duration_ms: 1320000, device: '' },
+          { ts: twoDaysAgoIso, code: 'HSK-3579', name: 'Hannah Brooks', exam_type: 'final-random', exam_title: 'Random Comprehensive Exam', chapters_scope: 'Chapters 1–4', score: 42, total: 50, pct: 84, duration_ms: 1510000, device: '' }
+        ];
+
+        var SAMPLE_WRONG_LOG = [
+          { ts: todayIso, code: 'HSK-1234', name: 'Alex Carter', lesson: 'Chapter 3', activity: 'True or False', question: '我是不中国人。', user_answer: 'TRUE', correct_answer: 'FALSE (我不是中国人。)' },
+          { ts: yesterdayIso, code: 'HSK-1234', name: 'Alex Carter', lesson: 'Chapter 3', activity: 'Chapter 3 Exam', question: '我是不中国人。', user_answer: 'TRUE', correct_answer: 'FALSE (我不是中国人。)' },
+          { ts: yesterdayIso, code: 'HSK-1234', name: 'Alex Carter', lesson: 'Chapter 2', activity: 'Fill in the Blank', question: '你___什么名字？', user_answer: '是', correct_answer: '叫' },
+          { ts: yesterdayIso, code: 'HSK-2468', name: 'Omar Khalid', lesson: 'Chapter 2', activity: 'Chapter 2 Exam', question: '你叫什么名字？(Tone check)', user_answer: 'míngzi (mǐngzì)', correct_answer: 'míngzi' },
+          { ts: twoDaysAgoIso, code: 'HSK-3579', name: 'Hannah Brooks', lesson: 'Chapter 4', activity: 'Fill in the Blank', question: '我有两___孩子。', user_answer: '本', correct_answer: '个' }
+        ];
+
         var state = {
-          activeTab: 'students',
+          activeTab: 'overview',
           students: [],
+          results: [],
+          exams: [],
+          wrongLog: [],
+          ovLessonFilter: 'all',
+          progressSearch: '',
+          progressSortField: 'questionsSolved',
+          progressSortDir: 'desc',
+          examsSearch: '',
+          examsTypeFilter: 'all',
+          examsSortField: 'ts',
+          examsSortDir: 'desc',
+          rankingMetric: 'solved',
+          rankingSearch: '',
           searchQuery: '',
           filterMode: 'all',
           sortField: 'accuracyPercent',
@@ -2221,7 +2690,66 @@
         var elThemeLabel = document.getElementById('themeToggleLabel');
         var elSidebarSyncBadge = document.getElementById('sidebarSyncBadge');
 
+        var elGlobalKpiGrid = document.getElementById('globalKpiGrid');
+        var elGlobalBroadcastCard = document.getElementById('globalBroadcastCard');
+
         var elNavCountStudents = document.getElementById('navCountStudents');
+        var elNavCountOverview = document.getElementById('navCountOverview');
+        var elNavCountProgress = document.getElementById('navCountProgress');
+        var elNavCountExams = document.getElementById('navCountExams');
+        var elNavCountRanking = document.getElementById('navCountRanking');
+
+        // Overview DOM refs
+        var elOvKpiStudents = document.getElementById('ovKpiStudents');
+        var elOvKpiStudentsSub = document.getElementById('ovKpiStudentsSub');
+        var elOvKpiQuestions = document.getElementById('ovKpiQuestions');
+        var elOvKpiQuestionsSub = document.getElementById('ovKpiQuestionsSub');
+        var elOvKpiAccuracy = document.getElementById('ovKpiAccuracy');
+        var elOvKpiAccuracySub = document.getElementById('ovKpiAccuracySub');
+        var elOvKpiExams = document.getElementById('ovKpiExams');
+        var elOvKpiExamsSub = document.getElementById('ovKpiExamsSub');
+        var elOvKpiMistakes = document.getElementById('ovKpiMistakes');
+        var elOvKpiMistakesSub = document.getElementById('ovKpiMistakesSub');
+        var elOvKpiStudyTime = document.getElementById('ovKpiStudyTime');
+        var elOvKpiStudyTimeSub = document.getElementById('ovKpiStudyTimeSub');
+        var elOvLessonFilterBar = document.getElementById('ovLessonFilterBar');
+        var elOvLessonTableMeta = document.getElementById('ovLessonTableMeta');
+        var elOvLessonTableBody = document.getElementById('ovLessonTableBody');
+
+        // Students Progress DOM refs
+        var elProgressSearchInput = document.getElementById('progressSearchInput');
+        var elProgressTableMeta = document.getElementById('progressTableMeta');
+        var elProgressTableBody = document.getElementById('progressTableBody');
+        var progressSortHeaders = Array.prototype.slice.call(
+          document.querySelectorAll('#panelProgress thead th[data-progress-sort]')
+        );
+
+        // Exams DOM refs
+        var elExKpiTotal = document.getElementById('exKpiTotal');
+        var elExKpiTotalSub = document.getElementById('exKpiTotalSub');
+        var elExKpiAvgPct = document.getElementById('exKpiAvgPct');
+        var elExKpiAvgPctSub = document.getElementById('exKpiAvgPctSub');
+        var elExKpiQuestions = document.getElementById('exKpiQuestions');
+        var elExKpiQuestionsSub = document.getElementById('exKpiQuestionsSub');
+        var elExKpiAvgTime = document.getElementById('exKpiAvgTime');
+        var elExKpiAvgTimeSub = document.getElementById('exKpiAvgTimeSub');
+        var elExamsSearchInput = document.getElementById('examsSearchInput');
+        var elExamsTypeFilterBar = document.getElementById('examsTypeFilterBar');
+        var elExamsTableMeta = document.getElementById('examsTableMeta');
+        var elExamsTableBody = document.getElementById('examsTableBody');
+        var examSortHeaders = Array.prototype.slice.call(
+          document.querySelectorAll('#panelExams thead th[data-exam-sort]')
+        );
+
+        // Ranking DOM refs
+        var elRankingMetricBar = document.getElementById('rankingMetricBar');
+        var elRankingSearchInput = document.getElementById('rankingSearchInput');
+        var elRankingTableMeta = document.getElementById('rankingTableMeta');
+        var elRankingTableBody = document.getElementById('rankingTableBody');
+        var elRankColSolved = document.getElementById('rankColSolved');
+        var elRankColStudyTime = document.getElementById('rankColStudyTime');
+        var elRankColAccuracy = document.getElementById('rankColAccuracy');
+        var elRankColExams = document.getElementById('rankColExams');
 
         var elKpiTotalStudents = document.getElementById('kpiTotalStudents');
         var elKpiTotalStudentsSub = document.getElementById('kpiTotalStudentsSub');
@@ -2281,10 +2809,19 @@
         var elReportLastActive = document.getElementById('reportLastActive');
         var elReportAccessLine = document.getElementById('reportAccessLine');
         var elReportGrade = document.getElementById('reportGrade');
+        var elReportChaptersCount = document.getElementById('reportChaptersCount');
         var elReportAccuracy = document.getElementById('reportAccuracy');
         var elReportSolved = document.getElementById('reportSolved');
         var elReportHours = document.getElementById('reportHours');
         var elReportChaptersBody = document.getElementById('reportChaptersBody');
+        var elReportAllExamsMeta = document.getElementById('reportAllExamsMeta');
+        var elReportAllExamsBody = document.getElementById('reportAllExamsBody');
+        var elReportWrongLogMeta = document.getElementById('reportWrongLogMeta');
+        var elReportWrongLogBody = document.getElementById('reportWrongLogBody');
+        var elReportChapterExamsMeta = document.getElementById('reportChapterExamsMeta');
+        var elReportChapterExamsBody = document.getElementById('reportChapterExamsBody');
+        var elReportFinalExamsMeta = document.getElementById('reportFinalExamsMeta');
+        var elReportFinalExamsBody = document.getElementById('reportFinalExamsBody');
 
         var elSettingsBackdrop = document.getElementById('settingsModalBackdrop');
         var elOpenSettingsBtn = document.getElementById('openSheetsSettingsBtn');
@@ -2296,6 +2833,10 @@
 
         var navButtons = Array.prototype.slice.call(document.querySelectorAll('.sidebar-nav .nav-item'));
         var tabPanels = {
+          overview: document.getElementById('panelOverview'),
+          progress: document.getElementById('panelProgress'),
+          exams: document.getElementById('panelExams'),
+          ranking: document.getElementById('panelRanking'),
           students: document.getElementById('panelStudents'),
           chapters: document.getElementById('panelChapters')
         };
@@ -2575,6 +3116,85 @@
           return out;
         }
 
+        function parseChapterExamResults(rawVal) {
+          var parsed = null;
+          if (Array.isArray(rawVal)) {
+            parsed = rawVal;
+          } else if (typeof rawVal === 'string' && rawVal.trim()) {
+            try {
+              parsed = JSON.parse(rawVal);
+            } catch (e) {
+              parsed = null;
+            }
+          }
+          if (!Array.isArray(parsed)) return [];
+          return parsed
+            .filter(function (item) {
+              return item && Number(item.chapterId || 0) >= 1 && Number(item.total || 0) > 0;
+            })
+            .map(function (item) {
+              var score = Math.max(0, Number(item.score || 0));
+              var total = Math.max(1, Number(item.total || 40));
+              var pct =
+                item.percentage !== undefined && item.percentage !== ''
+                  ? Math.max(0, Math.min(100, Math.round(Number(item.percentage))))
+                  : Math.round((score / total) * 100);
+              return {
+                id: String(item.id || ''),
+                chapterId: Number(item.chapterId),
+                chapterTitle: String(item.chapterTitle || ('Chapter ' + item.chapterId)),
+                score: score,
+                total: total,
+                percentage: pct,
+                partScores: Array.isArray(item.partScores) ? item.partScores : [],
+                durationSeconds: Math.max(0, Number(item.durationSeconds || 0)),
+                completedAt: String(item.completedAt || '')
+              };
+            });
+        }
+
+        function parseFinalExamResults(raw) {
+          var parsed = raw;
+          if (typeof raw === 'string') {
+            var trimmed = raw.trim();
+            if (!trimmed) return [];
+            try {
+              parsed = JSON.parse(trimmed);
+            } catch (e) {
+              return [];
+            }
+          }
+          var list = Array.isArray(parsed)
+            ? parsed
+            : parsed && typeof parsed === 'object' && Array.isArray(parsed.finalExams)
+              ? parsed.finalExams
+              : [];
+          return list
+            .filter(function (item) {
+              return item && typeof item === 'object' && item.modelId;
+            })
+            .map(function (item) {
+              var score = Math.max(0, Number(item.score || 0));
+              var total = Math.max(1, Number(item.total || 50));
+              var pct =
+                item.percentage !== undefined && item.percentage !== ''
+                  ? Math.max(0, Math.min(100, Math.round(Number(item.percentage))))
+                  : Math.round((score / total) * 100);
+              return {
+                id: String(item.id || ''),
+                modelId: String(item.modelId || 'random'),
+                modelLabel: String(item.modelLabel || item.modelId || 'Final Exam'),
+                scopeLabel: String(item.scopeLabel || 'All 15 Chapters'),
+                score: score,
+                total: total,
+                percentage: pct,
+                partScores: Array.isArray(item.partScores) ? item.partScores : [],
+                durationSeconds: Math.max(0, Number(item.durationSeconds || 0)),
+                completedAt: String(item.completedAt || '')
+              };
+            });
+        }
+
         function normalizeStudentRow(row, idx) {
           var solved = Math.max(0, Number(row.totalSolved || 0));
           var correct = Math.max(0, Math.min(solved, Number(row.correctCount || 0)));
@@ -2602,6 +3222,8 @@
             overallProgressPercent: Math.max(0, Math.min(100, Math.round(Number(row.overallProgressPercent || 0)))),
             lastActive: row.lastActive ? String(row.lastActive) : '',
             chaptersBreakdown: parseChaptersBreakdown(row.chaptersBreakdown),
+            chapterExamResults: parseChapterExamResults(row.chapterExamResults || row.hskMockResults),
+            finalExamResults: parseFinalExamResults(row.finalExamResults || row.hskPatternStats),
             unlockedAccess: parseUnlockedAccess(row.unlockedAccess),
             boundDeviceId: String(row.boundDeviceId || '').trim()
           };
@@ -2874,7 +3496,7 @@
           }
           renderSelectedStudentChapters();
 
-          // 10 Daily Drill Types Bank Inventory
+          // 11 Daily Drill Types Bank Inventory
           var totalVocab = 0;
           var totalSentences = 0;
           var populatedChapters = 0;
@@ -2888,6 +3510,7 @@
               var count = 0;
               if (d.key === 'match-2-col') count = ch.vocabCount > 0 ? Math.ceil(ch.vocabCount / 5) : 0;
               else if (d.key === 'match-3-col') count = ch.vocabCount > 0 ? Math.ceil(ch.vocabCount / 4) : 0;
+              else if (d.key === 'true-false') count = ch.sentenceCount > 0 ? 12 : 0;
               else if (d.requires === 'vocab') count = ch.vocabCount;
               else count = ch.sentenceCount;
               drillTotals[d.key] += count;
@@ -3144,27 +3767,1041 @@
             });
         }
 
-        /* ===================== Full Student Performance Report Modal ===================== */
+        /* ===================== Granular Analytics Model (Results, Exams, WrongLog) ===================== */
+        function normalizeCodeKey(code) {
+          return String(code || '').trim().replace(/\s+/g, '').toUpperCase();
+        }
+
+        function extractChapterNumber(label) {
+          if (label === null || label === undefined) return null;
+          var str = String(label).trim();
+          if (!str) return null;
+          var direct = str.match(/^(\d{1,2})$/);
+          if (direct) {
+            var d = Number(direct[1]);
+            return d >= 1 && d <= 15 ? d : null;
+          }
+          var m = str.match(/(?:chapter|ch\.?|lesson|第)\s*(\d{1,2})/i);
+          if (m) {
+            var n = Number(m[1]);
+            return n >= 1 && n <= 15 ? n : null;
+          }
+          return null;
+        }
+
+        function formatDurationMs(ms) {
+          var totalSec = Math.max(0, Math.round(Number(ms || 0) / 1000));
+          if (totalSec === 0) return '0m';
+          if (totalSec < 60) return totalSec + 's';
+          var hours = Math.floor(totalSec / 3600);
+          var mins = Math.floor((totalSec % 3600) / 60);
+          var secs = totalSec % 60;
+          if (hours > 0) {
+            return hours + 'h ' + (mins > 0 ? mins + 'm' : '0m');
+          }
+          return mins + 'm' + (secs > 0 ? ' ' + secs + 's' : '');
+        }
+
+        function formatStudyDurationCompact(ms) {
+          var totalMin = Math.max(0, Math.round(Number(ms || 0) / 60000));
+          if (totalMin === 0) {
+            var sec = Math.max(0, Math.round(Number(ms || 0) / 1000));
+            return sec > 0 ? sec + 's' : '0m';
+          }
+          var h = Math.floor(totalMin / 60);
+          var m = totalMin % 60;
+          if (h > 0) return h + 'h ' + m + 'm';
+          return m + 'm';
+        }
+
+        function parseTimestampMs(raw) {
+          if (!raw) return 0;
+          var t = new Date(raw).getTime();
+          return isNaN(t) ? 0 : t;
+        }
+
+        function normalizeResultRow(raw) {
+          if (!raw || typeof raw !== 'object') return null;
+          var total = Math.max(0, Number(raw.total || 0));
+          var correct = Math.max(0, Math.min(total || 99999, Number(raw.correct || 0)));
+          var pct =
+            raw.pct !== undefined && raw.pct !== ''
+              ? Math.max(0, Math.min(100, Math.round(Number(raw.pct))))
+              : total > 0
+                ? Math.round((correct / total) * 100)
+                : 0;
+          var lesson = String(raw.lesson || '').trim();
+          return {
+            ts: String(raw.ts || '').trim(),
+            code: String(raw.code || raw.studentCode || '').trim(),
+            name: String(raw.name || raw.studentName || '').trim(),
+            lesson: lesson,
+            chapterNum: extractChapterNumber(lesson),
+            activity: String(raw.activity || '').trim(),
+            kind: String(raw.kind || 'drill').trim(),
+            correct: correct,
+            total: total,
+            mistakes: Math.max(0, total - correct),
+            pct: pct,
+            duration_ms: Math.max(0, Number(raw.duration_ms || raw.durationMs || 0)),
+            device: String(raw.device || '').trim()
+          };
+        }
+
+        function normalizeExamRow(raw) {
+          if (!raw || typeof raw !== 'object') return null;
+          var total = Math.max(1, Number(raw.total || 40));
+          var score = Math.max(0, Math.min(total, Number(raw.score || 0)));
+          var pct =
+            raw.pct !== undefined && raw.pct !== ''
+              ? Math.max(0, Math.min(100, Math.round(Number(raw.pct))))
+              : Math.round((score / total) * 100);
+          var rawType = String(raw.exam_type || raw.examType || 'chapter').trim().toLowerCase();
+          var category = rawType.indexOf('final') !== -1 ? 'final' : 'chapter';
+          var title = String(raw.exam_title || raw.examTitle || (category === 'chapter' ? 'Chapter Exam' : 'Final Exam')).trim();
+          var scope = String(raw.chapters_scope || raw.chaptersScope || '').trim();
+          var chapterNum = category === 'chapter' ? (extractChapterNumber(scope) || extractChapterNumber(title)) : null;
+
+          return {
+            ts: String(raw.ts || '').trim(),
+            code: String(raw.code || raw.studentCode || '').trim(),
+            name: String(raw.name || raw.studentName || '').trim(),
+            exam_type: rawType || category,
+            category: category,
+            exam_title: title,
+            chapters_scope: scope || (chapterNum ? 'Chapter ' + chapterNum : 'All Chapters'),
+            chapterNum: chapterNum,
+            score: score,
+            total: total,
+            mistakes: Math.max(0, total - score),
+            pct: pct,
+            duration_ms: Math.max(0, Number(raw.duration_ms || raw.durationMs || 0)),
+            device: String(raw.device || '').trim()
+          };
+        }
+
+        function normalizeWrongLogRow(raw) {
+          if (!raw || typeof raw !== 'object') return null;
+          var question = String(raw.question || '').trim();
+          if (!question) return null;
+          var lesson = String(raw.lesson || '').trim();
+          return {
+            ts: String(raw.ts || '').trim(),
+            code: String(raw.code || raw.studentCode || '').trim(),
+            name: String(raw.name || raw.studentName || '').trim(),
+            lesson: lesson,
+            chapterNum: extractChapterNumber(lesson),
+            activity: String(raw.activity || '').trim(),
+            question: question,
+            user_answer: String(raw.user_answer !== undefined ? raw.user_answer : (raw.userAnswer || '')).trim(),
+            correct_answer: String(raw.correct_answer !== undefined ? raw.correct_answer : (raw.correctAnswer || '')).trim()
+          };
+        }
+
+        function getExamTypeDisplay(exam) {
+          var t = String(exam.exam_type || '').toLowerCase();
+          if (t === 'chapter' || exam.category === 'chapter') {
+            return { label: 'Chapter Exam', tone: 'tone-accent' };
+          }
+          if (t === 'final-random' || t.indexOf('random') !== -1) {
+            return { label: 'Final Exam (Random)', tone: 'tone-amber' };
+          }
+          if (t === 'final-fixed' || t.indexOf('fixed') !== -1) {
+            return { label: 'Final Exam (Fixed)', tone: 'tone-jade' };
+          }
+          return { label: 'Final Exam', tone: 'tone-jade' };
+        }
+
+        function buildAnalyticsModel() {
+          var resultsList = Array.isArray(state.results) ? state.results : [];
+          var sheetExamsList = Array.isArray(state.exams) ? state.exams : [];
+          var wrongList = Array.isArray(state.wrongLog) ? state.wrongLog : [];
+
+          // Map enrolled students by normalized code
+          var studentsByCode = {};
+          state.students.forEach(function (st) {
+            var ck = normalizeCodeKey(st.studentCode);
+            if (ck) studentsByCode[ck] = st;
+          });
+
+          // Merge sheet Exams tab with any legacy chapterExamResults / finalExamResults not already present
+          var allExams = [];
+          var examDedup = {};
+          function pushExamUnique(ex) {
+            if (!ex) return;
+            var ck = normalizeCodeKey(ex.code);
+            var tsMin = ex.ts ? String(ex.ts).slice(0, 16) : '';
+            var key = ck + '|' + ex.category + '|' + ex.exam_title.toLowerCase() + '|' + ex.score + '/' + ex.total + '|' + tsMin;
+            if (examDedup[key]) return;
+            examDedup[key] = true;
+            // Enrich student name if missing
+            if (!ex.name && ck && studentsByCode[ck]) {
+              ex = Object.assign({}, ex, { name: studentsByCode[ck].studentName });
+            }
+            allExams.push(ex);
+          }
+
+          sheetExamsList.forEach(pushExamUnique);
+
+          state.students.forEach(function (st) {
+            (st.chapterExamResults || []).forEach(function (cex) {
+              pushExamUnique(normalizeExamRow({
+                ts: cex.completedAt || st.lastActive,
+                code: st.studentCode,
+                name: st.studentName,
+                exam_type: 'chapter',
+                exam_title: cex.chapterTitle || ('Chapter ' + cex.chapterId + ' Exam'),
+                chapters_scope: 'Chapter ' + cex.chapterId,
+                score: cex.score,
+                total: cex.total,
+                pct: cex.percentage,
+                duration_ms: (cex.durationSeconds || 0) * 1000,
+                device: st.boundDeviceId || ''
+              }));
+            });
+            (st.finalExamResults || []).forEach(function (fex) {
+              var isRand = String(fex.modelId || '').toLowerCase().indexOf('random') !== -1;
+              pushExamUnique(normalizeExamRow({
+                ts: fex.completedAt || st.lastActive,
+                code: st.studentCode,
+                name: st.studentName,
+                exam_type: isRand ? 'final-random' : 'final-fixed',
+                exam_title: fex.modelLabel || 'Final Exam',
+                chapters_scope: fex.scopeLabel || 'All 15 Chapters',
+                score: fex.score,
+                total: fex.total,
+                pct: fex.percentage,
+                duration_ms: (fex.durationSeconds || 0) * 1000,
+                device: st.boundDeviceId || ''
+              }));
+            });
+          });
+
+          allExams.sort(function (a, b) {
+            return parseTimestampMs(b.ts) - parseTimestampMs(a.ts);
+          });
+
+          // Index Results, Exams, and WrongLog by student code
+          var resultsByCode = {};
+          var examsByCode = {};
+          var wrongByCode = {};
+
+          resultsList.forEach(function (r) {
+            var ck = normalizeCodeKey(r.code);
+            if (!ck) return;
+            if (!resultsByCode[ck]) resultsByCode[ck] = [];
+            resultsByCode[ck].push(r);
+          });
+
+          allExams.forEach(function (ex) {
+            var ck = normalizeCodeKey(ex.code);
+            if (!ck) return;
+            if (!examsByCode[ck]) examsByCode[ck] = [];
+            examsByCode[ck].push(ex);
+          });
+
+          wrongList.forEach(function (w) {
+            var ck = normalizeCodeKey(w.code);
+            if (!ck) return;
+            if (!wrongByCode[ck]) wrongByCode[ck] = [];
+            wrongByCode[ck].push(w);
+          });
+
+          // Build per-student unified progress profiles
+          var profilesByCode = {};
+          var profiles = state.students.map(function (st) {
+            var ck = normalizeCodeKey(st.studentCode);
+            var stResults = resultsByCode[ck] || [];
+            var stExams = examsByCode[ck] || [];
+            var stWrongs = wrongByCode[ck] || [];
+
+            var resTotal = 0;
+            var resCorrect = 0;
+            var resDurationMs = 0;
+            var chaptersSet = {};
+            var perChapterResults = {};
+
+            stResults.forEach(function (r) {
+              resTotal += r.total;
+              resCorrect += r.correct;
+              resDurationMs += r.duration_ms;
+              if (r.chapterNum) {
+                chaptersSet[r.chapterNum] = true;
+                if (!perChapterResults[r.chapterNum]) {
+                  perChapterResults[r.chapterNum] = { solved: 0, correct: 0, wrong: 0, activities: 0, bestPct: -1, durationMs: 0 };
+                }
+                var c = perChapterResults[r.chapterNum];
+                c.solved += r.total;
+                c.correct += r.correct;
+                c.wrong += r.mistakes;
+                c.durationMs += r.duration_ms;
+                if (r.total > 0) {
+                  c.activities += 1;
+                  if (r.pct > c.bestPct) c.bestPct = r.pct;
+                }
+              }
+            });
+
+            var exTotal = 0;
+            var exCorrect = 0;
+            var exDurationMs = 0;
+            var chExamCount = 0;
+            var finExamCount = 0;
+            var perChapterExams = {};
+
+            stExams.forEach(function (ex) {
+              exTotal += ex.total;
+              exCorrect += ex.score;
+              exDurationMs += ex.duration_ms;
+              if (ex.category === 'chapter') {
+                chExamCount += 1;
+                if (ex.chapterNum) {
+                  chaptersSet[ex.chapterNum] = true;
+                  if (!perChapterExams[ex.chapterNum]) {
+                    perChapterExams[ex.chapterNum] = { count: 0, solved: 0, correct: 0, wrong: 0, bestPct: -1, durationMs: 0 };
+                  }
+                  var ce = perChapterExams[ex.chapterNum];
+                  ce.count += 1;
+                  ce.solved += ex.total;
+                  ce.correct += ex.score;
+                  ce.wrong += ex.mistakes;
+                  ce.durationMs += ex.duration_ms;
+                  if (ex.pct > ce.bestPct) ce.bestPct = ex.pct;
+                }
+              } else {
+                finExamCount += 1;
+              }
+            });
+
+            var lessonStats = CHAPTERS_META.map(function (meta) {
+              var chId = meta.id;
+              var legacy = (st.chaptersBreakdown && st.chaptersBreakdown[chId - 1]) || { solved: 0, correct: 0, wrong: 0 };
+              var cr = perChapterResults[chId] || { solved: 0, correct: 0, wrong: 0, activities: 0, bestPct: -1, durationMs: 0 };
+              var ce = perChapterExams[chId] || { count: 0, solved: 0, correct: 0, wrong: 0, bestPct: -1, durationMs: 0 };
+
+              var loggedSolved = cr.solved + ce.solved;
+              var loggedCorrect = cr.correct + ce.correct;
+              var loggedWrong = cr.wrong + ce.wrong;
+
+              var useLogged = loggedSolved > 0 && loggedSolved >= legacy.solved;
+              var solved = useLogged ? loggedSolved : legacy.solved;
+              var correct = useLogged ? loggedCorrect : legacy.correct;
+              var wrong = useLogged ? loggedWrong : legacy.wrong;
+              if (solved > 0) chaptersSet[chId] = true;
+
+              var acc = solved > 0 ? Math.round((correct / solved) * 100) : 0;
+              var bestPct = Math.max(cr.bestPct, ce.bestPct, solved > 0 ? acc : -1);
+
+              return {
+                chapterId: chId,
+                solved: solved,
+                correct: correct,
+                wrong: wrong,
+                accuracy: acc,
+                bestPct: bestPct,
+                activitiesCount: cr.activities,
+                examsCount: ce.count,
+                studyTimeMs: cr.durationMs + ce.durationMs
+              };
+            });
+
+            var loggedCombinedTotal = resTotal + exTotal;
+            var loggedCombinedCorrect = resCorrect + exCorrect;
+            var useLoggedTotals = loggedCombinedTotal > 0 && loggedCombinedTotal >= st.totalSolved;
+            var questionsSolved = useLoggedTotals ? loggedCombinedTotal : st.totalSolved;
+            var correctCount = useLoggedTotals ? loggedCombinedCorrect : st.correctCount;
+            var wrongCount = Math.max(0, questionsSolved - correctCount);
+            var accuracyPercent = questionsSolved > 0 ? Math.round((correctCount / questionsSolved) * 100) : 0;
+
+            var studyTimeMs = Math.max((st.activeMinutes || 0) * 60000, resDurationMs + exDurationMs);
+
+            // Most recent timestamp across student record + granular tabs
+            var latestTs = st.lastActive || '';
+            var latestMs = parseTimestampMs(latestTs);
+            stResults.forEach(function (r) {
+              var m = parseTimestampMs(r.ts);
+              if (m > latestMs) { latestMs = m; latestTs = r.ts; }
+            });
+            stExams.forEach(function (ex) {
+              var m = parseTimestampMs(ex.ts);
+              if (m > latestMs) { latestMs = m; latestTs = ex.ts; }
+            });
+            stWrongs.forEach(function (w) {
+              var m = parseTimestampMs(w.ts);
+              if (m > latestMs) { latestMs = m; latestTs = w.ts; }
+            });
+
+            // Group frequent mistakes from WrongLog
+            var mistakeMap = {};
+            var frequentMistakes = [];
+            stWrongs.forEach(function (w) {
+              var mk = (w.question + '||' + w.correct_answer).toLowerCase();
+              if (!mistakeMap[mk]) {
+                mistakeMap[mk] = {
+                  lesson: w.lesson || 'General',
+                  activity: w.activity || 'Practice',
+                  question: w.question,
+                  user_answer: w.user_answer || '—',
+                  correct_answer: w.correct_answer || '—',
+                  count: 0,
+                  lastTs: w.ts
+                };
+                frequentMistakes.push(mistakeMap[mk]);
+              }
+              mistakeMap[mk].count += 1;
+              if (parseTimestampMs(w.ts) >= parseTimestampMs(mistakeMap[mk].lastTs)) {
+                mistakeMap[mk].lastTs = w.ts;
+                if (w.user_answer) mistakeMap[mk].user_answer = w.user_answer;
+              }
+            });
+            frequentMistakes.sort(function (a, b) {
+              if (b.count !== a.count) return b.count - a.count;
+              return parseTimestampMs(b.lastTs) - parseTimestampMs(a.lastTs);
+            });
+
+            var chaptersNums = Object.keys(chaptersSet).map(Number).sort(function (a, b) { return a - b; });
+
+            var prof = {
+              uid: st.uid,
+              student: st,
+              studentName: st.studentName,
+              studentCode: st.studentCode,
+              questionsSolved: questionsSolved,
+              correctCount: correctCount,
+              wrongCount: wrongCount,
+              accuracyPercent: accuracyPercent,
+              chaptersPracticed: chaptersNums.length,
+              chaptersPracticedNums: chaptersNums,
+              examsTaken: stExams.length,
+              chapterExamsCount: chExamCount,
+              finalExamsCount: finExamCount,
+              studyTimeMs: studyTimeMs,
+              lastActive: latestTs,
+              lessonStats: lessonStats,
+              exams: stExams,
+              frequentMistakes: frequentMistakes,
+              totalWrongLogged: stWrongs.length
+            };
+            if (ck) profilesByCode[ck] = prof;
+            return prof;
+          });
+
+          // Class Performance per Lesson (Chapters 1–15)
+          var lessonRows = CHAPTERS_META.map(function (meta) {
+            var chId = meta.id;
+            var activeStudents = 0;
+            var activities = 0;
+            var exams = 0;
+            var questions = 0;
+            var correct = 0;
+            var mistakes = 0;
+            var studyTimeMs = 0;
+            var bestSum = 0;
+            var bestCount = 0;
+
+            profiles.forEach(function (p) {
+              var ls = p.lessonStats[chId - 1];
+              if (!ls) return;
+              var hasActivity = ls.solved > 0 || ls.activitiesCount > 0 || ls.examsCount > 0 || ls.studyTimeMs > 0;
+              if (hasActivity) {
+                activeStudents += 1;
+                activities += ls.activitiesCount > 0 ? ls.activitiesCount : (ls.solved > 0 && ls.examsCount === 0 ? 1 : 0);
+                exams += ls.examsCount;
+                questions += ls.solved;
+                correct += ls.correct;
+                mistakes += ls.wrong;
+                studyTimeMs += ls.studyTimeMs;
+                if (ls.bestPct >= 0) {
+                  bestSum += ls.bestPct;
+                  bestCount += 1;
+                }
+              }
+            });
+
+            var accuracy = questions > 0 ? Math.round((correct / questions) * 100) : 0;
+            var avgBest = bestCount > 0 ? Math.round(bestSum / bestCount) : 0;
+
+            return {
+              meta: meta,
+              activeStudents: activeStudents,
+              activities: activities,
+              exams: exams,
+              accuracy: accuracy,
+              avgBest: avgBest,
+              hasBest: bestCount > 0,
+              studyTimeMs: studyTimeMs,
+              questions: questions,
+              correct: correct,
+              mistakes: mistakes
+            };
+          });
+
+          // Class Overview Totals
+          var totalQuestions = 0;
+          var totalCorrect = 0;
+          var totalMistakes = 0;
+          var totalStudyMs = 0;
+          var activeToday = 0;
+          var activeStudentsAny = 0;
+
+          profiles.forEach(function (p) {
+            totalQuestions += p.questionsSolved;
+            totalCorrect += p.correctCount;
+            totalMistakes += p.wrongCount;
+            totalStudyMs += p.studyTimeMs;
+            if (isSameLocalDay(p.lastActive)) activeToday += 1;
+            if (p.questionsSolved > 0 || p.examsTaken > 0) activeStudentsAny += 1;
+          });
+
+          var chapterExamsTaken = 0;
+          var finalExamsTaken = 0;
+          var examQuestionsTotal = 0;
+          allExams.forEach(function (ex) {
+            if (ex.category === 'chapter') chapterExamsTaken += 1;
+            else finalExamsTaken += 1;
+            examQuestionsTotal += ex.total;
+          });
+
+          var drillQuestionsTotal = Math.max(0, totalQuestions - examQuestionsTotal);
+          var overallAccuracy = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+
+          return {
+            profiles: profiles,
+            profilesByCode: profilesByCode,
+            allExams: allExams,
+            lessonRows: lessonRows,
+            overview: {
+              totalStudents: profiles.length,
+              activeToday: activeToday,
+              activeStudentsAny: activeStudentsAny,
+              questionsSolved: totalQuestions,
+              drillQuestions: drillQuestionsTotal,
+              examQuestions: examQuestionsTotal,
+              totalCorrect: totalCorrect,
+              totalMistakes: totalMistakes,
+              overallAccuracy: overallAccuracy,
+              examsTaken: allExams.length,
+              chapterExamsTaken: chapterExamsTaken,
+              finalExamsTaken: finalExamsTaken,
+              wrongLogCount: wrongList.length,
+              totalStudyTimeMs: totalStudyMs,
+              avgStudyTimeMs: profiles.length > 0 ? Math.round(totalStudyMs / profiles.length) : 0
+            }
+          };
+        }
+
+        function renderGenericSortArrows(headers, activeField, activeDir, attrName) {
+          headers.forEach(function (th) {
+            var field = th.getAttribute(attrName);
+            var arrow = th.querySelector('.sort-arrow');
+            if (!arrow) return;
+            if (field === activeField) {
+              arrow.textContent = activeDir === 'asc' ? '▲' : '▼';
+            } else {
+              arrow.textContent = '↕';
+            }
+          });
+        }
+
+        /* ===================== New Tab 1: Overview Renderer ===================== */
+        function renderOverviewTab(model) {
+          var ov = model.overview;
+
+          if (elNavCountProgress) elNavCountProgress.textContent = String(ov.totalStudents);
+          if (elNavCountExams) elNavCountExams.textContent = String(ov.examsTaken);
+          if (elNavCountRanking) elNavCountRanking.textContent = String(ov.totalStudents);
+
+          elOvKpiStudents.textContent = String(ov.totalStudents);
+          elOvKpiStudentsSub.textContent =
+            'Active today: ' + ov.activeToday + ' · Practiced: ' + ov.activeStudentsAny;
+
+          elOvKpiQuestions.textContent = ov.questionsSolved.toLocaleString('en-US');
+          elOvKpiQuestionsSub.textContent =
+            ov.drillQuestions.toLocaleString('en-US') + ' drill · ' + ov.examQuestions.toLocaleString('en-US') + ' exam';
+
+          elOvKpiAccuracy.textContent = ov.questionsSolved > 0 ? ov.overallAccuracy + '%' : '—';
+          elOvKpiAccuracy.className =
+            'kpi-value tabular-nums ' +
+            (ov.questionsSolved > 0 ? getOverallGrade(ov.overallAccuracy, ov.questionsSolved).tone : 'tone-muted');
+          elOvKpiAccuracySub.textContent =
+            ov.totalCorrect.toLocaleString('en-US') + ' correct · ' + ov.totalMistakes.toLocaleString('en-US') + ' wrong';
+
+          elOvKpiExams.textContent = String(ov.examsTaken);
+          elOvKpiExamsSub.textContent =
+            ov.chapterExamsTaken + ' Chapter · ' + ov.finalExamsTaken + ' Final';
+
+          elOvKpiMistakes.textContent = ov.totalMistakes.toLocaleString('en-US');
+          var errRate = ov.questionsSolved > 0 ? Math.round((ov.totalMistakes / ov.questionsSolved) * 100) : 0;
+          elOvKpiMistakesSub.textContent =
+            ov.wrongLogCount + ' logged in WrongLog · ' + errRate + '% error rate';
+
+          elOvKpiStudyTime.textContent = formatStudyDurationCompact(ov.totalStudyTimeMs);
+          elOvKpiStudyTimeSub.textContent =
+            'Avg. ' + formatStudyDurationCompact(ov.avgStudyTimeMs) + ' per student';
+
+          var rows =
+            state.ovLessonFilter === 'active'
+              ? model.lessonRows.filter(function (r) { return r.activeStudents > 0; })
+              : model.lessonRows;
+
+          var activeLessonsCount = model.lessonRows.filter(function (r) { return r.activeStudents > 0; }).length;
+          if (elNavCountOverview) elNavCountOverview.textContent = String(activeLessonsCount || 15);
+
+          elOvLessonTableMeta.textContent =
+            activeLessonsCount + ' of 15 lessons have recorded activity · Aggregated from Results, Exams, and student records';
+
+          if (rows.length === 0) {
+            elOvLessonTableBody.innerHTML =
+              '<tr><td colspan="9" class="empty-row">No lessons have recorded activity yet.</td></tr>';
+            return;
+          }
+
+          elOvLessonTableBody.innerHTML = rows.map(function (row) {
+            var ev = getChapterEvaluation(row.accuracy, row.questions);
+            var barClass = row.questions === 0 ? '' : row.accuracy >= 85 ? 'jade' : row.accuracy >= 70 ? 'amber' : 'crimson';
+            var bestTone = !row.hasBest ? 'tone-muted' : row.avgBest >= 85 ? 'tone-jade' : row.avgBest >= 70 ? 'tone-amber' : 'tone-crimson';
+
+            return (
+              '<tr class="data-row">' +
+              '<td>' +
+              '<div class="student-primary-cell">' +
+              '<span class="student-name">' + escapeHtml(row.meta.ar) + ' · <span class="font-hanzi">' + escapeHtml(row.meta.lessonZh) + '</span></span>' +
+              '<span class="sub-meta">' + escapeHtml(row.meta.subtitle) + '</span>' +
+              '</div>' +
+              '</td>' +
+              '<td class="tabular-nums"><strong>' + row.activeStudents + '</strong> <span style="font-size:11.5px;color:var(--ink-muted)">/ ' + ov.totalStudents + '</span></td>' +
+              '<td class="tabular-nums">' + row.activities + '</td>' +
+              '<td class="tabular-nums">' + row.exams + '</td>' +
+              '<td class="tabular-nums">' +
+              (row.questions > 0
+                ? '<div class="progress-inline">' +
+                  '<div class="progress-track"><div class="progress-fill ' + barClass + '" style="width:' + row.accuracy + '%"></div></div>' +
+                  '<strong class="' + ev.tone + '" style="min-width:38px">' + row.accuracy + '%</strong>' +
+                  '</div>'
+                : '<span class="tone-muted">—</span>') +
+              '</td>' +
+              '<td class="tabular-nums"><strong class="' + bestTone + '">' + (row.hasBest ? row.avgBest + '%' : '—') + '</strong></td>' +
+              '<td class="tabular-nums">' + escapeHtml(row.studyTimeMs > 0 ? formatDurationMs(row.studyTimeMs) : '—') + '</td>' +
+              '<td class="tabular-nums"><strong>' + row.questions.toLocaleString('en-US') + '</strong></td>' +
+              '<td class="tabular-nums"><span class="' + (row.mistakes > 0 ? 'tone-crimson' : 'tone-muted') + '">' + row.mistakes.toLocaleString('en-US') + '</span></td>' +
+              '</tr>'
+            );
+          }).join('');
+        }
+
+        /* ===================== New Tab 2: Students Progress Renderer ===================== */
+        function renderStudentsProgressTab(model) {
+          var q = state.progressSearch.trim().toLowerCase();
+          var filtered = model.profiles.filter(function (p) {
+            if (!q) return true;
+            return (
+              p.studentName.toLowerCase().indexOf(q) !== -1 ||
+              p.studentCode.toLowerCase().indexOf(q) !== -1
+            );
+          });
+
+          filtered.sort(function (a, b) {
+            var f = state.progressSortField;
+            var dir = state.progressSortDir === 'asc' ? 1 : -1;
+            if (f === 'lastActive') {
+              return (parseTimestampMs(a.lastActive) - parseTimestampMs(b.lastActive)) * dir;
+            }
+            if (f === 'studentName') {
+              return a.studentName.localeCompare(b.studentName, 'en') * dir;
+            }
+            return ((a[f] || 0) - (b[f] || 0)) * dir;
+          });
+
+          renderGenericSortArrows(progressSortHeaders, state.progressSortField, state.progressSortDir, 'data-progress-sort');
+          elProgressTableMeta.textContent =
+            'Showing ' + filtered.length + ' of ' + model.profiles.length + ' students · Click any student name to open their detailed profile modal';
+
+          if (filtered.length === 0) {
+            elProgressTableBody.innerHTML =
+              '<tr><td colspan="8" class="empty-row">No students match the current search.</td></tr>';
+            return;
+          }
+
+          elProgressTableBody.innerHTML = filtered.map(function (p) {
+            var grade = getOverallGrade(p.accuracyPercent, p.questionsSolved);
+            var barClass = p.questionsSolved === 0 ? '' : p.accuracyPercent >= 85 ? 'jade' : p.accuracyPercent >= 70 ? 'amber' : 'crimson';
+            var chPreview =
+              p.chaptersPracticedNums.length > 0
+                ? 'Ch. ' + p.chaptersPracticedNums.slice(0, 6).join(', ') + (p.chaptersPracticedNums.length > 6 ? '…' : '')
+                : 'No chapters yet';
+
+            return (
+              '<tr class="data-row">' +
+              '<td>' +
+              '<div class="student-primary-cell">' +
+              '<button type="button" class="student-name-btn" data-open-profile-uid="' + escapeHtml(p.uid) + '">' +
+              escapeHtml(p.studentName) +
+              '</button>' +
+              '<span class="student-code-sub font-mono" dir="ltr">' + escapeHtml(p.studentCode) + '</span>' +
+              '</div>' +
+              '</td>' +
+              '<td class="tabular-nums"><strong>' + p.questionsSolved.toLocaleString('en-US') + '</strong></td>' +
+              '<td class="tabular-nums">' +
+              '<span class="tone-jade" style="font-weight:700">' + p.correctCount.toLocaleString('en-US') + '</span>' +
+              ' <span style="color:var(--ink-muted)">/</span> ' +
+              '<span class="tone-crimson" style="font-weight:700">' + p.wrongCount.toLocaleString('en-US') + '</span>' +
+              '</td>' +
+              '<td class="tabular-nums">' +
+              (p.questionsSolved > 0
+                ? '<div class="progress-inline">' +
+                  '<div class="progress-track"><div class="progress-fill ' + barClass + '" style="width:' + p.accuracyPercent + '%"></div></div>' +
+                  '<strong class="' + grade.tone + '" style="min-width:38px">' + p.accuracyPercent + '%</strong>' +
+                  '</div>'
+                : '<span class="tone-muted">—</span>') +
+              '</td>' +
+              '<td class="tabular-nums">' +
+              '<strong>' + p.chaptersPracticed + ' / 15</strong>' +
+              '<span class="sub-meta">' + escapeHtml(chPreview) + '</span>' +
+              '</td>' +
+              '<td class="tabular-nums">' +
+              '<strong>' + p.examsTaken + '</strong>' +
+              '<span class="sub-meta">' + p.chapterExamsCount + ' Ch · ' + p.finalExamsCount + ' Final</span>' +
+              '</td>' +
+              '<td class="tabular-nums">' + escapeHtml(formatStudyDurationCompact(p.studyTimeMs)) + '</td>' +
+              '<td class="tabular-nums" style="white-space:nowrap;color:var(--ink-muted)">' + escapeHtml(formatLastActive(p.lastActive)) + '</td>' +
+              '</tr>'
+            );
+          }).join('');
+        }
+
+        /* ===================== New Tab 3: Exams (Chapter & Final) Renderer ===================== */
+        function renderExamsTab(model) {
+          var all = model.allExams;
+          var q = state.examsSearch.trim().toLowerCase();
+          var typeFilter = state.examsTypeFilter;
+
+          // Summary KPIs across all exam attempts
+          var chCount = 0;
+          var finCount = 0;
+          var totalQ = 0;
+          var totalCorrect = 0;
+          var totalMistakes = 0;
+          var totalDurMs = 0;
+          var pctSum = 0;
+          var passedCount = 0;
+
+          all.forEach(function (ex) {
+            if (ex.category === 'chapter') chCount += 1;
+            else finCount += 1;
+            totalQ += ex.total;
+            totalCorrect += ex.score;
+            totalMistakes += ex.mistakes;
+            totalDurMs += ex.duration_ms;
+            pctSum += ex.pct;
+            if (ex.pct >= 70) passedCount += 1;
+          });
+
+          var avgPct = all.length > 0 ? Math.round(pctSum / all.length) : 0;
+          var passRate = all.length > 0 ? Math.round((passedCount / all.length) * 100) : 0;
+          var avgDurMs = all.length > 0 ? Math.round(totalDurMs / all.length) : 0;
+
+          elExKpiTotal.textContent = String(all.length);
+          elExKpiTotalSub.textContent = chCount + ' Chapter · ' + finCount + ' Final';
+
+          elExKpiAvgPct.textContent = all.length > 0 ? avgPct + '%' : '—';
+          elExKpiAvgPct.className =
+            'kpi-value tabular-nums ' +
+            (all.length > 0 ? getChapterEvaluation(avgPct, 40).tone : 'tone-muted');
+          elExKpiAvgPctSub.textContent = 'Pass rate (≥70%): ' + (all.length > 0 ? passRate + '% (' + passedCount + '/' + all.length + ')' : '—');
+
+          elExKpiQuestions.textContent = totalQ.toLocaleString('en-US');
+          elExKpiQuestionsSub.textContent =
+            totalCorrect.toLocaleString('en-US') + ' correct · ' + totalMistakes.toLocaleString('en-US') + ' mistakes';
+
+          elExKpiAvgTime.textContent = all.length > 0 ? formatDurationMs(avgDurMs) : '0m';
+          elExKpiAvgTimeSub.textContent = 'Total exam time: ' + formatStudyDurationCompact(totalDurMs);
+
+          var filtered = all.filter(function (ex) {
+            if (typeFilter !== 'all' && ex.category !== typeFilter) return false;
+            if (!q) return true;
+            return (
+              ex.name.toLowerCase().indexOf(q) !== -1 ||
+              ex.code.toLowerCase().indexOf(q) !== -1 ||
+              ex.exam_title.toLowerCase().indexOf(q) !== -1 ||
+              ex.chapters_scope.toLowerCase().indexOf(q) !== -1
+            );
+          });
+
+          filtered.sort(function (a, b) {
+            var f = state.examsSortField;
+            var dir = state.examsSortDir === 'asc' ? 1 : -1;
+            if (f === 'ts') return (parseTimestampMs(a.ts) - parseTimestampMs(b.ts)) * dir;
+            if (f === 'name' || f === 'exam_type' || f === 'exam_title') {
+              return String(a[f] || '').localeCompare(String(b[f] || ''), 'en') * dir;
+            }
+            return ((a[f] || 0) - (b[f] || 0)) * dir;
+          });
+
+          renderGenericSortArrows(examSortHeaders, state.examsSortField, state.examsSortDir, 'data-exam-sort');
+          elExamsTableMeta.textContent = 'Showing ' + filtered.length + ' of ' + all.length + ' exam attempts';
+
+          if (filtered.length === 0) {
+            elExamsTableBody.innerHTML =
+              '<tr><td colspan="8" class="empty-row">No Chapter or Final Exam attempts match the current filter.</td></tr>';
+            return;
+          }
+
+          elExamsTableBody.innerHTML = filtered.map(function (ex) {
+            var typeDisplay = getExamTypeDisplay(ex);
+            var ev = getChapterEvaluation(ex.pct, ex.total);
+            var barClass = ex.pct >= 85 ? 'jade' : ex.pct >= 70 ? 'amber' : 'crimson';
+            var ck = normalizeCodeKey(ex.code);
+            var matchedProfile = ck ? model.profilesByCode[ck] : null;
+            var nameHtml = matchedProfile
+              ? '<button type="button" class="student-name-btn" data-open-profile-uid="' + escapeHtml(matchedProfile.uid) + '">' + escapeHtml(ex.name || matchedProfile.studentName) + '</button>'
+              : '<span class="student-name">' + escapeHtml(ex.name || 'Student') + '</span>';
+
+            return (
+              '<tr class="data-row">' +
+              '<td>' +
+              '<div class="student-primary-cell">' +
+              nameHtml +
+              '<span class="student-code-sub font-mono" dir="ltr">' + escapeHtml(ex.code || '—') + '</span>' +
+              '</div>' +
+              '</td>' +
+              '<td><span class="status-line ' + typeDisplay.tone + '">' + escapeHtml(typeDisplay.label) + '</span></td>' +
+              '<td>' +
+              '<strong>' + escapeHtml(ex.exam_title) + '</strong>' +
+              '<span class="sub-meta">' + escapeHtml(ex.chapters_scope) + '</span>' +
+              '</td>' +
+              '<td class="tabular-nums"><strong>' + ex.score + ' / ' + ex.total + '</strong></td>' +
+              '<td class="tabular-nums">' +
+              '<span class="tone-jade" style="font-weight:700">' + ex.score + ' ✓</span>' +
+              ' <span style="color:var(--ink-muted)">·</span> ' +
+              '<span class="tone-crimson" style="font-weight:700">' + ex.mistakes + ' ✗</span>' +
+              '</td>' +
+              '<td class="tabular-nums">' +
+              '<div class="progress-inline">' +
+              '<div class="progress-track"><div class="progress-fill ' + barClass + '" style="width:' + ex.pct + '%"></div></div>' +
+              '<strong class="' + ev.tone + '" style="min-width:38px">' + ex.pct + '%</strong>' +
+              '</div>' +
+              '</td>' +
+              '<td class="tabular-nums">' + escapeHtml(ex.duration_ms > 0 ? formatDurationMs(ex.duration_ms) : '—') + '</td>' +
+              '<td class="tabular-nums" style="white-space:nowrap;color:var(--ink-muted)">' + escapeHtml(formatLastActive(ex.ts)) + '</td>' +
+              '</tr>'
+            );
+          }).join('');
+        }
+
+        /* ===================== New Tab 4: Ranking Leaderboard Renderer ===================== */
+        function renderRankingTab(model) {
+          var metric = state.rankingMetric;
+          var q = state.rankingSearch.trim().toLowerCase();
+
+          var metricLabels = {
+            solved: 'Questions Solved',
+            studyTime: 'Total Study Time',
+            accuracy: 'Accuracy %',
+            exams: 'Exams Completed'
+          };
+
+          // Highlight active column header
+          if (elRankColSolved) elRankColSolved.classList.toggle('rank-active-col', metric === 'solved');
+          if (elRankColStudyTime) elRankColStudyTime.classList.toggle('rank-active-col', metric === 'studyTime');
+          if (elRankColAccuracy) elRankColAccuracy.classList.toggle('rank-active-col', metric === 'accuracy');
+          if (elRankColExams) elRankColExams.classList.toggle('rank-active-col', metric === 'exams');
+
+          // Sort full class first so rank numbers stay true even when filtering by search
+          var ranked = model.profiles.slice().sort(function (a, b) {
+            if (metric === 'solved') {
+              if (b.questionsSolved !== a.questionsSolved) return b.questionsSolved - a.questionsSolved;
+              return b.accuracyPercent - a.accuracyPercent;
+            }
+            if (metric === 'studyTime') {
+              if (b.studyTimeMs !== a.studyTimeMs) return b.studyTimeMs - a.studyTimeMs;
+              return b.questionsSolved - a.questionsSolved;
+            }
+            if (metric === 'accuracy') {
+              var aHas = a.questionsSolved > 0 ? 1 : 0;
+              var bHas = b.questionsSolved > 0 ? 1 : 0;
+              if (bHas !== aHas) return bHas - aHas;
+              if (b.accuracyPercent !== a.accuracyPercent) return b.accuracyPercent - a.accuracyPercent;
+              return b.questionsSolved - a.questionsSolved;
+            }
+            if (metric === 'exams') {
+              if (b.examsTaken !== a.examsTaken) return b.examsTaken - a.examsTaken;
+              return b.accuracyPercent - a.accuracyPercent;
+            }
+            return b.questionsSolved - a.questionsSolved;
+          });
+
+          var withRank = ranked.map(function (p, idx) {
+            return { rank: idx + 1, profile: p };
+          });
+
+          var visible = q
+            ? withRank.filter(function (entry) {
+                return (
+                  entry.profile.studentName.toLowerCase().indexOf(q) !== -1 ||
+                  entry.profile.studentCode.toLowerCase().indexOf(q) !== -1
+                );
+              })
+            : withRank;
+
+          elRankingTableMeta.textContent =
+            'Ranked by ' + (metricLabels[metric] || 'Questions Solved') + ' · Showing ' + visible.length + ' of ' + ranked.length + ' students';
+
+          if (visible.length === 0) {
+            elRankingTableBody.innerHTML =
+              '<tr><td colspan="7" class="empty-row">No students match the current leaderboard filter.</td></tr>';
+            return;
+          }
+
+          elRankingTableBody.innerHTML = visible.map(function (entry) {
+            var r = entry.rank;
+            var p = entry.profile;
+            var rankCls = r === 1 ? 'rank-1' : r === 2 ? 'rank-2' : r === 3 ? 'rank-3' : '';
+            var grade = getOverallGrade(p.accuracyPercent, p.questionsSolved);
+
+            return (
+              '<tr class="data-row">' +
+              '<td class="tabular-nums"><span class="rank-badge-num ' + rankCls + '">#' + r + '</span></td>' +
+              '<td>' +
+              '<div class="student-primary-cell">' +
+              '<button type="button" class="student-name-btn" data-open-profile-uid="' + escapeHtml(p.uid) + '">' +
+              escapeHtml(p.studentName) +
+              '</button>' +
+              '<span class="student-code-sub font-mono" dir="ltr">' + escapeHtml(p.studentCode) + '</span>' +
+              '</div>' +
+              '</td>' +
+              '<td class="tabular-nums ' + (metric === 'solved' ? 'rank-active-col' : '') + '">' +
+              '<strong>' + p.questionsSolved.toLocaleString('en-US') + '</strong>' +
+              '<span class="sub-meta">' + p.correctCount + ' ✓ · ' + p.wrongCount + ' ✗</span>' +
+              '</td>' +
+              '<td class="tabular-nums ' + (metric === 'studyTime' ? 'rank-active-col' : '') + '">' +
+              escapeHtml(formatStudyDurationCompact(p.studyTimeMs)) +
+              '</td>' +
+              '<td class="tabular-nums ' + (metric === 'accuracy' ? 'rank-active-col' : '') + '">' +
+              '<strong class="' + grade.tone + '">' + (p.questionsSolved > 0 ? p.accuracyPercent + '%' : '—') + '</strong>' +
+              '</td>' +
+              '<td class="tabular-nums ' + (metric === 'exams' ? 'rank-active-col' : '') + '">' +
+              '<strong>' + p.examsTaken + '</strong>' +
+              '<span class="sub-meta">' + p.chapterExamsCount + ' Ch · ' + p.finalExamsCount + ' Final</span>' +
+              '</td>' +
+              '<td class="tabular-nums">' + p.chaptersPracticed + ' / 15</td>' +
+              '</tr>'
+            );
+          }).join('');
+        }
+
+        /* ===================== Full Student Performance Report / Profile Modal ===================== */
         function openReportModal(student) {
           if (!student) return;
           state.selectedReportStudent = student;
 
-          var grade = getOverallGrade(student.accuracyPercent, student.totalSolved);
+          var model = buildAnalyticsModel();
+          var ck = normalizeCodeKey(student.studentCode);
+          var profile = (ck && model.profilesByCode[ck]) || null;
+
+          var solvedCount = profile ? profile.questionsSolved : student.totalSolved;
+          var wrongCount = profile ? profile.wrongCount : student.wrongCount;
+          var accPct = profile ? profile.accuracyPercent : student.accuracyPercent;
+          var studyMs = profile ? profile.studyTimeMs : (student.activeMinutes || 0) * 60000;
+          var chaptersPracticed = profile ? profile.chaptersPracticed : 0;
+          var lastActiveVal = profile ? profile.lastActive : student.lastActive;
+
+          var grade = getOverallGrade(accPct, solvedCount);
           var chSum = formatChaptersSummary(student.unlockedAccess);
 
           elReportTitle.textContent = student.studentName;
           elReportCode.textContent = 'Code: ' + student.studentCode;
-          elReportLastActive.textContent = 'Last active: ' + formatLastActive(student.lastActive);
+          elReportLastActive.textContent = 'Last active: ' + formatLastActive(lastActiveVal);
           elReportAccessLine.textContent = 'Access: ' + chSum.text;
 
           elReportGrade.textContent = grade.label;
           elReportGrade.className = 'kpi-value ' + grade.tone;
-          elReportAccuracy.textContent = student.totalSolved > 0 ? student.accuracyPercent + '%' : '—';
+          if (elReportChaptersCount) {
+            elReportChaptersCount.textContent = chaptersPracticed + ' / 15';
+          }
+          elReportAccuracy.textContent = solvedCount > 0 ? accPct + '%' : '—';
           elReportAccuracy.className = 'kpi-value tabular-nums ' + grade.tone;
-          elReportSolved.textContent = student.totalSolved + ' / ' + student.wrongCount + ' wrong';
-          elReportHours.textContent = (student.activeMinutes / 60).toFixed(1) + ' h';
+          elReportSolved.textContent = solvedCount + ' / ' + wrongCount;
+          elReportHours.textContent = formatStudyDurationCompact(studyMs);
 
-          elReportChaptersBody.innerHTML = renderStudentChaptersRowsHtml(student);
+          // Lesson-by-lesson accuracy (Chapters 1–15)
+          if (profile && profile.lessonStats) {
+            elReportChaptersBody.innerHTML = profile.lessonStats.map(function (ls, idx) {
+              var meta = CHAPTERS_META[idx];
+              var ev = getChapterEvaluation(ls.accuracy, ls.solved);
+              var barClass = ls.solved === 0 ? '' : ls.accuracy >= 85 ? 'jade' : ls.accuracy >= 70 ? 'amber' : 'crimson';
+              return (
+                '<tr>' +
+                '<td><strong>' + escapeHtml(meta.ar) + '</strong> <span style="color:var(--ink-muted);font-size:12px" class="font-hanzi">' + escapeHtml(meta.lessonZh) + '</span></td>' +
+                '<td class="tabular-nums">' + ls.solved + '</td>' +
+                '<td class="tabular-nums tone-jade">' + ls.correct + '</td>' +
+                '<td class="tabular-nums tone-crimson">' + ls.wrong + '</td>' +
+                '<td class="tabular-nums">' +
+                (ls.solved > 0
+                  ? '<div class="progress-inline">' +
+                    '<div class="progress-track"><div class="progress-fill ' + barClass + '" style="width:' + ls.accuracy + '%"></div></div>' +
+                    '<strong class="' + ev.tone + '" style="min-width:36px">' + ls.accuracy + '%</strong>' +
+                    '</div>'
+                  : '<span class="tone-muted">—</span>') +
+                '</td>' +
+                '<td class="' + ev.tone + '" style="font-weight:700;font-size:12.5px">' + escapeHtml(ev.label) + '</td>' +
+                '</tr>'
+              );
+            }).join('');
+          } else {
+            elReportChaptersBody.innerHTML = renderStudentChaptersRowsHtml(student);
+          }
+
+          // Unified Exams History (Chapter & Final)
+          var studentExams = profile ? profile.exams : [];
+          if (elReportAllExamsMeta && elReportAllExamsBody) {
+            elReportAllExamsMeta.textContent =
+              studentExams.length + ' exam' + (studentExams.length === 1 ? '' : 's') + ' recorded';
+            if (studentExams.length === 0) {
+              elReportAllExamsBody.innerHTML =
+                '<tr><td colspan="7" style="text-align:center;color:var(--ink-muted);padding:16px">No Chapter or Final Exams submitted yet.</td></tr>';
+            } else {
+              elReportAllExamsBody.innerHTML = studentExams.map(function (ex) {
+                var td = getExamTypeDisplay(ex);
+                var ev = getChapterEvaluation(ex.pct, ex.total);
+                return (
+                  '<tr>' +
+                  '<td><span class="status-line ' + td.tone + '">' + escapeHtml(td.label) + '</span></td>' +
+                  '<td><strong>' + escapeHtml(ex.exam_title) + '</strong><span class="sub-meta">' + escapeHtml(ex.chapters_scope) + '</span></td>' +
+                  '<td class="tabular-nums"><strong>' + ex.score + ' / ' + ex.total + '</strong></td>' +
+                  '<td class="tabular-nums"><span class="tone-jade">' + ex.score + ' ✓</span> · <span class="tone-crimson">' + ex.mistakes + ' ✗</span></td>' +
+                  '<td class="tabular-nums"><strong class="' + ev.tone + '">' + ex.pct + '%</strong></td>' +
+                  '<td class="tabular-nums">' + escapeHtml(ex.duration_ms > 0 ? formatDurationMs(ex.duration_ms) : '—') + '</td>' +
+                  '<td class="tabular-nums" style="font-size:12px;color:var(--ink-muted)">' + escapeHtml(formatLastActive(ex.ts)) + '</td>' +
+                  '</tr>'
+                );
+              }).join('');
+            }
+          }
+
+          // Frequent Mistakes from WrongLog
+          var frequentMistakes = profile ? profile.frequentMistakes : [];
+          if (elReportWrongLogMeta && elReportWrongLogBody) {
+            var totalMistakeEvents = profile ? profile.totalWrongLogged : 0;
+            elReportWrongLogMeta.textContent =
+              totalMistakeEvents + ' logged mistake' + (totalMistakeEvents === 1 ? '' : 's') +
+              (frequentMistakes.length > 0 ? ' · ' + frequentMistakes.length + ' unique items' : '');
+            if (frequentMistakes.length === 0) {
+              elReportWrongLogBody.innerHTML =
+                '<tr><td colspan="5" style="text-align:center;color:var(--ink-muted);padding:16px">No mistakes logged in WrongLog for this student yet.</td></tr>';
+            } else {
+              elReportWrongLogBody.innerHTML = frequentMistakes.slice(0, 30).map(function (m) {
+                return (
+                  '<tr>' +
+                  '<td><strong>' + escapeHtml(m.lesson) + '</strong><span class="sub-meta">' + escapeHtml(m.activity) + '</span></td>' +
+                  '<td class="mistake-q-cell">' + escapeHtml(m.question) + '</td>' +
+                  '<td class="mistake-ans-wrong">' + escapeHtml(m.user_answer) + '</td>' +
+                  '<td class="mistake-ans-correct">' + escapeHtml(m.correct_answer) + '</td>' +
+                  '<td class="tabular-nums"><strong>' + m.count + '×</strong></td>' +
+                  '</tr>'
+                );
+              }).join('');
+            }
+          }
 
           elReportBackdrop.classList.add('open');
           document.body.classList.add('modal-open');
@@ -3288,9 +4925,20 @@
 
         /* ===================== Data Fetching & Sync ===================== */
         function renderAllViews() {
+          var model = buildAnalyticsModel();
           renderTopKPIs();
           renderStudentsTable();
           renderChaptersAnalytics();
+          renderOverviewTab(model);
+          renderStudentsProgressTab(model);
+          renderExamsTab(model);
+          renderRankingTab(model);
+        }
+
+        function applySamplePreviewAnalytics() {
+          state.results = SAMPLE_RESULTS.map(normalizeResultRow).filter(Boolean);
+          state.exams = SAMPLE_EXAMS.map(normalizeExamRow).filter(Boolean);
+          state.wrongLog = SAMPLE_WRONG_LOG.map(normalizeWrongLogRow).filter(Boolean);
         }
 
         function fetchStudentData(silent) {
@@ -3300,6 +4948,7 @@
 
           if (!url) {
             state.students = mergeUniqueStudents(loadLocallyRegisteredStudents(), SAMPLE_STUDENTS);
+            applySamplePreviewAnalytics();
             elConnectionStatus.textContent = 'Demo Preview Mode';
             elConnectionStatus.className = 'tone-amber';
             elLastFetch.textContent = 'Last sync: Local';
@@ -3327,7 +4976,15 @@
                     ? data.rows
                     : [];
 
+              var rawResults = data && Array.isArray(data.results) ? data.results : [];
+              var rawExams = data && Array.isArray(data.exams) ? data.exams : [];
+              var rawWrongLog = data && Array.isArray(data.wrongLog) ? data.wrongLog : [];
+
               state.students = mergeUniqueStudents(rows, loadLocallyRegisteredStudents());
+              state.results = rawResults.map(normalizeResultRow).filter(Boolean);
+              state.exams = rawExams.map(normalizeExamRow).filter(Boolean);
+              state.wrongLog = rawWrongLog.map(normalizeWrongLogRow).filter(Boolean);
+
               elConnectionStatus.textContent = 'Connected to Google Sheets';
               elConnectionStatus.className = 'tone-jade';
               elLastFetch.textContent =
@@ -3337,6 +4994,7 @@
             })
             .catch(function () {
               state.students = mergeUniqueStudents(loadLocallyRegisteredStudents(), SAMPLE_STUDENTS);
+              applySamplePreviewAnalytics();
               elConnectionStatus.textContent = 'Offline Fallback (Local Preview)';
               elConnectionStatus.className = 'tone-amber';
               elLastFetch.textContent = 'Last sync: Local';
@@ -3353,7 +5011,7 @@
         /* ===================== Tab Navigation ===================== */
         function switchTab(tabKey) {
           state.activeTab = tabKey;
-          elTopbarTitle.textContent = TAB_TITLES[tabKey] || TAB_TITLES.students;
+          elTopbarTitle.textContent = TAB_TITLES[tabKey] || TAB_TITLES.overview;
 
           navButtons.forEach(function (btn) {
             var active = btn.getAttribute('data-tab') === tabKey;
@@ -3362,11 +5020,28 @@
           });
 
           Object.keys(tabPanels).forEach(function (key) {
-            tabPanels[key].classList.toggle('hidden', key !== tabKey);
+            if (tabPanels[key]) {
+              tabPanels[key].classList.toggle('hidden', key !== tabKey);
+            }
           });
+
+          // Show the existing global KPI strip + Broadcast Banner on Management tabs (Students & Access / Chapters)
+          var showManagementHeader = tabKey === 'students' || tabKey === 'chapters';
+          if (elGlobalKpiGrid) {
+            elGlobalKpiGrid.classList.toggle('global-section-hidden', !showManagementHeader);
+          }
+          if (elGlobalBroadcastCard) {
+            elGlobalBroadcastCard.classList.toggle('global-section-hidden', !showManagementHeader);
+          }
 
           if (tabKey === 'chapters') {
             renderChaptersAnalytics();
+          } else if (tabKey === 'overview' || tabKey === 'progress' || tabKey === 'exams' || tabKey === 'ranking') {
+            var model = buildAnalyticsModel();
+            if (tabKey === 'overview') renderOverviewTab(model);
+            else if (tabKey === 'progress') renderStudentsProgressTab(model);
+            else if (tabKey === 'exams') renderExamsTab(model);
+            else if (tabKey === 'ranking') renderRankingTab(model);
           }
         }
 
@@ -3376,6 +5051,108 @@
             switchTab(btn.getAttribute('data-tab'));
           });
         });
+
+        // Overview lesson filter
+        if (elOvLessonFilterBar) {
+          elOvLessonFilterBar.addEventListener('click', function (e) {
+            var btn = e.target && e.target.closest ? e.target.closest('[data-ov-filter]') : null;
+            if (!btn) return;
+            state.ovLessonFilter = btn.getAttribute('data-ov-filter') || 'all';
+            var allBtns = elOvLessonFilterBar.querySelectorAll('[data-ov-filter]');
+            for (var i = 0; i < allBtns.length; i++) {
+              allBtns[i].classList.toggle('active', allBtns[i] === btn);
+            }
+            renderOverviewTab(buildAnalyticsModel());
+          });
+        }
+
+        // Students Progress search, sort, and clickable student profile
+        if (elProgressSearchInput) {
+          elProgressSearchInput.addEventListener('input', function () {
+            state.progressSearch = elProgressSearchInput.value;
+            renderStudentsProgressTab(buildAnalyticsModel());
+          });
+        }
+
+        progressSortHeaders.forEach(function (th) {
+          th.addEventListener('click', function () {
+            var field = th.getAttribute('data-progress-sort');
+            if (state.progressSortField === field) {
+              state.progressSortDir = state.progressSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+              state.progressSortField = field;
+              state.progressSortDir = field === 'studentName' ? 'asc' : 'desc';
+            }
+            renderStudentsProgressTab(buildAnalyticsModel());
+          });
+        });
+
+        // Exams search, type filter, and sort
+        if (elExamsSearchInput) {
+          elExamsSearchInput.addEventListener('input', function () {
+            state.examsSearch = elExamsSearchInput.value;
+            renderExamsTab(buildAnalyticsModel());
+          });
+        }
+
+        if (elExamsTypeFilterBar) {
+          elExamsTypeFilterBar.addEventListener('click', function (e) {
+            var btn = e.target && e.target.closest ? e.target.closest('[data-exam-filter]') : null;
+            if (!btn) return;
+            state.examsTypeFilter = btn.getAttribute('data-exam-filter') || 'all';
+            var allBtns = elExamsTypeFilterBar.querySelectorAll('[data-exam-filter]');
+            for (var i = 0; i < allBtns.length; i++) {
+              allBtns[i].classList.toggle('active', allBtns[i] === btn);
+            }
+            renderExamsTab(buildAnalyticsModel());
+          });
+        }
+
+        examSortHeaders.forEach(function (th) {
+          th.addEventListener('click', function () {
+            var field = th.getAttribute('data-exam-sort');
+            if (state.examsSortField === field) {
+              state.examsSortDir = state.examsSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+              state.examsSortField = field;
+              state.examsSortDir = field === 'name' || field === 'exam_title' ? 'asc' : 'desc';
+            }
+            renderExamsTab(buildAnalyticsModel());
+          });
+        });
+
+        // Ranking sort-by buttons & search
+        if (elRankingMetricBar) {
+          elRankingMetricBar.addEventListener('click', function (e) {
+            var btn = e.target && e.target.closest ? e.target.closest('[data-rank-metric]') : null;
+            if (!btn) return;
+            state.rankingMetric = btn.getAttribute('data-rank-metric') || 'solved';
+            var allBtns = elRankingMetricBar.querySelectorAll('[data-rank-metric]');
+            for (var i = 0; i < allBtns.length; i++) {
+              allBtns[i].classList.toggle('active', allBtns[i] === btn);
+            }
+            renderRankingTab(buildAnalyticsModel());
+          });
+        }
+
+        if (elRankingSearchInput) {
+          elRankingSearchInput.addEventListener('input', function () {
+            state.rankingSearch = elRankingSearchInput.value;
+            renderRankingTab(buildAnalyticsModel());
+          });
+        }
+
+        // Shared clickable student profile modal opener across Progress, Exams, and Ranking tables
+        function handleProfileClick(e) {
+          var profileBtn = e.target && e.target.closest ? e.target.closest('[data-open-profile-uid]') : null;
+          if (!profileBtn) return;
+          var uid = profileBtn.getAttribute('data-open-profile-uid');
+          var st = state.students.find(function (x) { return x.uid === uid; });
+          if (st) openReportModal(st);
+        }
+        if (elProgressTableBody) elProgressTableBody.addEventListener('click', handleProfileClick);
+        if (elExamsTableBody) elExamsTableBody.addEventListener('click', handleProfileClick);
+        if (elRankingTableBody) elRankingTableBody.addEventListener('click', handleProfileClick);
 
         elThemeBtn.addEventListener('click', function () {
           applyTheme(elHtml.classList.contains('dark') ? 'light' : 'dark');

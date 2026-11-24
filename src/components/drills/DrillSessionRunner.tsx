@@ -38,6 +38,7 @@ import { MatchingTwoColDrill } from './MatchingTwoColDrill';
 import { SentenceBuilderDrill } from './SentenceBuilderDrill';
 import { SentenceTranslationDrill } from './SentenceTranslationDrill';
 import { SpeakChineseButton } from './SpeakChineseButton';
+import { TrueFalseDrill } from './TrueFalseDrill';
 
 export type DrillSessionSource =
   | { kind: 'chapter'; chapter: ChapterData; drillKey: SessionDrillKey; mode: QuizMode }
@@ -301,7 +302,21 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
     stopChineseSpeech();
     const finalRecords: QuestionAnswerRecord[] = questions.map((q) => {
       const existing = answers[q.id];
-      if (existing) return existing;
+      const promptText = q.sentenceWithBlank || q.promptPrimary || q.audioText || q.id;
+      const expectedAnswer =
+        q.drillType === 'true-false'
+          ? q.isStatementTrue
+            ? 'TRUE'
+            : `FALSE (${q.correctedHanzi ?? q.correctDisplay})`
+          : q.correctDisplay;
+
+      if (existing) {
+        return {
+          ...existing,
+          questionPrompt: promptText,
+          correctDisplay: expectedAnswer,
+        };
+      }
       return {
         questionId: q.id,
         chapterId: q.chapterId,
@@ -310,6 +325,8 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
         isAnswered: true,
         isCorrect: false,
         userDisplay: 'Not answered',
+        questionPrompt: promptText,
+        correctDisplay: expectedAnswer,
       };
     });
 
@@ -317,15 +334,37 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
     drillTimeRef.current = {};
     flushedTimeRef.current = true;
 
+    const lessonLabel =
+      source.kind === 'chapter'
+        ? `Chapter ${source.chapter.id}`
+        : source.kind === 'custom'
+          ? source.config.chapterIds.length === 1
+            ? `Chapter ${source.config.chapterIds[0]}`
+            : `Custom (${source.config.chapterIds.length} ch.)`
+          : 'Mistake Review';
+
+    const sessionKind =
+      source.kind === 'mistakes'
+        ? 'mistake-review'
+        : source.kind === 'custom'
+          ? `custom-${mode}`
+          : mode === 'exam'
+            ? 'drill-exam'
+            : 'drill-practice';
+
     setIsFinished(true);
     const syncRes = await recordCompletedSession(finalRecords, capturedDrillTime, {
       isMistakeReview: source.kind === 'mistakes',
+      lesson: lessonLabel,
+      activity: sessionTitle,
+      kind: sessionKind,
+      durationMs: Math.max(0, elapsedSeconds * 1000),
     });
     if (syncRes) {
       setSyncSavedMessage(
         syncRes.syncedRemotely
           ? 'Results saved and automatically synced to the teacher log.'
-          : 'Results saved locally on this device.'
+          : 'Results saved locally and queued for automatic sync when online.'
       );
     }
   };
@@ -520,31 +559,77 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
                       </p>
                     )}
 
-                    <div className="text-xs space-y-1 pt-1">
-                      <p className="text-[#57534E] dark:text-[#A8A29E]">
-                        Your answer:{' '}
-                        <strong
-                          className={
-                            isRight
-                              ? 'text-[#15803D] dark:text-[#22C55E]'
-                              : 'text-[#B91C1C] dark:text-[#EF4444]'
-                          }
-                        >
-                          {rec?.userDisplay ?? 'Not answered'}
-                        </strong>
-                      </p>
+                      {q.drillType === 'true-false' ? (
+                        <div className="space-y-1.5 pt-1 text-xs">
+                          <p className="text-[#57534E] dark:text-[#A8A29E]">
+                            Your answer:{' '}
+                            <strong
+                              className={
+                                isRight
+                                  ? 'text-[#15803D] dark:text-[#22C55E]'
+                                  : 'text-[#B91C1C] dark:text-[#EF4444]'
+                              }
+                            >
+                              {rec?.userDisplay ?? 'Not answered'}
+                            </strong>
+                            <span className="mx-1.5 text-[#1C1917]/25 dark:text-[#F5F2EB]/25">·</span>
+                            Correct verdict:{' '}
+                            <strong
+                              className={
+                                q.isStatementTrue
+                                  ? 'text-[#15803D] dark:text-[#22C55E]'
+                                  : 'text-[#B91C1C] dark:text-[#EF4444]'
+                              }
+                            >
+                              {q.isStatementTrue ? 'TRUE' : 'FALSE'}
+                            </strong>
+                          </p>
 
-                      {!isRight && (
-                        <p className="text-[#15803D] dark:text-[#22C55E]">
-                          Correct answer: <strong>{q.correctDisplay}</strong>
-                          {showPinyin && q.correctPinyinDisplay && (
-                            <span className="font-pinyin ml-2 text-[#57534E] dark:text-[#A8A29E]">
-                              ({q.correctPinyinDisplay})
-                            </span>
+                          {!q.isStatementTrue && q.correctedHanzi && (
+                            <p className="text-[#15803D] dark:text-[#22C55E]">
+                              Corrected sentence:{' '}
+                              <strong className="font-hanzi text-sm">{q.correctedHanzi}</strong>
+                              {showPinyin && q.correctedPinyin && (
+                                <span className="font-pinyin ml-2 text-[#57534E] dark:text-[#A8A29E]">
+                                  ({q.correctedPinyin})
+                                </span>
+                              )}
+                            </p>
                           )}
-                        </p>
+
+                          {q.explanation && (
+                            <p className="text-[#57534E] dark:text-[#A8A29E] leading-relaxed">
+                              {q.explanation}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-xs space-y-1 pt-1">
+                          <p className="text-[#57534E] dark:text-[#A8A29E]">
+                            Your answer:{' '}
+                            <strong
+                              className={
+                                isRight
+                                  ? 'text-[#15803D] dark:text-[#22C55E]'
+                                  : 'text-[#B91C1C] dark:text-[#EF4444]'
+                              }
+                            >
+                              {rec?.userDisplay ?? 'Not answered'}
+                            </strong>
+                          </p>
+
+                          {!isRight && (
+                            <p className="text-[#15803D] dark:text-[#22C55E]">
+                              Correct answer: <strong>{q.correctDisplay}</strong>
+                              {showPinyin && q.correctPinyinDisplay && (
+                                <span className="font-pinyin ml-2 text-[#57534E] dark:text-[#A8A29E]">
+                                  ({q.correctPinyinDisplay})
+                                </span>
+                              )}
+                            </p>
+                          )}
+                        </div>
                       )}
-                    </div>
                   </div>
 
                   <div className="shrink-0 mt-1 flex flex-col items-end gap-2">
@@ -763,13 +848,25 @@ export function DrillSessionRunner({ source, onExit }: DrillSessionRunnerProps) 
             onSelectOption={handleSelectOption}
           />
         )}
+
+        {currentQuestion.drillType === 'true-false' && (
+          <TrueFalseDrill
+            question={currentQuestion}
+            mode={mode}
+            showPinyin={showPinyin}
+            selectedOptionId={currentRecord?.selectedOptionId}
+            isLocked={isCurrentLocked}
+            onSelectOption={handleSelectOption}
+          />
+        )}
       </div>
 
       {/* Instant feedback card in Practice Mode for multiple-choice drills */}
       {mode === 'practice' &&
         isCurrentLocked &&
         currentQuestion.drillType !== 'sentence-builder' &&
-        currentQuestion.drillType !== 'fill-in-blank' && (
+        currentQuestion.drillType !== 'fill-in-blank' &&
+        currentQuestion.drillType !== 'true-false' && (
           <div
             className={`rounded-xl border p-4 flex items-start justify-between gap-3 ${
               currentRecord?.isCorrect

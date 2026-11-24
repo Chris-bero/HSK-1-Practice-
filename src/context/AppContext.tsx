@@ -6,19 +6,26 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { ALL_DRILL_TYPES, CHAPTERS_DATA } from '../data/chaptersData';
+import { ALL_DRILL_TYPES, CHAPTERS_DATA, DRILL_METADATA } from '../data/chaptersData';
 import { authenticateStudent } from '../data/students';
 import { useActiveStudyTimer } from '../hooks/useActiveStudyTimer';
 import {
   bindStudentDeviceInSheet,
   fetchStudentSessionFromSheet,
+  flushAnalyticsRetryQueue,
+  logAnalyticsEvents,
   syncStudentStatsToSheets,
   SyncResult,
 } from '../services/sheetsSync';
 import {
+  AnalyticsExamLogEntry,
+  AnalyticsResultLogEntry,
+  AnalyticsWrongLogEntry,
+  ChapterExamResult,
   ChapterStatEntry,
   DrillStatEntry,
   DrillType,
+  FinalExamResult,
   MistakeItem,
   QuestionAnswerRecord,
   SheetsSyncPayload,
@@ -116,7 +123,7 @@ function createEmptyProgress(studentId: string): StudentProgress {
 
   const chapterStats = {} as Record<number, ChapterStatEntry>;
   for (const ch of CHAPTERS_DATA) {
-    chapterStats[ch.id] = { solved: 0, correct: 0, completedDrills: [] };
+    chapterStats[ch.id] = { solved: 0, correct: 0, completedDrills: [], timeSeconds: 0 };
   }
 
   return {
@@ -131,7 +138,76 @@ function createEmptyProgress(studentId: string): StudentProgress {
     drillTimeSeconds,
     chapterStats,
     mistakes: [],
+    chapterExamResults: [],
+    finalExamResults: [],
   };
+}
+
+function distributeSecondsToChapters(
+  chapterStats: Record<number, ChapterStatEntry>,
+  chapterQuestionCounts: Map<number, number>,
+  totalSeconds: number
+): void {
+  const safeSeconds = Math.max(0, Math.round(totalSeconds));
+  if (safeSeconds <= 0 || chapterQuestionCounts.size === 0) return;
+
+  const entries = Array.from(chapterQuestionCounts.entries()).filter(([, count]) => count > 0);
+  if (entries.length === 0) return;
+
+  if (entries.length === 1) {
+    const [chId] = entries[0];
+    const prevCh = chapterStats[chId] ?? {
+      solved: 0,
+      correct: 0,
+      completedDrills: [],
+      timeSeconds: 0,
+    };
+    chapterStats[chId] = {
+      ...prevCh,
+      timeSeconds: (prevCh.timeSeconds ?? 0) + safeSeconds,
+    };
+    return;
+  }
+
+  const totalQuestions = entries.reduce((sum, [, count]) => sum + count, 0);
+  if (totalQuestions <= 0) return;
+
+  let distributed = 0;
+  let primaryChId = entries[0][0];
+  let maxCount = entries[0][1];
+
+  for (const [chId, count] of entries) {
+    if (count > maxCount) {
+      maxCount = count;
+      primaryChId = chId;
+    }
+    const share = Math.floor((safeSeconds * count) / totalQuestions);
+    distributed += share;
+    const prevCh = chapterStats[chId] ?? {
+      solved: 0,
+      correct: 0,
+      completedDrills: [],
+      timeSeconds: 0,
+    };
+    chapterStats[chId] = {
+      ...prevCh,
+      timeSeconds: (prevCh.timeSeconds ?? 0) + share,
+    };
+  }
+
+  const remainder = safeSeconds - distributed;
+  if (remainder > 0) {
+    const prevPrimary = chapterStats[primaryChId] ?? {
+      solved: 0,
+      correct: 0,
+      completedDrills: [],
+      timeSeconds: 0,
+    };
+    chapterStats[primaryChId] = {
+      ...prevPrimary,
+      timeSeconds: (prevPrimary.timeSeconds ?? 0) + remainder,
+    };
+  }
 }
 
 function loadStudentProgress(studentId: string): StudentProgress {
@@ -160,7 +236,23 @@ function loadStudentProgress(studentId: string): StudentProgress {
       }
     }
 
-    const mergedChapterStats = { ...fallback.chapterStats, ...(parsed.chapterStats ?? {}) };
+    const mergedChapterStats: Record<number, ChapterStatEntry> = { ...fallback.chapterStats };
+    if (parsed.chapterStats) {
+      for (const [rawId, entry] of Object.entries(parsed.chapterStats)) {
+        const chId = Number(rawId);
+        if (!Number.isNaN(chId) && entry) {
+          mergedChapterStats[chId] = {
+            solved: typeof entry.solved === 'number' ? entry.solved : 0,
+            correct: typeof entry.correct === 'number' ? entry.correct : 0,
+            completedDrills: Array.isArray(entry.completedDrills) ? entry.completedDrills : [],
+            timeSeconds:
+              typeof entry.timeSeconds === 'number' && !Number.isNaN(entry.timeSeconds)
+                ? entry.timeSeconds
+                : 0,
+          };
+        }
+      }
+    }
     const validDrillSet = new Set<string>(ALL_DRILL_TYPES);
     const cleanedMistakes: MistakeItem[] = Array.isArray(parsed.mistakes)
       ? parsed.mistakes.filter(
@@ -177,6 +269,12 @@ function loadStudentProgress(studentId: string): StudentProgress {
       drillTimeSeconds: mergedDrillTime,
       chapterStats: mergedChapterStats,
       mistakes: cleanedMistakes,
+      chapterExamResults: Array.isArray(parsed.chapterExamResults)
+        ? parsed.chapterExamResults
+        : [],
+      finalExamResults: Array.isArray(parsed.finalExamResults)
+        ? parsed.finalExamResults
+        : [],
       studyDates: Array.isArray(parsed.studyDates) ? parsed.studyDates : fallback.studyDates,
     };
   } catch {
@@ -237,7 +335,8 @@ function computeChapterCompletion(chapterId: number, stats: ChapterStatEntry | u
       dt === 'sentence-hanzi-to-arabic' ||
       dt === 'sentence-arabic-to-hanzi' ||
       dt === 'sentence-builder' ||
-      dt === 'fill-in-blank'
+      dt === 'fill-in-blank' ||
+      dt === 'true-false'
     ) {
       return chapter.sentences.length > 0;
     }
@@ -282,7 +381,23 @@ interface AppContextValue {
   recordCompletedSession: (
     records: QuestionAnswerRecord[],
     drillElapsedSeconds?: Partial<Record<DrillType, number>>,
-    options?: { isMistakeReview?: boolean }
+    options?: {
+      isMistakeReview?: boolean;
+      lesson?: string;
+      activity?: string;
+      kind?: string;
+      durationMs?: number;
+    }
+  ) => Promise<SyncResult | null>;
+  recordChapterExamResult: (
+    examResult: ChapterExamResult,
+    records: QuestionAnswerRecord[],
+    drillElapsedSeconds?: Partial<Record<DrillType, number>>
+  ) => Promise<SyncResult | null>;
+  recordFinalExamResult: (
+    examResult: FinalExamResult,
+    records: QuestionAnswerRecord[],
+    drillElapsedSeconds?: Partial<Record<DrillType, number>>
   ) => Promise<SyncResult | null>;
   studyVault: Record<string, StudentStudyBookmark>;
   vaultCount: number;
@@ -398,6 +513,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useActiveStudyTimer(Boolean(currentStudent), handleTimerTick);
+
+  // Automatically flush any offline-queued granular analytics on login/mount and browser reconnect
+  useEffect(() => {
+    if (!currentStudent) return;
+    void flushAnalyticsRetryQueue();
+    const handleOnline = () => {
+      void flushAnalyticsRetryQueue();
+    };
+    window.addEventListener('online', handleOnline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [currentStudent?.id]);
 
   const toggleTheme = useCallback(() => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
@@ -647,6 +775,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       );
       if (entries.length === 0) return;
 
+      const totalAddedSeconds = entries.reduce((sum, [, secs]) => sum + (secs ?? 0), 0);
+
       setProgress((prev) => {
         if (!prev) return prev;
         const updatedTimes = { ...prev.drillTimeSeconds };
@@ -662,15 +792,41 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         saveStudentProgress(updated);
         return updated;
       });
+
+      // Log meaningful partial active study duration (>= 10s) to the Results tab with offline retry
+      if (currentStudent && totalAddedSeconds >= 10) {
+        const primaryDrillKey = entries[0][0] as DrillType;
+        const activityLabel = DRILL_METADATA[primaryDrillKey]?.titleAr ?? primaryDrillKey;
+        const activeEntry: AnalyticsResultLogEntry = {
+          ts: new Date().toISOString(),
+          code: currentStudent.code,
+          name: currentStudent.name,
+          lesson: 'Active Study',
+          activity: activityLabel,
+          kind: 'active-study',
+          correct: 0,
+          total: 0,
+          pct: 0,
+          duration_ms: Math.round(totalAddedSeconds * 1000),
+          device: getOrCreateClientDeviceId(),
+        };
+        void logAnalyticsEvents({ results: [activeEntry] });
+      }
     },
-    []
+    [currentStudent]
   );
 
   const recordCompletedSession = useCallback(
     async (
       records: QuestionAnswerRecord[],
       drillElapsedSeconds?: Partial<Record<DrillType, number>>,
-      options?: { isMistakeReview?: boolean }
+      options?: {
+        isMistakeReview?: boolean;
+        lesson?: string;
+        activity?: string;
+        kind?: string;
+        durationMs?: number;
+      }
     ): Promise<SyncResult | null> => {
       if (!currentStudent || !progress || records.length === 0) {
         return null;
@@ -707,6 +863,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       );
       const nowIso = new Date().toISOString();
 
+      const chapterQuestionCounts = new Map<number, number>();
+      const computedDurationMs =
+        typeof options?.durationMs === 'number' && options.durationMs >= 0
+          ? Math.round(options.durationMs)
+          : Math.round(
+              Object.values(drillElapsedSeconds ?? {}).reduce(
+                (sum, secs) => sum + (typeof secs === 'number' && secs > 0 ? secs : 0),
+                0
+              ) * 1000
+            );
+      const sessionSeconds = Math.max(0, Math.round(computedDurationMs / 1000));
+
       for (const rec of answeredRecords) {
         const existingDrill = updatedDrillStats[rec.drillType] ?? { attempted: 0, correct: 0 };
         updatedDrillStats[rec.drillType] = {
@@ -718,6 +886,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           solved: 0,
           correct: 0,
           completedDrills: [],
+          timeSeconds: 0,
         };
         const completedDrills = prevCh.completedDrills.includes(rec.drillType)
           ? prevCh.completedDrills
@@ -727,24 +896,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           solved: prevCh.solved + 1,
           correct: prevCh.correct + (rec.isCorrect ? 1 : 0),
           completedDrills,
+          timeSeconds: prevCh.timeSeconds ?? 0,
         };
+        chapterQuestionCounts.set(
+          rec.chapterId,
+          (chapterQuestionCounts.get(rec.chapterId) ?? 0) + 1
+        );
 
-        // Update mistakes bank (add mistake or clear it when answered correctly in Mistake Review mode)
+        // Update mistakes bank (add/increment missCount or clear when answered correctly in Mistake Review mode)
         if (rec.sourceItemId) {
           const mKey = makeMistakeKey(rec.chapterId, rec.drillType, rec.sourceItemId);
           if (!rec.isCorrect) {
+            const existingMistake = mistakesMap.get(mKey);
             mistakesMap.set(mKey, {
               key: mKey,
               chapterId: rec.chapterId,
               drillType: rec.drillType,
               sourceItemId: rec.sourceItemId,
               recordedAt: nowIso,
+              missCount: (existingMistake?.missCount ?? 0) + 1,
             });
           } else if (options?.isMistakeReview) {
             mistakesMap.delete(mKey);
           }
         }
       }
+
+      distributeSecondsToChapters(updatedChapterStats, chapterQuestionCounts, sessionSeconds);
 
       const today = getTodayIsoDate();
       const studyDates = progress.studyDates.includes(today)
@@ -774,6 +952,56 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const overallProgressPercent = computeOverallProgress(updatedProgress);
       const activeMinutes = Math.round(updatedProgress.activeSeconds / 60);
 
+      // Build granular Results + WrongLog entries
+      const uniqueChapterIds = Array.from(new Set(answeredRecords.map((r) => r.chapterId))).sort(
+        (a, b) => a - b
+      );
+      const inferredLesson =
+        options?.lesson ||
+        (options?.isMistakeReview
+          ? 'Mistake Review'
+          : uniqueChapterIds.length === 1
+            ? `Chapter ${uniqueChapterIds[0]}`
+            : `Chapters ${uniqueChapterIds.join(', ')}`);
+
+      const uniqueDrills = Array.from(new Set(answeredRecords.map((r) => r.drillType)));
+      const inferredActivity =
+        options?.activity ||
+        (uniqueDrills.length === 1
+          ? (DRILL_METADATA[uniqueDrills[0]]?.titleAr ?? uniqueDrills[0])
+          : 'Mixed Drills');
+
+      const sessionPct =
+        addedSolved > 0 ? Math.round((addedCorrect / addedSolved) * 100) : 0;
+      const deviceId = getOrCreateClientDeviceId();
+
+      const resultEntry: AnalyticsResultLogEntry = {
+        ts: nowIso,
+        code: currentStudent.code,
+        name: currentStudent.name,
+        lesson: inferredLesson,
+        activity: inferredActivity,
+        kind: options?.kind || (options?.isMistakeReview ? 'mistake-review' : 'drill'),
+        correct: addedCorrect,
+        total: addedSolved,
+        pct: sessionPct,
+        duration_ms: computedDurationMs,
+        device: deviceId,
+      };
+
+      const wrongEntries: AnalyticsWrongLogEntry[] = answeredRecords
+        .filter((rec) => !rec.isCorrect)
+        .map((rec) => ({
+          ts: nowIso,
+          code: currentStudent.code,
+          name: currentStudent.name,
+          lesson: `Chapter ${rec.chapterId}`,
+          activity: DRILL_METADATA[rec.drillType]?.titleAr ?? rec.drillType,
+          question: rec.questionPrompt || rec.sourceItemId || rec.questionId,
+          user_answer: rec.userDisplay || 'Not answered',
+          correct_answer: rec.correctDisplay || '',
+        }));
+
       const payload: SheetsSyncPayload = {
         studentId: currentStudent.id,
         studentName: currentStudent.name,
@@ -785,6 +1013,351 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         activeMinutes,
         overallProgressPercent,
         lastActive: nowIso,
+        chapterExamResults: updatedProgress.chapterExamResults ?? [],
+        finalExamResults: updatedProgress.finalExamResults ?? [],
+        resultEntry,
+        wrongEntries,
+      };
+
+      const result = await syncStudentStatsToSheets(payload);
+      setLastSyncResult(result);
+      return result;
+    },
+    [currentStudent, progress]
+  );
+
+  const recordChapterExamResult = useCallback(
+    async (
+      examResult: ChapterExamResult,
+      records: QuestionAnswerRecord[],
+      drillElapsedSeconds?: Partial<Record<DrillType, number>>
+    ): Promise<SyncResult | null> => {
+      if (!currentStudent || !progress) return null;
+
+      const addedSolved = records.length;
+      const addedCorrect = records.filter((r) => r.isCorrect).length;
+      const addedWrong = addedSolved - addedCorrect;
+
+      const updatedDrillStats: Record<DrillType, DrillStatEntry> = {
+        ...progress.drillStats,
+      };
+      const updatedDrillTimes: Record<DrillType, number> = {
+        ...progress.drillTimeSeconds,
+      };
+      if (drillElapsedSeconds) {
+        for (const [dt, secs] of Object.entries(drillElapsedSeconds)) {
+          if (typeof secs === 'number' && secs > 0) {
+            const key = dt as DrillType;
+            updatedDrillTimes[key] = (updatedDrillTimes[key] ?? 0) + secs;
+          }
+        }
+      }
+
+      const updatedChapterStats: Record<number, ChapterStatEntry> = {
+        ...progress.chapterStats,
+      };
+      const mistakesMap = new Map<string, MistakeItem>(
+        progress.mistakes.map((m) => [m.key, m])
+      );
+      const nowIso = examResult.completedAt || new Date().toISOString();
+
+      for (const rec of records) {
+        const existingDrill = updatedDrillStats[rec.drillType] ?? { attempted: 0, correct: 0 };
+        updatedDrillStats[rec.drillType] = {
+          attempted: existingDrill.attempted + 1,
+          correct: existingDrill.correct + (rec.isCorrect ? 1 : 0),
+        };
+
+        const prevCh = updatedChapterStats[rec.chapterId] ?? {
+          solved: 0,
+          correct: 0,
+          completedDrills: [],
+          timeSeconds: 0,
+        };
+        const completedDrills = prevCh.completedDrills.includes(rec.drillType)
+          ? prevCh.completedDrills
+          : [...prevCh.completedDrills, rec.drillType];
+
+        updatedChapterStats[rec.chapterId] = {
+          solved: prevCh.solved + 1,
+          correct: prevCh.correct + (rec.isCorrect ? 1 : 0),
+          completedDrills,
+          timeSeconds: prevCh.timeSeconds ?? 0,
+        };
+
+        if (rec.sourceItemId && !rec.isCorrect) {
+          const mKey = makeMistakeKey(rec.chapterId, rec.drillType, rec.sourceItemId);
+          const existingMistake = mistakesMap.get(mKey);
+          mistakesMap.set(mKey, {
+            key: mKey,
+            chapterId: rec.chapterId,
+            drillType: rec.drillType,
+            sourceItemId: rec.sourceItemId,
+            recordedAt: nowIso,
+            missCount: (existingMistake?.missCount ?? 0) + 1,
+          });
+        }
+      }
+
+      const chapterExamSeconds = Math.max(0, Math.round(examResult.durationSeconds));
+      if (chapterExamSeconds > 0) {
+        const prevExamCh = updatedChapterStats[examResult.chapterId] ?? {
+          solved: 0,
+          correct: 0,
+          completedDrills: [],
+          timeSeconds: 0,
+        };
+        updatedChapterStats[examResult.chapterId] = {
+          ...prevExamCh,
+          timeSeconds: (prevExamCh.timeSeconds ?? 0) + chapterExamSeconds,
+        };
+      }
+
+      const today = getTodayIsoDate();
+      const studyDates = progress.studyDates.includes(today)
+        ? progress.studyDates
+        : [...progress.studyDates, today];
+
+      const existingExams = Array.isArray(progress.chapterExamResults)
+        ? progress.chapterExamResults
+        : [];
+      const updatedExamResults = [examResult, ...existingExams].slice(0, 60);
+
+      const updatedProgress: StudentProgress = {
+        ...progress,
+        totalSolved: progress.totalSolved + addedSolved,
+        correctCount: progress.correctCount + addedCorrect,
+        wrongCount: progress.wrongCount + addedWrong,
+        studyDates,
+        lastActive: nowIso,
+        drillStats: updatedDrillStats,
+        drillTimeSeconds: updatedDrillTimes,
+        chapterStats: updatedChapterStats,
+        mistakes: Array.from(mistakesMap.values()),
+        chapterExamResults: updatedExamResults,
+      };
+
+      saveStudentProgress(updatedProgress);
+      setProgress(updatedProgress);
+
+      const accuracyPercent =
+        updatedProgress.totalSolved > 0
+          ? Math.round((updatedProgress.correctCount / updatedProgress.totalSolved) * 100)
+          : 0;
+      const overallProgressPercent = computeOverallProgress(updatedProgress);
+      const activeMinutes = Math.round(updatedProgress.activeSeconds / 60);
+
+      const chapterExamEntry: AnalyticsExamLogEntry = {
+        ts: nowIso,
+        code: currentStudent.code,
+        name: currentStudent.name,
+        exam_type: 'chapter-exam',
+        exam_title: examResult.chapterTitle,
+        chapters_scope: `Chapter ${examResult.chapterId}`,
+        score: examResult.score,
+        total: examResult.total,
+        pct: examResult.percentage,
+        duration_ms: Math.max(0, Math.round(examResult.durationSeconds * 1000)),
+        device: getOrCreateClientDeviceId(),
+      };
+
+      const chapterExamWrongEntries: AnalyticsWrongLogEntry[] = records
+        .filter((rec) => !rec.isCorrect)
+        .map((rec) => ({
+          ts: nowIso,
+          code: currentStudent.code,
+          name: currentStudent.name,
+          lesson: `Chapter ${rec.chapterId}`,
+          activity: `Chapter ${examResult.chapterId} Exam (${DRILL_METADATA[rec.drillType]?.titleAr ?? rec.drillType})`,
+          question: rec.questionPrompt || rec.sourceItemId || rec.questionId,
+          user_answer: rec.userDisplay || 'Not answered',
+          correct_answer: rec.correctDisplay || '',
+        }));
+
+      const payload: SheetsSyncPayload = {
+        studentId: currentStudent.id,
+        studentName: currentStudent.name,
+        studentCode: currentStudent.code,
+        totalSolved: updatedProgress.totalSolved,
+        correctCount: updatedProgress.correctCount,
+        wrongCount: updatedProgress.wrongCount,
+        accuracyPercent,
+        activeMinutes,
+        overallProgressPercent,
+        lastActive: nowIso,
+        chapterExamResults: updatedExamResults,
+        finalExamResults: updatedProgress.finalExamResults ?? [],
+        examEntry: chapterExamEntry,
+        wrongEntries: chapterExamWrongEntries,
+      };
+
+      const result = await syncStudentStatsToSheets(payload);
+      setLastSyncResult(result);
+      return result;
+    },
+    [currentStudent, progress]
+  );
+
+  const recordFinalExamResult = useCallback(
+    async (
+      examResult: FinalExamResult,
+      records: QuestionAnswerRecord[],
+      drillElapsedSeconds?: Partial<Record<DrillType, number>>
+    ): Promise<SyncResult | null> => {
+      if (!currentStudent || !progress) return null;
+
+      const addedSolved = records.length;
+      const addedCorrect = records.filter((r) => r.isCorrect).length;
+      const addedWrong = addedSolved - addedCorrect;
+
+      const updatedDrillStats: Record<DrillType, DrillStatEntry> = {
+        ...progress.drillStats,
+      };
+      const updatedDrillTimes: Record<DrillType, number> = {
+        ...progress.drillTimeSeconds,
+      };
+      if (drillElapsedSeconds) {
+        for (const [dt, secs] of Object.entries(drillElapsedSeconds)) {
+          if (typeof secs === 'number' && secs > 0) {
+            const key = dt as DrillType;
+            updatedDrillTimes[key] = (updatedDrillTimes[key] ?? 0) + secs;
+          }
+        }
+      }
+
+      const updatedChapterStats: Record<number, ChapterStatEntry> = {
+        ...progress.chapterStats,
+      };
+      const mistakesMap = new Map<string, MistakeItem>(
+        progress.mistakes.map((m) => [m.key, m])
+      );
+      const nowIso = examResult.completedAt || new Date().toISOString();
+
+      const finalExamChapterCounts = new Map<number, number>();
+      for (const rec of records) {
+        const existingDrill = updatedDrillStats[rec.drillType] ?? { attempted: 0, correct: 0 };
+        updatedDrillStats[rec.drillType] = {
+          attempted: existingDrill.attempted + 1,
+          correct: existingDrill.correct + (rec.isCorrect ? 1 : 0),
+        };
+
+        const prevCh = updatedChapterStats[rec.chapterId] ?? {
+          solved: 0,
+          correct: 0,
+          completedDrills: [],
+          timeSeconds: 0,
+        };
+        const completedDrills = prevCh.completedDrills.includes(rec.drillType)
+          ? prevCh.completedDrills
+          : [...prevCh.completedDrills, rec.drillType];
+
+        updatedChapterStats[rec.chapterId] = {
+          solved: prevCh.solved + 1,
+          correct: prevCh.correct + (rec.isCorrect ? 1 : 0),
+          completedDrills,
+          timeSeconds: prevCh.timeSeconds ?? 0,
+        };
+        finalExamChapterCounts.set(
+          rec.chapterId,
+          (finalExamChapterCounts.get(rec.chapterId) ?? 0) + 1
+        );
+
+        if (rec.sourceItemId && !rec.isCorrect && !rec.sourceItemId.startsWith('rc-')) {
+          const mKey = makeMistakeKey(rec.chapterId, rec.drillType, rec.sourceItemId);
+          const existingMistake = mistakesMap.get(mKey);
+          mistakesMap.set(mKey, {
+            key: mKey,
+            chapterId: rec.chapterId,
+            drillType: rec.drillType,
+            sourceItemId: rec.sourceItemId,
+            recordedAt: nowIso,
+            missCount: (existingMistake?.missCount ?? 0) + 1,
+          });
+        }
+      }
+
+      distributeSecondsToChapters(
+        updatedChapterStats,
+        finalExamChapterCounts,
+        Math.max(0, Math.round(examResult.durationSeconds))
+      );
+
+      const today = getTodayIsoDate();
+      const studyDates = progress.studyDates.includes(today)
+        ? progress.studyDates
+        : [...progress.studyDates, today];
+
+      const existingFinals = Array.isArray(progress.finalExamResults)
+        ? progress.finalExamResults
+        : [];
+      const updatedFinalResults = [examResult, ...existingFinals].slice(0, 60);
+
+      const updatedProgress: StudentProgress = {
+        ...progress,
+        totalSolved: progress.totalSolved + addedSolved,
+        correctCount: progress.correctCount + addedCorrect,
+        wrongCount: progress.wrongCount + addedWrong,
+        studyDates,
+        lastActive: nowIso,
+        drillStats: updatedDrillStats,
+        drillTimeSeconds: updatedDrillTimes,
+        chapterStats: updatedChapterStats,
+        mistakes: Array.from(mistakesMap.values()),
+        finalExamResults: updatedFinalResults,
+      };
+
+      saveStudentProgress(updatedProgress);
+      setProgress(updatedProgress);
+
+      const accuracyPercent =
+        updatedProgress.totalSolved > 0
+          ? Math.round((updatedProgress.correctCount / updatedProgress.totalSolved) * 100)
+          : 0;
+      const overallProgressPercent = computeOverallProgress(updatedProgress);
+      const activeMinutes = Math.round(updatedProgress.activeSeconds / 60);
+
+      const finalExamEntry: AnalyticsExamLogEntry = {
+        ts: nowIso,
+        code: currentStudent.code,
+        name: currentStudent.name,
+        exam_type: examResult.modelId === 'random' ? 'final-random' : `final-${examResult.modelId}`,
+        exam_title: examResult.modelLabel,
+        chapters_scope: examResult.scopeLabel,
+        score: examResult.score,
+        total: examResult.total,
+        pct: examResult.percentage,
+        duration_ms: Math.max(0, Math.round(examResult.durationSeconds * 1000)),
+        device: getOrCreateClientDeviceId(),
+      };
+
+      const finalExamWrongEntries: AnalyticsWrongLogEntry[] = records
+        .filter((rec) => !rec.isCorrect)
+        .map((rec) => ({
+          ts: nowIso,
+          code: currentStudent.code,
+          name: currentStudent.name,
+          lesson: `Chapter ${rec.chapterId}`,
+          activity: `${examResult.modelLabel} (${DRILL_METADATA[rec.drillType]?.titleAr ?? rec.drillType})`,
+          question: rec.questionPrompt || rec.sourceItemId || rec.questionId,
+          user_answer: rec.userDisplay || 'Not answered',
+          correct_answer: rec.correctDisplay || '',
+        }));
+
+      const payload: SheetsSyncPayload = {
+        studentId: currentStudent.id,
+        studentName: currentStudent.name,
+        studentCode: currentStudent.code,
+        totalSolved: updatedProgress.totalSolved,
+        correctCount: updatedProgress.correctCount,
+        wrongCount: updatedProgress.wrongCount,
+        accuracyPercent,
+        activeMinutes,
+        overallProgressPercent,
+        lastActive: nowIso,
+        chapterExamResults: updatedProgress.chapterExamResults ?? [],
+        finalExamResults: updatedFinalResults,
+        examEntry: finalExamEntry,
+        wrongEntries: finalExamWrongEntries,
       };
 
       const result = await syncStudentStatsToSheets(payload);
@@ -859,6 +1432,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     lastSyncResult,
     addDrillElapsedTime,
     recordCompletedSession,
+    recordChapterExamResult,
+    recordFinalExamResult,
     studyVault,
     vaultCount,
     isItemBookmarked,

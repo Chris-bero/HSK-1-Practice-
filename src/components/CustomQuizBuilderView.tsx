@@ -140,7 +140,7 @@ export function CustomQuizBuilderView({
           </div>
 
           <p className="text-sm text-[#57534E] dark:text-[#A8A29E] max-w-md">
-            Select one or more chapters, choose a specific skill or all 10 drill modes, and run in
+            Select one or more chapters, choose a specific skill or all 11 drill modes, and run in
             Practice or Exam mode.
           </p>
         </div>
@@ -256,7 +256,7 @@ export function CustomQuizBuilderView({
             2. Select Drill Skill
           </h2>
           <p className="text-xs text-[#57534E] dark:text-[#A8A29E] mt-0.5">
-            Combine all 10 drill types together or focus on a single skill.
+            Combine all 11 drill types together or focus on a single skill.
           </p>
         </div>
 

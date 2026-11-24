@@ -14,7 +14,13 @@ Google Apps Script Web App Setup (see root Code.gs for full backend script)
 import { GOOGLE_SCRIPT_WEB_APP_URL, STORAGE_KEYS } from '../config/appConfig';
 import { ALLOWED_STUDENTS, authenticateStudent } from '../data/students';
 import {
+  AnalyticsExamLogEntry,
+  AnalyticsLogBatchPayload,
+  AnalyticsResultLogEntry,
+  AnalyticsWrongLogEntry,
   BroadcastStyle,
+  ChapterExamResult,
+  FinalExamResult,
   SheetsSyncPayload,
   Student,
   TeacherBroadcast,
@@ -28,6 +34,8 @@ const LOCAL_SYNC_BACKUP_KEY = STORAGE_KEYS.SHEETS_SYNC_BACKUP;
 const STUDENT_PROGRESS_PREFIX = STORAGE_KEYS.PROGRESS_PREFIX;
 export const TEACHER_URL_STORAGE_KEY = STORAGE_KEYS.TEACHER_SHEETS_URL;
 const LOCAL_REGISTERED_STUDENTS_KEY = STORAGE_KEYS.REGISTERED_STUDENTS;
+const ANALYTICS_RETRY_QUEUE_KEY = STORAGE_KEYS.ANALYTICS_RETRY_QUEUE;
+const MAX_RETRY_QUEUE_ITEMS = 150;
 const TOTAL_CHAPTERS = 15;
 
 // Automatically sync the configured Web App URL into localStorage for alignment with the Teacher Dashboard
@@ -500,6 +508,243 @@ export function getLastLocalSync(studentId: string): EnrichedSheetsSyncPayload |
   }
 }
 
+function resolveChapterExamResultsJson(
+  payload: SheetsSyncPayload & { chapterExamResults?: ChapterExamResult[] }
+): string {
+  if (Array.isArray(payload.chapterExamResults)) {
+    return JSON.stringify(payload.chapterExamResults);
+  }
+  try {
+    const raw = localStorage.getItem(`${STUDENT_PROGRESS_PREFIX}${payload.studentId}`);
+    if (raw) {
+      const parsed = JSON.parse(raw) as { chapterExamResults?: ChapterExamResult[] };
+      if (Array.isArray(parsed?.chapterExamResults)) {
+        return JSON.stringify(parsed.chapterExamResults);
+      }
+    }
+  } catch {
+    // Fallback to empty array if storage cannot be read
+  }
+  return '[]';
+}
+
+function resolveFinalExamResultsJson(
+  payload: SheetsSyncPayload & { finalExamResults?: FinalExamResult[] }
+): string {
+  if (Array.isArray(payload.finalExamResults)) {
+    return JSON.stringify({ finalExams: payload.finalExamResults });
+  }
+  try {
+    const raw = localStorage.getItem(`${STUDENT_PROGRESS_PREFIX}${payload.studentId}`);
+    if (raw) {
+      const parsed = JSON.parse(raw) as { finalExamResults?: FinalExamResult[] };
+      if (Array.isArray(parsed?.finalExamResults)) {
+        return JSON.stringify({ finalExams: parsed.finalExamResults });
+      }
+    }
+  } catch {
+    // Fallback to empty object if storage cannot be read
+  }
+  return JSON.stringify({ finalExams: [] });
+}
+
+interface QueuedAnalyticsBatch {
+  id: string;
+  queuedAt: string;
+  results: AnalyticsResultLogEntry[];
+  exams: AnalyticsExamLogEntry[];
+  wrongLog: AnalyticsWrongLogEntry[];
+}
+
+function isBrowserOffline(): boolean {
+  return typeof navigator !== 'undefined' && navigator.onLine === false;
+}
+
+function readAnalyticsRetryQueue(): QueuedAnalyticsBatch[] {
+  try {
+    const raw = localStorage.getItem(ANALYTICS_RETRY_QUEUE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (item): item is QueuedAnalyticsBatch =>
+        Boolean(item && typeof item === 'object' && typeof (item as QueuedAnalyticsBatch).id === 'string')
+    );
+  } catch {
+    return [];
+  }
+}
+
+function writeAnalyticsRetryQueue(items: QueuedAnalyticsBatch[]): void {
+  try {
+    if (items.length === 0) {
+      localStorage.removeItem(ANALYTICS_RETRY_QUEUE_KEY);
+      return;
+    }
+    const bounded = items.slice(-MAX_RETRY_QUEUE_ITEMS);
+    localStorage.setItem(ANALYTICS_RETRY_QUEUE_KEY, JSON.stringify(bounded));
+  } catch {
+    // Ignore storage quota errors
+  }
+}
+
+export function getPendingAnalyticsQueueCount(): number {
+  return readAnalyticsRetryQueue().length;
+}
+
+export function enqueueAnalyticsBatch(payload: AnalyticsLogBatchPayload): void {
+  const results = Array.isArray(payload.results) ? payload.results : [];
+  const exams = Array.isArray(payload.exams) ? payload.exams : [];
+  const wrongLog = Array.isArray(payload.wrongLog) ? payload.wrongLog : [];
+  if (results.length === 0 && exams.length === 0 && wrongLog.length === 0) return;
+
+  const existing = readAnalyticsRetryQueue();
+  existing.push({
+    id: `aq_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    queuedAt: new Date().toISOString(),
+    results,
+    exams,
+    wrongLog,
+  });
+  writeAnalyticsRetryQueue(existing);
+}
+
+let retryFlushInFlight = false;
+
+/**
+ * Drains offline-queued drill results, exam attempts, and wrong answers from
+ * `hsk1_en_analytics_retry_queue_v1` in localStorage to Google Apps Script.
+ */
+export async function flushAnalyticsRetryQueue(): Promise<{
+  flushedCount: number;
+  remainingCount: number;
+}> {
+  if (retryFlushInFlight) {
+    return { flushedCount: 0, remainingCount: getPendingAnalyticsQueueCount() };
+  }
+
+  const queue = readAnalyticsRetryQueue();
+  if (queue.length === 0) {
+    return { flushedCount: 0, remainingCount: 0 };
+  }
+
+  const endpoint = getConfiguredSheetsUrl();
+  if (!endpoint || isBrowserOffline()) {
+    return { flushedCount: 0, remainingCount: queue.length };
+  }
+
+  retryFlushInFlight = true;
+  let totalFlushed = 0;
+  try {
+    let pending = [...queue];
+    while (pending.length > 0) {
+      if (isBrowserOffline()) break;
+
+      const chunk: QueuedAnalyticsBatch[] = [];
+      const mergedResults: AnalyticsResultLogEntry[] = [];
+      const mergedExams: AnalyticsExamLogEntry[] = [];
+      const mergedWrongs: AnalyticsWrongLogEntry[] = [];
+
+      for (const batch of pending) {
+        if (
+          chunk.length > 0 &&
+          (chunk.length >= 10 || mergedWrongs.length + batch.wrongLog.length > 250)
+        ) {
+          break;
+        }
+        chunk.push(batch);
+        mergedResults.push(...batch.results);
+        mergedExams.push(...batch.exams);
+        mergedWrongs.push(...batch.wrongLog);
+      }
+
+      await fetch(endpoint, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify({
+          action: 'logAnalyticsBatch',
+          results: mergedResults,
+          exams: mergedExams,
+          wrongLog: mergedWrongs,
+        }),
+      });
+
+      const flushedIds = new Set(chunk.map((q) => q.id));
+      const latest = readAnalyticsRetryQueue().filter((q) => !flushedIds.has(q.id));
+      writeAnalyticsRetryQueue(latest);
+      totalFlushed += chunk.length;
+      pending = pending.slice(chunk.length);
+    }
+
+    return { flushedCount: totalFlushed, remainingCount: readAnalyticsRetryQueue().length };
+  } catch {
+    return { flushedCount: totalFlushed, remainingCount: readAnalyticsRetryQueue().length };
+  } finally {
+    retryFlushInFlight = false;
+  }
+}
+
+/**
+ * Posts standalone granular analytics (e.g., partial active-study duration or direct logs)
+ * with automatic offline retry queueing in localStorage.
+ */
+export async function logAnalyticsEvents(
+  payload: AnalyticsLogBatchPayload
+): Promise<{ syncedRemotely: boolean; queuedOffline: boolean }> {
+  const results = Array.isArray(payload.results) ? payload.results : [];
+  const exams = Array.isArray(payload.exams) ? payload.exams : [];
+  const wrongLog = Array.isArray(payload.wrongLog) ? payload.wrongLog : [];
+  if (results.length === 0 && exams.length === 0 && wrongLog.length === 0) {
+    return { syncedRemotely: false, queuedOffline: false };
+  }
+
+  const endpoint = getConfiguredSheetsUrl();
+  if (!endpoint || isBrowserOffline()) {
+    enqueueAnalyticsBatch({ results, exams, wrongLog });
+    return { syncedRemotely: false, queuedOffline: true };
+  }
+
+  try {
+    const body =
+      results.length === 1 && exams.length === 0
+        ? {
+            action: 'logResult',
+            resultEntry: results[0],
+            wrongEntries: wrongLog,
+          }
+        : exams.length === 1 && results.length === 0
+          ? {
+              action: 'logExam',
+              examEntry: exams[0],
+              wrongEntries: wrongLog,
+            }
+          : {
+              action: 'logAnalyticsBatch',
+              results,
+              exams,
+              wrongLog,
+            };
+
+    await fetch(endpoint, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: JSON.stringify(body),
+    });
+
+    void flushAnalyticsRetryQueue();
+    return { syncedRemotely: true, queuedOffline: false };
+  } catch {
+    enqueueAnalyticsBatch({ results, exams, wrongLog });
+    return { syncedRemotely: false, queuedOffline: true };
+  }
+}
+
 export async function syncStudentStatsToSheets(
   payload: SheetsSyncPayload & { chaptersBreakdown?: string | ChapterBreakdownEntry[] }
 ): Promise<SyncResult> {
@@ -507,14 +752,27 @@ export async function syncStudentStatsToSheets(
   const enrichedPayload: EnrichedSheetsSyncPayload = {
     ...payload,
     chaptersBreakdown: resolveChaptersBreakdownJson(payload),
-    hskMockResults: '[]',
-    hskPatternStats: '{}',
+    hskMockResults: resolveChapterExamResultsJson(payload),
+    hskPatternStats: resolveFinalExamResultsJson(payload),
   };
 
   saveLocalBackup(enrichedPayload);
 
+  const queuedGranular: AnalyticsLogBatchPayload = {
+    results: payload.resultEntry ? [payload.resultEntry] : [],
+    exams: payload.examEntry ? [payload.examEntry] : [],
+    wrongLog: Array.isArray(payload.wrongEntries) ? payload.wrongEntries : [],
+  };
+  const hasGranular =
+    (queuedGranular.results?.length ?? 0) > 0 ||
+    (queuedGranular.exams?.length ?? 0) > 0 ||
+    (queuedGranular.wrongLog?.length ?? 0) > 0;
+
   const endpoint = getConfiguredSheetsUrl();
-  if (!endpoint) {
+  if (!endpoint || isBrowserOffline()) {
+    if (hasGranular) {
+      enqueueAnalyticsBatch(queuedGranular);
+    }
     return {
       syncedRemotely: false,
       savedLocally: true,
@@ -532,12 +790,18 @@ export async function syncStudentStatsToSheets(
       body: JSON.stringify(enrichedPayload),
     });
 
+    // Drain any previously offline-queued granular events now that the network succeeded
+    void flushAnalyticsRetryQueue();
+
     return {
       syncedRemotely: true,
       savedLocally: true,
       timestamp,
     };
   } catch {
+    if (hasGranular) {
+      enqueueAnalyticsBatch(queuedGranular);
+    }
     return {
       syncedRemotely: false,
       savedLocally: true,

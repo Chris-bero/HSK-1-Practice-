@@ -335,7 +335,7 @@ export function AnalyticsView({ onStartMistakeReview }: AnalyticsViewProps) {
         </div>
       </div>
 
-      {/* Accuracy Across All 10 Drill Types */}
+      {/* Accuracy Across All 11 Drill Types */}
       <div className="rounded-xl border border-[#1C1917]/10 dark:border-[#F5F2EB]/10 bg-white dark:bg-[#1E1C1A] p-6 sm:p-8 space-y-5">
         <h2 className="text-lg font-bold text-[#1C1917] dark:text-[#F5F2EB] border-b border-[#1C1917]/10 dark:border-[#F5F2EB]/10 pb-4">
           Accuracy by Drill Mode
