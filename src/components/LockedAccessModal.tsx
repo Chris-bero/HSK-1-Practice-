@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Check, Copy, Lock, RefreshCw, X } from 'lucide-react';
+import { Lock, RefreshCw, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 interface LockedAccessModalProps {
@@ -16,7 +16,6 @@ export function LockedAccessModal({
   onClose,
 }: LockedAccessModalProps) {
   const { currentStudent, refreshStudentAccess } = useApp();
-  const [copied, setCopied] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshMsg, setRefreshMsg] = useState('');
 
@@ -32,16 +31,6 @@ export function LockedAccessModal({
   }, [isOpen, onClose]);
 
   if (!isOpen || !currentStudent) return null;
-
-  const handleCopyCode = async () => {
-    try {
-      await navigator.clipboard.writeText(currentStudent.code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2200);
-    } catch {
-      // Ignore clipboard errors
-    }
-  };
 
   const handleRefreshAccess = async () => {
     if (isRefreshing) return;
@@ -100,49 +89,18 @@ export function LockedAccessModal({
         </div>
 
         <p className="text-sm text-[#57534E] dark:text-[#A8A29E] leading-relaxed">
-          This chapter is not enabled on your current trial plan. Share your student access code
-          with your instructor to unlock all 15 curriculum chapters, chapter exams, and study labs.
+          This chapter is not enabled on your current trial plan. Contact your instructor with your
+          registered student name to unlock all 15 curriculum chapters, chapter exams, and study
+          labs.
         </p>
 
-        {/* Student credentials card */}
-        <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F9F6F0] dark:bg-[#121110] p-4 space-y-3">
+        {/* Student account card */}
+        <div className="rounded-xl border border-[#1C1917]/12 dark:border-[#F5F2EB]/12 bg-[#F9F6F0] dark:bg-[#121110] p-4">
           <div className="flex items-center justify-between gap-2 text-xs">
             <span className="text-[#57534E] dark:text-[#A8A29E]">Student Name</span>
             <strong className="text-sm text-[#1C1917] dark:text-[#F5F2EB]">
               {currentStudent.name}
             </strong>
-          </div>
-
-          <div className="h-px bg-[#1C1917]/8 dark:bg-[#F5F2EB]/8" />
-
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <span className="block text-xs text-[#57534E] dark:text-[#A8A29E]">Student Code</span>
-              <strong
-                dir="ltr"
-                className="inline-block text-lg font-bold tracking-wider text-[#B91C1C] dark:text-[#EF4444] tabular-nums mt-0.5"
-              >
-                {currentStudent.code}
-              </strong>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleCopyCode}
-              className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[38px] rounded-lg border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-white dark:bg-[#1E1C1A] text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB] hover:border-[#B91C1C]/45 transition-colors"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-3.5 h-3.5 text-[#15803D] dark:text-[#22C55E]" />
-                  <span className="text-[#15803D] dark:text-[#22C55E]">Copied</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copy Code</span>
-                </>
-              )}
-            </button>
           </div>
         </div>
 

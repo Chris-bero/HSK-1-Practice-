@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   AlertTriangle,
   ArrowRight,
   Award,
   BookOpen,
-  Check,
   CheckCircle2,
   Clock,
-  Copy,
   FileCheck2,
   Flame,
   Lock,
@@ -74,7 +72,6 @@ export function StudentProfileModal({
   onStartMistakeReview,
 }: StudentProfileModalProps) {
   const { currentStudent, unlockedAccess, progress, analytics, showPinyin } = useApp();
-  const [copiedCode, setCopiedCode] = useState(false);
 
   // Close on Escape and lock body scroll while open
   useEffect(() => {
@@ -239,16 +236,6 @@ export function StudentProfileModal({
 
   if (!isOpen || !currentStudent || !progress) return null;
 
-  const handleCopyCode = async () => {
-    try {
-      await navigator.clipboard.writeText(currentStudent.code);
-      setCopiedCode(true);
-      window.setTimeout(() => setCopiedCode(false), 2000);
-    } catch {
-      // Ignore clipboard errors in restricted frames
-    }
-  };
-
   const handleJumpChapter = (chapter: ChapterData) => {
     if (!isChapterUnlocked(unlockedAccess, chapter.id)) return;
     onClose();
@@ -288,27 +275,12 @@ export function StudentProfileModal({
               {getStudentInitials(currentStudent.name)}
             </span>
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2
-                  id="student-profile-modal-title"
-                  className="text-lg sm:text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB] truncate"
-                >
-                  {currentStudent.name}
-                </h2>
-                <button
-                  type="button"
-                  onClick={handleCopyCode}
-                  title="Copy student access code"
-                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border border-[#1C1917]/15 dark:border-[#F5F2EB]/15 bg-[#F9F6F0] dark:bg-[#141312] text-xs font-bold tabular-nums text-[#B91C1C] dark:text-[#EF4444] hover:border-[#B91C1C]/50 transition-colors"
-                >
-                  <span>{currentStudent.code}</span>
-                  {copiedCode ? (
-                    <Check className="w-3 h-3 text-[#15803D] dark:text-[#22C55E]" />
-                  ) : (
-                    <Copy className="w-3 h-3 opacity-70" />
-                  )}
-                </button>
-              </div>
+              <h2
+                id="student-profile-modal-title"
+                className="text-lg sm:text-xl font-bold text-[#1C1917] dark:text-[#F5F2EB] truncate"
+              >
+                {currentStudent.name}
+              </h2>
               <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs text-[#57534E] dark:text-[#A8A29E] mt-0.5">
                 <span>Student Profile &amp; Progress Report</span>
                 <span aria-hidden="true">·</span>

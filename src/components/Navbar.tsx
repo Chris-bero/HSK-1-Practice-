@@ -122,13 +122,8 @@ export function Navbar({
                 <span className="w-7 h-7 rounded-md bg-[#B91C1C]/10 dark:bg-[#EF4444]/15 text-[#B91C1C] dark:text-[#EF4444] flex items-center justify-center shrink-0">
                   <User className="w-3.5 h-3.5" />
                 </span>
-                <span className="flex flex-col text-left leading-tight min-w-0">
-                  <span className="text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB] truncate">
-                    {currentStudent.name}
-                  </span>
-                  <span className="text-[10px] font-bold tracking-wide text-[#B91C1C] dark:text-[#EF4444] tabular-nums truncate">
-                    {currentStudent.code}
-                  </span>
+                <span className="text-xs font-bold text-[#1C1917] dark:text-[#F5F2EB] truncate">
+                  {currentStudent.name}
                 </span>
               </button>
             )}
